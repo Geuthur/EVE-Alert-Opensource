@@ -1,8 +1,8 @@
 import customtkinter
 import tkinter as tk
-import json, os, sys
-from config import *
-from menus.settings import settings
+import os, sys
+from evealert.config import *
+from evealert.menus.settings import settings
 
 alert_timer = None
 faction_timer = None
@@ -10,10 +10,10 @@ faction_timer = None
 def get_resource_path(relative_path):
     if getattr(sys, 'frozen', False):
         # Wenn das Skript mit PyInstaller kompiliert wurde
-        base_path = os.path.abspath(".")
+        base_path = os.path.abspath("evealert/.")
     else:
         # Wenn das Skript direkt ausgeführt wird
-        base_path = os.path.abspath(".")
+        base_path = os.path.abspath("evealert/.")
 
     return os.path.join(base_path, relative_path)
 

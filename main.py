@@ -1,22 +1,18 @@
+import pyautogui, logging
+import customtkinter
+import tkinter as tk
+
 from pynput import mouse, keyboard
 from datetime import datetime
 
-import pyautogui, sys, json, asyncio, logging
+from evealert import __version__
 
-import customtkinter
-import tkinter as tk
-import json, os, sys
-
-import logger
-from config import *
-from alert import Alert_Agent, wincap
-from functions import get_resource_path, create_alert_region, create_faction_region, create_screenshot_region
+from evealert.config import *
+from evealert.alert import Alert_Agent, wincap
+from evealert.functions import get_resource_path, create_alert_region, create_faction_region, create_screenshot_region
 
 from customtkinter import CTkFrame, CTkLabel
-#from menus.mainmenu import AlertMenu
-#from menus.settingsmenu import ConfigMenu
-#from menus.descriptionmenu import DescriptiongMenu
-from menus.settings import settings
+from evealert.menus.settings import settings
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
@@ -581,7 +577,7 @@ class AlertMenu:
 
 # Menu Settings
 root = customtkinter.CTk()
-root.title("Alert - 0.3.6")
+root.title(f"Alert - {__version__}")
 root.iconbitmap(default=get_resource_path(icon_path))
 desc = DescriptionMenu(root)
 config = ConfigMenu(root)

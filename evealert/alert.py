@@ -1,17 +1,19 @@
-import os, time, random, asyncio, threading
-import pyaudio
-import wave
-import logging, socket
-
+import os, time, random, threading, logging
 from datetime import datetime
-from config import *
-from functions import get_resource_path
 from threading import Thread, Lock
-from pycolorise.colors import *
-from PIL import Image
-from vision import Vision
-from windowscapture import WindowCapture
-from menus.settings import settings
+
+import wave
+import socket
+import pyaudio
+
+from pycolorise.colors import Green, Red, Yellow
+
+from evealert.functions import get_resource_path
+from evealert.vision import Vision
+from evealert.windowscapture import WindowCapture
+from evealert.menus.settings import settings
+
+from evealert.config import *
 
 # ALERT SYSTEM
 
@@ -25,7 +27,7 @@ faction_sound = "sound/faction.wav"
 alarm_sound = get_resource_path(alarm_sound)
 faction_sound = get_resource_path(faction_sound)
 
-img_folder = 'img'
+img_folder = 'evealert/img'
 image_filenames = [os.path.join(img_folder, filename) for filename in os.listdir(img_folder) if filename.startswith('image_')]
 image_faction_filenames = [os.path.join(img_folder, filename) for filename in os.listdir(img_folder) if filename.startswith('faction_')]
 vision = Vision(image_filenames)
@@ -170,9 +172,10 @@ class Alert_Agent:
             t5.start()
             self.threads.append(t5)
             
-            t6 = Thread(target=self.run_socket)
-            t6.start()
-            self.threads.append(t6)
+            #Not Implemented Yet
+            #t6 = Thread(target=self.run_socket)
+            #t6.start()
+            #self.threads.append(t6)
             
             logger.info("Alle Tasks wurden gestartet")
             return True      
