@@ -18,9 +18,10 @@ customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
 
 # Pfad zur JSON-Datei für die Einstellungen
-settings_file = 'settings.json'
 logger = logging.getLogger('alert')
 now = datetime.now()
+
+logger.error("Error")
 
 class DescriptionMenu:
     def __init__(self, root):

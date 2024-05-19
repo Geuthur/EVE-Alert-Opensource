@@ -1,7 +1,9 @@
-import json, os
+import json, os, logging
+from pathlib import Path
+from logging.handlers import RotatingFileHandler
 
 # Pfad zur JSON-Datei für die Einstellungen
-settings_file = 'settings.json'
+SETTINGS_FILE = 'settings.json'
 
 class settings:
     def __init__(self):
@@ -20,16 +22,16 @@ class settings:
         }
 
         try:
-            with open(settings_file, 'r') as file:
+            with open(SETTINGS_FILE, 'r') as file:
                 settings = json.load(file)
             return settings
         except FileNotFoundError:
-            if os.path.exists(settings_file):  # Überprüfen, ob die Datei existiert
+            if os.path.exists(SETTINGS_FILE):  # Überprüfen, ob die Datei existiert
                 # Wenn die Datei existiert, lösche sie
-                os.remove(settings_file)
+                os.remove(SETTINGS_FILE)
 
             # Erstelle die Datei mit den Standardwerten
-            with open(settings_file, 'w') as file:
+            with open(SETTINGS_FILE, 'w') as file:
                 json.dump(default_settings, file, indent=4)
 
             return default_settings
@@ -63,8 +65,44 @@ class settings:
                 "value": config_dict['cooldown_timer']
             },
         }
-        with open(settings_file, 'w') as file:
+        with open(SETTINGS_FILE, 'w') as file:
             json.dump(settings, file, indent=4)
 
     def set_system_label(self):
         pass
+
+
+# Logging
+LOG_PATH = Path('logs')
+LOG_PATH.mkdir(exist_ok=True)
+
+LOG_FORMAT = logging.Formatter(
+    '%(asctime)s %(levelname)s %(module)s %(funcName)s %(lineno)d: %(message)s',
+    datefmt="[%Y-%m-%d %H:%M:%S]"
+)
+
+def create_fh(name: str):
+    """Create a logging filehandler based on given file path."""
+
+    fh = RotatingFileHandler(
+        filename=Path(LOG_PATH, f"{name}.log"),
+        encoding='utf-8', mode='a',
+    )
+    fh.setFormatter(LOG_FORMAT)
+    return fh
+
+alert_log = logging.getLogger("alert")
+alert_log.addHandler(create_fh('alert'))
+settings_config = settings().open_settings()
+log_level = settings_config.get("logging")
+
+if log_level:
+    try:
+        alert_log.setLevel(log_level)
+    except Exception as e:
+        alert_log.setLevel(logging.ERROR)
+        alert_log.error("Wrong Logging Level: %s", e)
+else:
+    alert_log.setLevel(logging.ERROR)
+
+logging.StreamHandler()
