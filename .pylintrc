@@ -1,0 +1,43 @@
+[MASTER]
+# Add files or directories matching the regex patterns to the ignore-list.
+# The regex matches against paths.
+ignore-paths=
+    tests/,
+    (.*)/tests/,
+    (.*)/migrations/
+
+[MESSAGES CONTROL]
+disable=
+    attribute-defined-outside-init,
+    import-error,
+    protected-access,
+    too-few-public-methods,
+
+    # ignore TODOS
+    fixme,
+
+    # ignore docstrings
+    missing-module-docstring,
+    missing-function-docstring,
+    missing-class-docstring,
+
+    # handled by isort
+    wrong-import-position,
+    ungrouped-imports,
+
+    # handled by black
+    format,
+
+    # Exception
+    broad-except,
+
+    # To many
+    too-many-arguments,
+    too-many-locals,
+    too-many-branches,
+    too-many-instance-attributes,
+    too-many-statements,
+
+
+[DESIGN]
+max-attributes=12

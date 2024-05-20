@@ -1,0 +1,249 @@
+# Apply to all files without committing:
+#   pre-commit run --all-files
+# Update this file:
+#   pre-commit autoupdate
+
+default_language_version:
+  # force all unspecified python hooks to run python3
+  python: python3
+
+# https://pre-commit.ci/
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: false
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: monthly
+  skip:
+    - eslint  # Fails due to missing node environment in CI
+  submodules: false
+
+# pre-commit setup
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # Identify invalid files
+      - id: check-ast
+        name: check-ast (Python)
+        description: Check for syntax errors in Python files.
+
+      # git checks
+      - id: check-merge-conflict
+        name: Check for merge conflict strings
+        description: Check for files that contain merge conflict strings.
+
+      - id: check-added-large-files
+        name: Check for large files
+        description: Check for large files that were added to the repository.
+        args:
+          - --maxkb=1000
+
+      - id: detect-private-key
+        name: Detect private key
+        description: Check for private keys in the repository.
+
+      - id: check-case-conflict
+        name: Check for case conflicts
+        description: Check for files with names that differ only in case.
+
+      # Python checks
+      - id: check-docstring-first
+        name: Check for docstring in first line
+        description: Check that the first line of a file is a docstring.
+
+      - id: debug-statements
+        name: Check for debug statements
+        description: Check for print statements and pdb imports.
+
+      - id: requirements-txt-fixer
+        name: Fix requirements.txt
+        description: Fix the formatting of requirements.txt files.
+
+      - id: fix-encoding-pragma
+        name: Fix encoding pragma
+        description: Fix the encoding pragma in Python files.
+        args:
+          - --remove
+
+      - id: fix-byte-order-marker
+        name: Fix byte order marker
+        description: Fix the byte order marker in Python files.
+
+      - id: check-builtin-literals
+        name: Check for built-in literals
+        description: Check for built-in literals in Python code.
+
+      # General quality checks
+      - id: mixed-line-ending
+        name: Mixed line ending
+        description: Check for mixed line endings.
+        args:
+          - --fix=lf
+
+      - id: trailing-whitespace
+        name: Trailing whitespace
+        description: Check for trailing whitespace.
+        args:
+          - --markdown-linebreak-ext=md
+        exclude: |
+          (?x)(
+            .min(.css|.css.map|.js|.js.map)|
+            locale/|
+            static/(.*)/libs/
+          )
+
+      - id: check-executables-have-shebangs
+        name: Check for shebangs in executables
+        description: Check that executables have shebangs.
+
+      - id: end-of-file-fixer
+        name: End of file fixer
+        description: Ensure that files end with a newline.
+        exclude: |
+          (?x)(
+            .min(.css|.css.map|.js|.js.map)|
+            locale/|
+            static/(.*)/libs/
+          )
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa  # Enforce that noqa annotations always occur with specific codes. Sample annotations: # noqa: F401, # noqa: F401,W203
+        name: Check for blanket noqa
+        description: Check for blanket noqa annotations.
+
+      - id: python-check-blanket-type-ignore  # Enforce that # type: ignore annotations always occur with specific codes. Sample annotations: # type: ignore[attr-defined], # type: ignore[attr-defined, name-defined]
+        name: Check for blanket type ignore
+        description: Check for blanket type ignore annotations.
+
+      - id: python-check-mock-methods  # Prevent common mistakes of assert mck.not_called(), assert mck.called_once_with(...) and mck.assert_called
+        name: Check for mock methods
+        description: Check for common mistakes of mock methods.
+
+      - id: python-no-eval  # A quick check for the eval() built-in function
+        name: Check for eval
+        description: Check for the eval() built-in function.
+
+      - id: python-no-log-warn  #  A quick check for the deprecated .warn() method of python loggers
+        name: Check for log warn
+        description: Check for the deprecated .warn() method of python loggers.
+
+      - id: python-use-type-annotations  # Enforce that python3.6+ type annotations are used instead of type comments
+        name: Use type annotations
+        description: Enforce that python3.6+ type annotations are used instead of type comments.
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 2.7.3
+    hooks:
+      - id: editorconfig-checker
+        name: EditorConfig Checker
+        description: Check for compliance with the definitions in the EditorConfig file.
+        exclude: |
+          (?x)(
+            LICENSE|
+            .min(.css|.css.map|.js|.js.map)|
+            static/(.*)/libs/
+          )
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.2
+    hooks:
+      - id: pyupgrade
+        name: PyUpgrade
+        description: Upgrade syntax to newer versions of Python.
+        args:
+          - --py38-plus
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        name: Flake8
+        description: Check for style and complexity issues in Python code.
+
+  - repo: https://github.com/asottile/yesqa
+    rev: v1.5.0
+    hooks:
+      - id: yesqa
+        name: YesQA
+        description: Check for extraneous `# noqa` comments.
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: Isort
+        description: Sort imports.
+
+  - repo: https://github.com/Pierre-Sassoulas/black-disable-checker/
+    rev: v1.1.3
+    hooks:
+      - id: black-disable-checker
+        name: Black disable checker
+        description: Check for black disable comments.
+
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        name: Black
+        description: Format Python code.
+        args:
+          - --target-version=py38
+
+  - repo: https://github.com/asottile/blacken-docs
+    rev: 1.16.0
+    hooks:
+      - id: blacken-docs
+        name: Blacken docs
+        description: Format Python code in documentation files.
+        additional_dependencies:
+          - black==24.4.2  # https://github.com/psf/black/releases/latest
+        args:
+          - --target-version=py38
+
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.17
+    hooks:
+      - id: mdformat
+        name: Mdformat
+        description: Format Markdown files.
+        exclude: |
+          (?x)(
+            .github/|
+            static/(.*)/libs/
+          )
+        additional_dependencies:
+          - mdformat-gfm==0.3.6  # Mdformat plugin for GitHub Flavored Markdown compatibility » https://github.com/hukkin/mdformat-gfm/tags
+          - mdformat-toc==0.3.0  # Mdformat plugin to generate a table of contents » https://github.com/hukkin/mdformat-toc/tags
+          - mdformat-black==0.1.1  # Mdformat plugin to Blacken Python code blocks » https://github.com/hukkin/mdformat-black/tags
+          - mdformat-shfmt==0.1.0  # Mdformat plugin to format shell code blocks » https://github.com/hukkin/mdformat-shfmt/tags
+
+  - repo: https://github.com/pylint-dev/pylint
+    rev: v3.2.0
+    hooks:
+      - id: pylint
+        name: Pylint
+        description: Check for errors and code smells in Python code.
+        args:
+          - --py-version=3.8
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.28.3
+    hooks:
+      - id: check-github-actions
+        name: Check GitHub Actions
+        description: This hook checks that GitHub Actions files are valid.
+        args:
+          - --verbose
+
+      - id: check-github-workflows
+        name: Check GitHub Workflows
+        description: This hook checks that GitHub Workflows files are valid.
+        args:
+          - --verbose

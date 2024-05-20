@@ -5,37 +5,82 @@ name: Python package
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'
+
+    tags-ignore:
+      - '**'
+
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - '**'
+
+    tags-ignore:
+      - '**'
 
 jobs:
-  build:
-
+  # Run pre-commit Checks
+  pre-commit:
+    name: Pre Commit Checks
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10","3.11","3.12"]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y portaudio19-dev
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
+      # Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '>=3.8'
+
+      - name: Run Pre Commit Checks
+        uses: pre-commit/action@v3.0.1
+
+  # Run Test Coverage
+  test-coverage:
+    needs: [pre-commit]
+    name: AA Latest (Python ${{ matrix.python-version }} with ${{ matrix.database }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Set Python versions to test against
+      matrix:
+        python-version:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+        # Set up Python
+    steps:
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Upload coverage to Codecov
+      - name: Upload Coverage
+        if: ${{
+              (
+                github.event_name == 'pull_request'
+                || (
+                  github.event_name == 'push'
+                  && github.ref == 'refs/heads/master'
+                )
+              )
+              && (
+                matrix.python-version == '3.10'
+                && matrix.database == 'mariadb:10.11'
+              )
+            }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml # optional
+          verbose: true # optional (default = false)
+      # Test with pytest
+      - name: Test with pytest
+        run: |
+          pytest
