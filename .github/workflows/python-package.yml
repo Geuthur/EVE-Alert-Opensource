@@ -63,9 +63,11 @@ jobs:
         run: |
           sudo apt-get install -y portaudio19-dev
           python -m pip install --upgrade pip
-          python -m pip install flake8 pytest
+          python -m pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       # Test with pytest
+      - name: List directory contents
+        run: ls -l
       - name: Test with pytest
         run: |
           pytest tests/
