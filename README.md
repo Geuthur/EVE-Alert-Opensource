@@ -62,9 +62,9 @@ I know it is simple Script, but if you want to support me here:
 https://www.paypal.com/paypalme/HellRiderZ
 
 ## Terms
-
-<span style="color: red">This is an open-source project without any guarantees. Use it at your own risk.\
-Please ensure that you comply with EVE Online's terms of use and policies. The use of bots or automation may violate the game's terms of service.</span>
+> \[!CAUTION\]
+> This is an open-source project without any guarantees. Use it at your own risk.
+> Please ensure that you comply with EVE Online's terms of use and policies. The use of bots or automation may violate the game's terms of service.
 
 ## Contributing
 
