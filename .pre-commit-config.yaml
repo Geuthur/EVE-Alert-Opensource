@@ -223,7 +223,7 @@ repos:
           - mdformat-shfmt==0.1.0  # Mdformat plugin to format shell code blocks » https://github.com/hukkin/mdformat-shfmt/tags
 
   - repo: https://github.com/pylint-dev/pylint
-    rev: v3.2.0
+    rev: v3.2.2
     hooks:
       - id: pylint
         name: Pylint
