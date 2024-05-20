@@ -68,4 +68,4 @@ jobs:
       # Test with pytest
       - name: Test with pytest
         run: |
-          pytest
+          pytest --cov=src tests/
