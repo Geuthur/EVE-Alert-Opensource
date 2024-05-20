@@ -4,7 +4,7 @@ import tkinter as tk
 
 import customtkinter
 
-from evealert.settings.settings import settings
+from evealert.settings.settings import SettingsManager
 
 
 def get_resource_path(relative_path):
@@ -38,7 +38,7 @@ def create_overlay(root, x1, y1, x2, y2):
 
 def create_alert_region(root, system_label):
     alert_timer = None
-    config = settings().open_settings()
+    config = SettingsManager().open_settings()
     if alert_timer:
         return
     try:
@@ -67,7 +67,7 @@ def create_alert_region(root, system_label):
 
 def create_faction_region(root, system_label):
     faction_timer = None
-    config = settings().open_settings()
+    config = SettingsManager().open_settings()
     if faction_timer:
         return
     try:

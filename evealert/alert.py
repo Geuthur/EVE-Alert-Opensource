@@ -12,7 +12,7 @@ import pyaudio
 from pycolorise.colors import Green, Red, Yellow
 
 from evealert.functions import get_resource_path
-from evealert.settings.settings import settings
+from evealert.settings.settings import SettingsManager
 from evealert.vision import Vision
 from evealert.windowscapture import WindowCapture
 
@@ -57,7 +57,7 @@ class AlertAgent:
         self.faction = False
         self.image_detected = False
         self.change = True
-        self.settings = settings()
+        self.settings = SettingsManager()
 
         # create a thread lock object
         self.lock = Lock()

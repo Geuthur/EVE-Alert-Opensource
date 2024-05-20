@@ -4,13 +4,13 @@ import mss
 import numpy as np
 from PIL import Image
 
-from evealert.settings.settings import settings
+from evealert.settings.settings import SettingsManager
 
 
 class WindowCapture:
 
     def __init__(self):
-        config = settings.open_settings(self)
+        config = SettingsManager.open_settings(self)
         if config:
             self.x1 = int(config.get("alert_region_1", {}).get("x", None))
             self.y1 = int(config.get("alert_region_1", {}).get("y", None))
