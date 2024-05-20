@@ -1,10 +1,12 @@
+import logging
 from datetime import datetime
+
 import cv2 as cv
 import numpy as np
-import logging
 
-logger = logging.getLogger('alert')
+logger = logging.getLogger("alert")
 now = datetime.now()
+
 
 class Vision:
 
@@ -17,7 +19,9 @@ class Vision:
     # constructor
     def __init__(self, needle_img_paths, method=cv.TM_CCOEFF_NORMED):
         # Load the images we're trying to match
-        self.needle_imgs = [cv.imread(path, cv.IMREAD_UNCHANGED) for path in needle_img_paths]
+        self.needle_imgs = [
+            cv.imread(path, cv.IMREAD_UNCHANGED) for path in needle_img_paths
+        ]
 
         # Save the dimensions of the needle images
         self.needle_dims = [(img.shape[1], img.shape[0]) for img in self.needle_imgs]
@@ -55,15 +59,15 @@ class Vision:
                 rectangles.append(rect)
 
             # Apply group rectangles.
-            rectangles, weights = cv.groupRectangles(rectangles, groupThreshold=1, eps=0.5)
+            rectangles, _ = cv.groupRectangles(rectangles, groupThreshold=1, eps=0.5)
 
             points = []
             if len(rectangles):
                 # Loop over all the rectangles
-                for (x, y, w, h) in rectangles:
+                for x, y, w, h in rectangles:
                     # Determine the center position
-                    center_x = x + int(w/2)
-                    center_y = y + int(h/2)
+                    center_x = x + int(w / 2)
+                    center_y = y + int(h / 2)
                     # Save the points
                     points.append((center_x, center_y))
                     if self.debug_mode:
@@ -72,8 +76,14 @@ class Vision:
                         bottom_right = (x + w, y + h)
                         # Draw the box
                         try:
-                            cv.rectangle(haystack_img, top_left, bottom_right, color=color,
-                                        lineType=cv.LINE_4, thickness=2)
+                            cv.rectangle(
+                                haystack_img,
+                                top_left,
+                                bottom_right,
+                                color=color,
+                                lineType=cv.LINE_4,
+                                thickness=2,
+                            )
                         except Exception as e:
                             logger.error("Reactangle Error: %s", e)
                     if self.debug_mode_faction:
@@ -81,26 +91,32 @@ class Vision:
                         top_left = (x, y)
                         bottom_right = (x + w, y + h)
                         # Draw the box
-                        cv.rectangle(haystack_img, top_left, bottom_right, color=color,
-                                     lineType=cv.LINE_4, thickness=2)
+                        cv.rectangle(
+                            haystack_img,
+                            top_left,
+                            bottom_right,
+                            color=color,
+                            lineType=cv.LINE_4,
+                            thickness=2,
+                        )
 
             all_points.extend(points)
 
         if self.debug_mode:
-            cv.imshow('Enemy Vision', haystack_img)
+            cv.imshow("Enemy Vision", haystack_img)
             self.enemy = True
             cv.waitKey(1)
         else:
             if self.enemy:
-                cv.destroyWindow('Enemy Vision')
+                cv.destroyWindow("Enemy Vision")
                 self.enemy = None
 
         if self.debug_mode_faction:
-            cv.imshow('Faction Vision', haystack_img)
+            cv.imshow("Faction Vision", haystack_img)
             self.faction = True
             cv.waitKey(1)
         else:
             if self.faction:
-                cv.destroyWindow('Faction Vision')
+                cv.destroyWindow("Faction Vision")
                 self.faction = None
         return all_points

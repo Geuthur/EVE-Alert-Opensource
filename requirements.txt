@@ -1,8 +1,8 @@
-pyautogui
-pynput
-opencv-python==4.8.1.78
 customtkinter
-pyaudio
-pycolorise
-pillow
 mss
+opencv-python==4.8.1.78
+pillow
+pyaudio
+pyautogui
+pycolorise
+pynput

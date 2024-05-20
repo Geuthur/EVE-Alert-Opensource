@@ -1,14 +1,14 @@
-import customtkinter
+import os
+import sys
 import tkinter as tk
-import os, sys
-from evealert.config import *
-from evealert.menus.settings import settings
 
-alert_timer = None
-faction_timer = None
+import customtkinter
+
+from evealert.settings.settings import settings
+
 
 def get_resource_path(relative_path):
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         # Wenn das Skript mit PyInstaller kompiliert wurde
         base_path = os.path.abspath("evealert/.")
     else:
@@ -17,16 +17,17 @@ def get_resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
 def create_overlay(root, x1, y1, x2, y2):
     overlay = tk.Toplevel(root)
-    overlay.attributes('-topmost', 1)
-    overlay.attributes('-alpha', 0.5)
+    overlay.attributes("-topmost", 1)
+    overlay.attributes("-alpha", 0.5)
     overlay.overrideredirect(True)
 
     overlay.geometry(f"{x2}x{y2}+{x1}+{y1}")
 
     alert_canvas = customtkinter.CTkCanvas(overlay, bg="blue", highlightthickness=0)
-    
+
     alert_canvas.pack(fill="both", expand=True)
 
     # Zeichnen Sie ein rotes Rechteck als Alert-Bereich
@@ -34,8 +35,9 @@ def create_overlay(root, x1, y1, x2, y2):
 
     return overlay
 
+
 def create_alert_region(root, system_label):
-    global alert_timer
+    alert_timer = None
     config = settings().open_settings()
     if alert_timer:
         return
@@ -46,10 +48,11 @@ def create_alert_region(root, system_label):
         x2 = int(config.get("alert_region_2", {}).get("x", 100))
         y2 = int(config.get("alert_region_2", {}).get("y", 100))
 
-        def close_alert_region():
-            global alert_timer
+        def close_alert_region(alert_timer):
             alert_overlay.destroy()
             alert_timer = False
+
+            return alert_timer
 
         width = x2 - x1
         height = y2 - y1
@@ -61,8 +64,9 @@ def create_alert_region(root, system_label):
         print(e)
         system_label.configure(text="System: ❎ Something is wrong.", text_color="red")
 
+
 def create_faction_region(root, system_label):
-    global faction_timer
+    faction_timer = None
     config = settings().open_settings()
     if faction_timer:
         return
@@ -73,10 +77,10 @@ def create_faction_region(root, system_label):
         x2 = int(config.get("faction_region_2", {}).get("x", 100))
         y2 = int(config.get("faction_region_2", {}).get("y", 100))
 
-        def close_alert_region():
-            global faction_timer
+        def close_alert_region(faction_timer):
             alert_overlay.destroy()
             faction_timer = False
+            return faction_timer
 
         width = x2 - x1
         height = y2 - y1
@@ -88,15 +92,21 @@ def create_faction_region(root, system_label):
         print(e)
         system_label.configure(text="System: ❎ Something is wrong.", text_color="red")
 
-def create_screenshot_region(x, y, width, height, root, system_label):
-    global screenshot_overlay
+
+def create_screenshot_region(
+    x, y, width, height, root, system_label, screenshot_overlay=None
+):
+    """Create a screenshot region overlay."""
     try:
         screenshot_overlay = create_overlay(root, x, y, width, height)
         if screenshot_overlay:
+
             def close_screenshot_region():
                 screenshot_overlay.destroy()
+
             root.after(5000, close_screenshot_region)
-            return screenshot_overlay
     except Exception as e:
         print(e)
         system_label.configure(text="System: ❎ Something is wrong.", text_color="red")
+        screenshot_overlay = None
+    return screenshot_overlay

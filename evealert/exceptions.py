@@ -1,0 +1,2 @@
+class ScreenshotError(Exception):
+    pass
