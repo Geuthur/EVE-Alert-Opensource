@@ -5,3 +5,7 @@ pyinstaller.txt
 testing/*
 *.pyc
 logs/
+
+build/
+dist/
+main.spec

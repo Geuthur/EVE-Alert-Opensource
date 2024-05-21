@@ -5,4 +5,5 @@ pillow
 pyaudio
 pyautogui
 pycolorise
+pyinstaller
 pynput

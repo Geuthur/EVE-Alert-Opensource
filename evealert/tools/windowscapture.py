@@ -4,7 +4,7 @@ import mss
 import numpy as np
 from PIL import Image
 
-from evealert.settings.settings import SettingsManager
+from evealert.managers.settingsmanager import SettingsManager
 
 
 class WindowCapture:

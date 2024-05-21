@@ -1,19 +1,23 @@
 import customtkinter
 
+from evealert.settings.constants import ICON_PATH
+from evealert.settings.functions import get_resource_path
+
 
 class ConfigMenu:
     """Configuration menu for the Alert System."""
 
-    def __init__(self, main):
+    def __init__(self, main: customtkinter.CTk):
         self.main = main
         self.active = False
         self.config_window_y = None
+        self.main.iconbitmap(default=get_resource_path(ICON_PATH))
 
         self.load_settings()
 
     def load_settings(self):
         """Load the settings from the settings file."""
-        self.config_window = customtkinter.CTkToplevel(self.main.root)
+        self.config_window = customtkinter.CTkToplevel(self.main)
         self.config_window.title("Settings")
 
         self.config_window.withdraw()
@@ -139,12 +143,12 @@ class ConfigMenu:
 
             # Position des Beschreibungsfensters rechts neben dem Hauptmenü
             config_menu_x, config_menu_y = (
-                self.main.root.winfo_x(),
-                self.main.root.winfo_y(),
+                self.main.winfo_x(),
+                self.main.winfo_y(),
             )
             config_menu_width, config_menu_height = (
-                self.main.root.winfo_width(),
-                self.main.root.winfo_height(),
+                self.main.winfo_width(),
+                self.main.winfo_height(),
             )
 
             config_window_width = 650

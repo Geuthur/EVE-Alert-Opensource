@@ -11,10 +11,10 @@ from threading import Lock, Thread
 import pyaudio
 from pycolorise.colors import Green, Red, Yellow
 
-from evealert.functions import get_resource_path
-from evealert.settings.settings import SettingsManager
-from evealert.vision import Vision
-from evealert.windowscapture import WindowCapture
+from evealert.managers.settingsmanager import SettingsManager
+from evealert.settings.functions import get_resource_path
+from evealert.tools.vision import Vision
+from evealert.tools.windowscapture import WindowCapture
 
 # ALERT SYSTEM
 

@@ -4,7 +4,7 @@ import customtkinter
 class DescriptionMenu:
     """Description Menu for the configuration mode."""
 
-    def __init__(self, main):
+    def __init__(self, main: customtkinter.CTk):
         self.main = main
         self.active = False
 
@@ -17,17 +17,17 @@ class DescriptionMenu:
                 fg_color="#fa0202", hover_color="#bd291e"
             )
 
-            self.description_window = customtkinter.CTkToplevel(self.main.root)
+            self.description_window = customtkinter.CTkToplevel(self.main)
             self.description_window.title("Config Mode")
 
             # Position des Beschreibungsfensters rechts neben dem Hauptmenü
             main_menu_x, main_menu_y = (
-                self.main.root.winfo_x(),
-                self.main.root.winfo_y(),
+                self.main.winfo_x(),
+                self.main.winfo_y(),
             )
             main_menu_width, main_menu_height = (
-                self.main.root.winfo_width(),
-                self.main.root.winfo_height(),
+                self.main.winfo_width(),
+                self.main.winfo_height(),
             )
 
             description_window_width = 400

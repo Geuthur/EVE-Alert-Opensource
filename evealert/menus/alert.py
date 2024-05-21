@@ -2,17 +2,20 @@ import customtkinter
 import pyautogui
 from pynput import keyboard, mouse
 
-from evealert.alert import AlertAgent, wincap
+from evealert import __version__
 from evealert.exceptions import ScreenshotError
-from evealert.functions import (
+from evealert.managers.alertmanager import AlertAgent, wincap
+from evealert.managers.settingsmanager import SettingsManager
+from evealert.menus.configuration import ConfigMenu
+from evealert.menus.description import DescriptionMenu
+from evealert.settings.constants import ICON_PATH
+from evealert.settings.functions import (
     create_alert_region,
     create_faction_region,
     create_screenshot_region,
+    get_resource_path,
 )
-from evealert.menus.configuration import ConfigMenu
-from evealert.menus.description import DescriptionMenu
 from evealert.settings.logger import logging
-from evealert.settings.settings import SettingsManager
 
 logger = logging.getLogger("alert")
 
@@ -76,11 +79,13 @@ class AlertButton:
         self.main.configmenu.open_description_window()
 
 
-class AlertMenu:
+class AlertMenu(customtkinter.CTk):
     """Main Menu for the Alert System"""
 
-    def __init__(self, root: customtkinter.CTk):
-        self.root = root
+    def __init__(self):
+        super().__init__()
+        self.title(f"Alert - {__version__}")
+        self.iconbitmap(default=get_resource_path(ICON_PATH))
         self.init_menu()
         self.settings = SettingsManager()
         self.alarm = AlertAgent()
@@ -98,31 +103,31 @@ class AlertMenu:
     def init_menu(self):
         """Initializes the Main Menu for the Alert System."""
         # Setze die Größe des Fensters
-        self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
         # 1 Row - Init
         self.mouse_position_label = customtkinter.CTkLabel(
-            self.root, text="", justify="left"
+            self, text="", justify="left"
         )
-        self.timer_var = customtkinter.CTkEntry(self.root)
+        self.timer_var = customtkinter.CTkEntry(self)
 
         # Row 12
         # System Info
         # self.system_label = customtkinter.CTkLabel(root, text="System: ")
-        credit_label = customtkinter.CTkLabel(self.root, text="Powered by Geuthur")
+        credit_label = customtkinter.CTkLabel(self, text="Powered by Geuthur")
 
         self.mouse_position_label.pack()
 
         # Settings System
-        self.settings_label_frame = customtkinter.CTkFrame(self.root)
+        self.settings_label_frame = customtkinter.CTkFrame(self)
 
         self.settings_label_frame.pack()
 
-        empty_label = customtkinter.CTkLabel(self.root, text="")
+        empty_label = customtkinter.CTkLabel(self, text="")
         empty_label.pack()
 
         # Alert System
-        alert_label_frame = customtkinter.CTkFrame(self.root)
+        alert_label_frame = customtkinter.CTkFrame(self)
 
         # Erstellen Sie das system_label im Frame
         show_alert_button = customtkinter.CTkButton(
@@ -145,11 +150,11 @@ class AlertMenu:
 
         alert_label_frame.pack()
 
-        empty_label = customtkinter.CTkLabel(self.root, text="")
+        empty_label = customtkinter.CTkLabel(self, text="")
         empty_label.pack()
 
         # Start Stopp System
-        engine_label_frame = customtkinter.CTkFrame(self.root)
+        engine_label_frame = customtkinter.CTkFrame(self)
 
         start_button = customtkinter.CTkButton(
             engine_label_frame,
@@ -171,7 +176,7 @@ class AlertMenu:
         engine_label_frame.pack()
 
         # System Info Label
-        system_label_frame = customtkinter.CTkFrame(self.root)
+        system_label_frame = customtkinter.CTkFrame(self)
 
         # Erstellen Sie das system_label im Frame
         self.system_label = customtkinter.CTkLabel(system_label_frame, text="")
@@ -243,17 +248,17 @@ class AlertMenu:
         """Display the alert region on the screen."""
         selected_mode = self.configmenu.mode_var.get()
         if selected_mode == "picture":
-            self.root.after(0, self.alarm.set_vision)
+            self.after(0, self.alarm.set_vision)
         else:
-            self.root.after(0, create_alert_region(self.root, self.system_label))
+            self.after(0, create_alert_region(self, self.system_label))
 
     def display_faction_region(self):
         """Display the faction region on the screen."""
         selected_mode = self.configmenu.mode_var.get()
         if selected_mode == "picture":
-            self.root.after(0, self.alarm.set_vision_faction)
+            self.after(0, self.alarm.set_vision_faction)
         else:
-            self.root.after(0, create_faction_region(self.root, self.system_label))
+            self.after(0, create_faction_region(self, self.system_label))
 
     def display_screenshot_region(self, x, y, width, height):
         """Display the screenshot region on the screen."""
@@ -262,18 +267,18 @@ class AlertMenu:
             y,
             width,
             height,
-            self.root,
+            self,
             self.system_label,
             self.screenshot.screenshot_overlay,
         )
-        self.root.after(0)
+        self.after(0)
 
     # Mouse Functions
     def update_mouse_position_label(self):
         """Update the mouse position label."""
         x, y = pyautogui.position()
         self.mouse_position_label.configure(text=f"Mausposition: X={x}, Y={y}")
-        self.root.after(100, self.update_mouse_position_label)
+        self.after(100, self.update_mouse_position_label)
 
     def on_click(self, x, y, button, pressed):
         if self.config_mode:
@@ -451,7 +456,7 @@ class AlertMenu:
             self.system_label.configure(
                 text="System: ❎ EVE Alert isn't running.", text_color="red"
             )
-        self.root.destroy()
+        self.destroy()
 
     # Starten Sie den Alert-Thread, indem Sie die Alert-Funktion aus alert.py aufrufen
     def start_alert_script(self, system_label):

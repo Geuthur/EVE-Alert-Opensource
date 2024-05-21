@@ -4,7 +4,7 @@ import tkinter as tk
 
 import customtkinter
 
-from evealert.settings.settings import SettingsManager
+from evealert.managers.settingsmanager import SettingsManager
 
 
 def get_resource_path(relative_path):
