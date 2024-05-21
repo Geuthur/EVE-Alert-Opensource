@@ -44,11 +44,11 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 To create an executable program, you need to download a release version and then run it through the installer in an environment.
 You also need a Python Version installed on Windows or Linux
 
-### Download Version
+### Download Version<a name="step1"></a>
 
 Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releases) to download the latest version.
 
-### Create Enviorment
+### Create Enviorment<a name="step2"></a>
 
 Create the .venv in the EVE-Alert-Opensource folder after you extract the package.
 
@@ -68,7 +68,7 @@ source .venv\Scripts\activate
 pip install -r ./requirments.txt
 ```
 
-### Make Build
+### Make Build<a name="step3"></a>
 
 > \[!NOTE\]
 > Ensure you have read/write permissions to this directory
