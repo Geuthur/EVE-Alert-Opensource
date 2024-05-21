@@ -9,6 +9,10 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 - [EVE Alert](#evealert)
   - [Features](#features)
   - [Usage](#usage)
+  - [Installation](#installation)
+    - [Download](#step1)
+    - [Create Environment](#step2)
+    - [Make Build](#step3)
   - [Detection](#detection)
     - [Image Detection](#imagedetection)
     - [Color Detection](#colordetection)
@@ -34,6 +38,54 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 - If the Alert doesn't respond to the local chat, you can reduce the detection accuracy or double-check if you've set the region correctly.
 - If both settings are 100% accurate and your interface is not blurred, make sure that your neutral symbol looks like this:
 - You can edit all images & sounds by yourself only the name must be the same
+
+## Installation<a name="installation"></a>
+
+To create an executable program, you need to download a release version and then run it through the installer in an environment.
+You also need a Python Version installed on Windows or Linux
+
+### Download Version
+
+Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releases) to download the latest version.
+
+### Create Enviorment
+
+Create the .venv in the EVE-Alert-Opensource folder after you extract the package.
+
+Windows:
+
+```cmd
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r ./requirments.txt
+```
+
+Linux
+
+```bash
+python -m venv .venv
+source .venv\Scripts\activate
+pip install -r ./requirments.txt
+```
+
+### Make Build
+
+> \[!NOTE\]
+> Ensure you have read/write permissions to this directory
+
+Windows:
+
+```cmd
+installer_window.bat
+```
+
+Linux:
+
+```bash
+./installer_linux.sh
+```
+
+Now you will find a folder called dist/ where the finished executable program is located.
 
 ## Detection<a name="detection"></a>
 
