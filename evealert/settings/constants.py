@@ -1,1 +1,1 @@
-ICON_PATH = "img/eve.ico"
+ICON = "img/eve.ico"
