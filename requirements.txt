@@ -4,6 +4,5 @@ opencv-python==4.8.1.78
 pillow
 pyaudio
 pyautogui
-pycolorise
 pyinstaller
 pynput

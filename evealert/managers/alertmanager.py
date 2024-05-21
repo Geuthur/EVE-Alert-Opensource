@@ -9,7 +9,6 @@ from datetime import datetime
 from threading import Lock, Thread
 
 import pyaudio
-from pycolorise.colors import Green, Red, Yellow
 
 from evealert.managers.settingsmanager import SettingsManager
 from evealert.settings.functions import get_resource_path
@@ -44,13 +43,13 @@ vision_faction = Vision(image_faction_filenames)
 wincap = WindowCapture()
 
 logger = logging.getLogger("alert")
-now = datetime.now()
 
 
 class AlertAgent:
     """Alert Agent Class"""
 
-    def __init__(self):
+    def __init__(self, main):
+        self.main = main
         # Settings
         self.stopped = True
         self.enemy = False
@@ -99,9 +98,6 @@ class AlertAgent:
         self.red_tolerance = 20
         self.green_blue_tolerance = 4
         self.rgb_group = [(128, 12, 12)]
-
-        # system_label wird zuerst auf None gesetzt
-        self.system_label = None
 
         self.socketlock = Lock()
         self.socket = None
@@ -176,6 +172,7 @@ class AlertAgent:
                 self.change = False
 
     def start(self):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.stopped = False
         self.running = True
 
@@ -207,6 +204,9 @@ class AlertAgent:
             # t6 = Thread(target=self.run_socket)
             # t6.start()
             # self.threads.append(t6)
+            self.main.log_field.insert(
+                "1.0", f"[{now}] System: EVE Alert started.\n", "green"
+            )
 
             logger.info("Alle Tasks wurden gestartet")
             return True
@@ -229,10 +229,6 @@ class AlertAgent:
     def set_settings(self):
         self.change = True
 
-    def set_system_label(self, system_label):
-        # Set System Menu Label
-        self.system_label = system_label
-
     def set_vision(self):
         if not vision.debug_mode:
             vision.debug_mode = True
@@ -253,12 +249,12 @@ class AlertAgent:
 
     def vision_thread(self):
         while not self.stopped:
-            self.visionerror = False
             self.load_settings()
             screenshot, screenshot_data = wincap.get_screenshot_value(
                 self.y1, self.x1, self.x2, self.y2
             )
             if screenshot is not None:
+                self.visionerror = False
                 if self.mode == "color":
                     # Check if the target color is in the screenshot
                     enemy = self.is_color_in_screenshot(
@@ -280,10 +276,11 @@ class AlertAgent:
                         self.enemy = False
                 time.sleep(0.1)
             else:
-                print(Red("Wrong Alert Settings."))
+                self.main.log_field.insert("1.0", "Wrong Alert Settings.\n", "red")
                 self.visionerror = True
                 self.stop()
                 break  # Add break statement to exit the loop
+            
 
     def vision_faction_thread(self):
         with self.factionlock:
@@ -307,6 +304,7 @@ class AlertAgent:
     def play_alarm_sound(self, sound):
         # Funktion, um den Alarm-Sound in einem separaten Thread abzuspielen
         def play_sound():
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             chunk = 1024
             wf = wave.open(sound, "rb")
             try:
@@ -319,9 +317,8 @@ class AlertAgent:
             except OSError as e:
                 logger.error("Error opening audio stream: %s", e)
                 self.stop()
-                print("Error Sound Device")
-                self.system_label.configure(
-                    text="System: ❎ Something went wrong.", text_color="red"
+                self.main.log_field.insert(
+                    "1.0", f"[{now}] Something went wrong.\n", "red"
                 )
                 wf.close()
                 return
@@ -379,7 +376,9 @@ class AlertAgent:
                 # self.play_alarm_sound(alarm_sound)
                 if self.alarm_counter >= self.alarm_frequency:
                     self.cooldown = True
-                    print(Yellow("Play sound cooldown started"))
+                    self.main.log_field.insert(
+                        "1.0", f"Play sound cooldown started\n"
+                    )
                     self.timer = time.sleep(
                         int(self.cooldowntimer)
                     )  # Warten Sie 1 Minute (60 Sekunden)
@@ -418,6 +417,7 @@ class AlertAgent:
         with self.lock:
             last_state = None  # Hält den letzten gesendeten Zustand
             while not self.stopped:
+                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 if self.socket:
                     current_state = str(self.image_detected)
 
@@ -447,10 +447,9 @@ class AlertAgent:
                                 with faction_counter_lock:
                                     self.faction_counter += 1
                                     self.faction_queue += 1
-                                print(
-                                    Red(
-                                        f"FACTION SPAWN!!- Play Sound ({self.faction_counter}/{self.alarm_frequency})"
-                                    )
+                                self.main.log_field.insert(
+                                    "1.0",
+                                    f"[{now}] FACTION SPAWN!!- Play Sound ({self.faction_counter}/{self.alarm_frequency})\n",
                                 )
                     if self.enemy:
                         self.image_detected = True
@@ -460,15 +459,16 @@ class AlertAgent:
                                 with alarm_counter_lock:
                                     self.alarm_counter += 1
                                     self.alarm_queue += 1
-                                print(
-                                    Red(
-                                        f"Enemy Detected - Play Sound ({self.alarm_counter}/{self.alarm_frequency})"
-                                    )
+                                self.main.log_field.insert(
+                                    "1.0",
+                                    f"[{now}] Enemy Detected - Play Sound ({self.alarm_counter}/{self.alarm_frequency})\n",
                                 )
                 except ValueError as e:
                     logger.error("Alert System Error: %s", e)
                     self.stop()
-                    self.system_label.configure(text="System: ❎ Something went wrong.")
+                    self.main.log_field.insert(
+                        "1.0", f"[{now}] Something went wrong.\n", "red"
+                    )
                     return
 
                 # Überprüfen, ob Faction Spawn erkannt wurde
@@ -478,15 +478,23 @@ class AlertAgent:
                 # Überprüfen, ob eines der Bilder erkannt wurde
                 if not self.image_detected and self.stopped is False:
                     self.alarm_counter = 0
-                    print(Green("No Enemy detected..."))
+                    # self.main.log_field.insert(
+                    #    "1.0", f"[{now}] No Enemy detected...\n"
+                    # )
 
                 # Zufällige Schlafzeit zwischen 2 und 3 Sekunden
                 if self.mode == "color" and self.stopped is False:
                     sleep_time = random.uniform(2, 3)
-                    print(Yellow(f"Next check in {sleep_time:.2f} seconds..."))
+                    self.main.log_field.insert(
+                        "1.0",
+                        f"[{now}] Next check in {sleep_time:.2f} seconds...\n",
+                    )
                     time.sleep(sleep_time)
                 else:
                     if self.stopped is False:
                         sleep_time = random.uniform(1, 2)
-                        print(Yellow(f"Next check in {sleep_time:.2f} seconds..."))
+                        self.main.log_field.insert(
+                            "1.0",
+                            f"[{now}] Next check in {sleep_time:.2f} seconds...\n",
+                        )
                         time.sleep(sleep_time)
