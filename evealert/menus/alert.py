@@ -1,5 +1,5 @@
 from datetime import datetime
-from threading import Lock, Thread
+from threading import Thread
 
 import customtkinter
 import pyautogui
