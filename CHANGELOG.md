@@ -2,11 +2,14 @@
 
 ### Added
 
+- Cooldown Function with optional cooldowns
+- Log Message Function
 - Status Icon for Running Alert
 - Log Textfield
 
 ### Fixed
 
+- Program Blocking on some situations
 - Alert Text appears after Error
 - Performance Issues
 
@@ -21,7 +24,8 @@
 
 - Socket Functions, Maybe Later i will Implemend this..
 - Log System Label
+- Unused Code
 
 ## Full Changelog
 
-https://github.com/geuthur/aa-ledger/compare/v0.4.0...v0.4.1b1
+https://github.com/geuthur/aa-ledger/compare/v0.4.0...v0.4.1
