@@ -11,7 +11,7 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
   - [Usage](#usage)
   - [Installation](#installation)
     - [Download](#step1)
-    - [Create Environment](#step2)
+    - [Install Python](#step2)
     - [Make Build](#step3)
   - [Detection](#detection)
     - [Image Detection](#imagedetection)
@@ -48,24 +48,18 @@ You also need a Python Version installed on Windows or Linux
 
 Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releases) to download the latest version.
 
-### Create Enviorment<a name="step2"></a>
+### Install Python<a name="step2"></a>
 
-Create the .venv in the EVE-Alert-Opensource folder after you extract the package.
+You need Python for <a name="step3">Step 3</a>
+Here is a Guide to install Python
 
-Windows:
+Windows User:
+you need to install Python you can download it from [Python Download](https://www.python.org/downloads/)
 
-```cmd
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r ./requirments.txt
-```
-
-Linux
+Linux User:
 
 ```bash
-python -m venv .venv
-source .venv\Scripts\activate
-pip install -r ./requirments.txt
+sudo apt update
 ```
 
 ### Make Build<a name="step3"></a>
