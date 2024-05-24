@@ -4,7 +4,6 @@ import logging
 import os
 import random
 import wave
-from datetime import datetime
 
 import pyaudio
 
@@ -51,7 +50,7 @@ class AlertAgent:
 
         # Locks to prevent overstacking
         self.lock = asyncio.Lock()
-        self.timerlock = asyncio.Lock()
+        self.timerlock = {}
         self.visionlock = asyncio.Lock()
         self.factionlock = asyncio.Lock()
 
@@ -61,7 +60,7 @@ class AlertAgent:
 
         # Alarm Settings
         self.alarm_detected = False
-        self.alarm_counter = 0
+        self.alarm_counter = {"Enemy": 0, "Faction": 0}
         self.alarm_frequency = 3
 
         # PyAudio-Objekt erstellen
@@ -90,21 +89,18 @@ class AlertAgent:
             self.cooldowntimer = settings["cooldowntimer"]
 
     def start(self):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.loop.run_until_complete(self.vision_check())
         if self.check is True:
 
             self.vison_t = self.loop.create_task(self.vision_thread())
-            self.alarm_timer_t = self.loop.create_task(self.alarm_timer_thread())
+            self.alarm_timer_t = self.loop.create_task(self.init_alarm_cooldowns())
             self.vision_faction_t = self.loop.create_task(self.vision_faction_thread())
 
             # Start the Alarm
             self.alert_t = self.loop.create_task(self.run())
 
             self.running = True
-            self.main.log_field.insert(
-                "1.0", f"[{now}] System: EVE Alert started.\n", "green"
-            )
+            self.main.write_message("System: EVE Alert started.", "green")
             self.loop.run_forever()
             logger.info("Alle Tasks wurden gestartet")
             return True
@@ -113,7 +109,7 @@ class AlertAgent:
     def stop(self):
         self.loop.stop()
         self.running = False
-        self.alarm_counter = 0
+        self.alarm_counter = {"Enemy": 0, "Faction": 0}
         vision.debug_mode = False
         vision_faction.debug_mode_faction = False
 
@@ -141,7 +137,7 @@ class AlertAgent:
         if screenshot is not None:
             self.check = True
         else:
-            self.main.log_field.insert("1.0", "Wrong Alert Settings.\n", "red")
+            self.main.write_message("Wrong Alert Settings.", "red")
             self.check = False
 
     async def vision_thread(self):
@@ -170,7 +166,7 @@ class AlertAgent:
                         else:
                             self.enemy = False
                 else:
-                    self.main.log_field.insert("1.0", "Wrong Alert Settings.\n", "red")
+                    self.main.write_message("Wrong Alert Settings.", "red")
                     break
                 await asyncio.sleep(0.1)  # Add a small delay
 
@@ -193,15 +189,27 @@ class AlertAgent:
                 )  # Warten Sie 3 Sekunden zwischen den Alarmüberprüfungen
 
     # Alarm Cooldown - Run in Background
-    async def alarm_timer_thread(self):
-        async with self.timerlock:
+    async def alarm_timer_check(self, alarm_type):
+        async with self.timerlock[alarm_type]:
             while True:
-                if self.alarm_counter >= self.alarm_frequency:
-                    self.main.log_field.insert("1.0", "Sound cooldown started\n")
+                if self.alarm_counter[alarm_type] >= self.alarm_frequency:
+                    self.main.write_message(f"{alarm_type} cooldown started.")
                     await asyncio.sleep(int(self.cooldowntimer))
-                    self.alarm_counter = 0
-                    self.main.log_field.insert("1.0", "Sound cooldown stopped\n")
+                    self.alarm_counter[alarm_type] = 0
+                    self.main.write_message(f"{alarm_type} cooldown stopped.")
                 await asyncio.sleep(0.1)
+
+    async def init_alarm_cooldowns(self):
+        for alarm_type in self.alarm_counter:
+            self.timerlock[alarm_type] = asyncio.Lock()
+            asyncio.ensure_future(self.alarm_timer_check(alarm_type))
+
+    async def reset_alarm(self, alarm_type):
+        if self.alarm_counter.get(alarm_type, 0) > 0:
+            self.main.write_message(f"No {alarm_type} found, cooldown reseted.")
+        self.alarm_counter[alarm_type] = 0
+        if alarm_type in self.timerlock and self.timerlock[alarm_type].locked():
+            self.timerlock[alarm_type].release()
 
     def is_color_in_screenshot(self, pixels, target_color, tolerance):
         # Check if the target color is in the screenshot pixels with tolerance
@@ -219,26 +227,25 @@ class AlertAgent:
 
         return False
 
-    async def alarm_detection(self, alarm_text, sound=alarm_sound):
-        if self.alarm_counter >= self.alarm_frequency:
+    async def alarm_detection(self, alarm_text, sound=alarm_sound, alarm_type="Enemy"):
+        if self.alarm_counter.get(alarm_type, 0) >= self.alarm_frequency:
             return
-        self.alarm_counter += 1
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.main.log_field.insert(
-            "1.0",
-            f"[{now}] {alarm_text} - Play Sound ({self.alarm_counter}/{self.alarm_frequency})\n",
-        )
-        await self.play_sound(sound)
+        self.alarm_counter[alarm_type] = self.alarm_counter.get(alarm_type, 0) + 1
 
-    async def play_sound(self, sound):
-        if self.alarm_counter <= 3:
+        self.main.write_message(
+            f"{alarm_text} - Play Sound ({self.alarm_counter[alarm_type]}/{self.alarm_frequency}).",
+            "red",
+        )
+        await self.play_sound(sound, alarm_type)
+
+    async def play_sound(self, sound, alarm_type="enemy"):
+        if self.alarm_counter.get(alarm_type, 0) <= 3:
             # Wrap the blocking operation in a partial function
             func = functools.partial(self._play_sound_blocking, sound)
             # Run the function in a separate thread
             await self.loop.run_in_executor(None, func)
 
     def _play_sound_blocking(self, sound):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         chunk = 1024
         wf = wave.open(sound, "rb")
         try:
@@ -251,7 +258,7 @@ class AlertAgent:
         except OSError as e:
             logger.error("Error opening audio stream: %s", e)
             self.stop()
-            self.main.log_field.insert("1.0", f"[{now}] Something went wrong.\n", "red")
+            self.main.write_message("Something went wrong.", "red")
             wf.close()
             return
 
@@ -266,32 +273,34 @@ class AlertAgent:
     async def run(self):
         async with self.lock:
             while True:
-                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 # Reset Alarm Status
                 self.alarm_detected = False
 
                 try:
                     if self.faction:
                         self.alarm_detected = True
-                        await self.alarm_detection("Faction Spawn!", faction_sound)
+                        await self.alarm_detection(
+                            "Faction Spawn!", faction_sound, "Faction"
+                        )
                     if self.enemy:
                         self.alarm_detected = True
-                        await self.alarm_detection("Enemy Appears!", alarm_sound)
+                        await self.alarm_detection(
+                            "Enemy Appears!", alarm_sound, "Enemy"
+                        )
                 except ValueError as e:
                     logger.error("Alert System Error: %s", e)
                     self.stop()
-                    self.main.log_field.insert(
-                        "1.0", f"[{now}] Something went wrong.\n", "red"
-                    )
+                    self.main.write_message("Something went wrong.", "red")
                     return
 
                 # Überprüfen, ob eines der Bilder erkannt wurde
-                if not self.alarm_detected:
-                    self.alarm_counter = 0
+                if not self.faction:
+                    await self.reset_alarm("Faction")
+                if not self.enemy:
+                    await self.reset_alarm("Enemy")
 
                 sleep_time = random.uniform(2, 3)
-                self.main.log_field.insert(
-                    "1.0",
-                    f"[{now}] Next check in {sleep_time:.2f} seconds...\n",
+                self.main.write_message(
+                    f"Next check in {sleep_time:.2f} seconds...",
                 )
                 await asyncio.sleep(sleep_time)
