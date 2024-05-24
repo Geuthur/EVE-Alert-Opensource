@@ -1,13 +1,14 @@
-
 import tkinter as tk
+
 import customtkinter
+
 
 class RegionDisplay:
     def __init__(self, main: customtkinter.CTk):
         self.main = main
         self.alerttimer = None
         self.factiontimer = None
-        
+
     def create_overlay(self, x1, y1, x2, y2):
         overlay = tk.Toplevel(self.main)
         overlay.attributes("-topmost", 1)
@@ -24,7 +25,7 @@ class RegionDisplay:
         alert_canvas.create_rectangle(0, 0, x2, y2, outline="red", width=2)
 
         return overlay
-    
+
     def create_alert_region(self):
         config = self.main.settings.open_settings()
         if self.alerttimer:
@@ -48,7 +49,9 @@ class RegionDisplay:
             self.main.after(5000, close_alert_region)
         except Exception as e:
             print(e)
-            self.main.log_field.configure(text="System: ❎ Something is wrong.", text_color="red")
+            self.main.log_field.configure(
+                text="System: ❎ Something is wrong.", text_color="red"
+            )
 
     def create_faction_region(self):
         config = self.main.settings.open_settings()
@@ -73,8 +76,9 @@ class RegionDisplay:
             self.main.after(5000, close_alert_region)
         except Exception as e:
             print(e)
-            self.main.log_field.configure(text="System: ❎ Something is wrong.", text_color="red")
-
+            self.main.log_field.configure(
+                text="System: ❎ Something is wrong.", text_color="red"
+            )
 
     def create_screenshot_region(self, x, y, width, height, screenshot_overlay=None):
         """Create a screenshot region overlay."""
@@ -88,6 +92,8 @@ class RegionDisplay:
                 self.main.after(5000, close_screenshot_region)
         except Exception as e:
             print(e)
-            self.main.log_field.configure(text="System: ❎ Something is wrong.", text_color="red")
+            self.main.log_field.configure(
+                text="System: ❎ Something is wrong.", text_color="red"
+            )
             screenshot_overlay = None
         return screenshot_overlay
