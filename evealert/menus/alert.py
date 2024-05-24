@@ -1,6 +1,6 @@
 from datetime import datetime
+from threading import Lock, Thread
 
-import tkinter as tk
 import customtkinter
 import pyautogui
 from PIL import Image
@@ -9,14 +9,12 @@ from pynput import keyboard, mouse
 from evealert import __version__
 from evealert.exceptions import ScreenshotError
 from evealert.managers.alertmanager import AlertAgent, wincap
-from evealert.managers.settingsmanager import SettingsManager
 from evealert.managers.regionmanager import RegionDisplay
+from evealert.managers.settingsmanager import SettingsManager
 from evealert.menus.configuration import ConfigMenu
 from evealert.menus.description import DescriptionMenu
 from evealert.settings.constants import ICON
-from evealert.settings.functions import (
-    get_resource_path,
-)
+from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
 
 logger = logging.getLogger("alert")
@@ -26,6 +24,7 @@ customtkinter.set_default_color_theme("dark-blue")
 
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 350
+
 
 class Screenshot:
     """Screenshot Class for the Alert System"""
@@ -48,7 +47,7 @@ class AlertButton:
         # Create Settings System
         self.settings_label_frame = customtkinter.CTkFrame(self.main)
         self.alert_label_frame = customtkinter.CTkFrame(self.main)
-        
+
         self.save_button = customtkinter.CTkButton(
             self.settings_label_frame,
             text="Save",
@@ -69,7 +68,7 @@ class AlertButton:
         self.save_button.grid(row=0, column=0, padx=(0, 10))
         self.description_button.grid(row=0, column=1, padx=(0, 10))
         self.config_button.grid(row=0, column=2)
-        
+
         # Create Buttons
         self.show_alert_button = customtkinter.CTkButton(
             self.alert_label_frame,
@@ -87,11 +86,11 @@ class AlertButton:
             compound="left",
             font=customtkinter.CTkFont(size=15, weight="bold"),
         )
-        
+
         self.show_status_label.grid(row=0, column=0, padx=20, pady=20)
         self.show_alert_button.grid(row=0, column=1, padx=(0, 10))
         self.show_faction_button.grid(row=0, column=2)
-        
+
     def save_button_clicked(self):
         self.main.log_field.insert(
             "1.0",
@@ -144,10 +143,14 @@ class AlertMenu(customtkinter.CTk):
         if new_status != self.current_status:
             if new_status:
                 self.buttons.show_status_label.configure(image=online)
-                self.buttons.show_status_label.image = online  # Keep a reference to the image
+                self.buttons.show_status_label.image = (
+                    online  # Keep a reference to the image
+                )
             else:
                 self.buttons.show_status_label.configure(image=offline)
-                self.buttons.show_status_label.image = offline  # Keep a reference to the image
+                self.buttons.show_status_label.image = (
+                    offline  # Keep a reference to the image
+                )
 
             self.current_status = new_status
 
@@ -508,7 +511,7 @@ class AlertMenu(customtkinter.CTk):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         try:
             if not self.alarm.is_running():
-                self.alarm.start()
+                Thread(target=self.alarm.start).start()
             else:
                 self.log_field.insert(
                     "1.0", f"[{now}] System: EVE Alert is already running.\n"
