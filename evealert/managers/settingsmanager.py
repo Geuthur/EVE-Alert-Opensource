@@ -104,6 +104,3 @@ class SettingsManager:
                 settings["detection"] = settings["detection"] / 100
             return settings
         return None
-
-    def set_system_label(self):
-        pass
