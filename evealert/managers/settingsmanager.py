@@ -103,6 +103,7 @@ class SettingsManager:
             if settings["detection"] is not None:
                 settings["detection"] = settings["detection"] / 100
             return settings
+        return None
 
     def set_system_label(self):
         pass
