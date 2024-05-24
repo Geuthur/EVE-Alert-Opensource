@@ -1,5 +1,4 @@
 import asyncio
-import functools
 import logging
 import os
 import random
@@ -240,12 +239,9 @@ class AlertAgent:
 
     async def play_sound(self, sound, alarm_type="enemy"):
         if self.alarm_counter.get(alarm_type, 0) <= 3:
-            # Wrap the blocking operation in a partial function
-            func = functools.partial(self._play_sound_blocking, sound)
-            # Run the function in a separate thread
-            await self.loop.run_in_executor(None, func)
+            asyncio.ensure_future(self._play_sound(sound))
 
-    def _play_sound_blocking(self, sound):
+    async def _play_sound(self, sound):
         chunk = 1024
         wf = wave.open(sound, "rb")
         try:
