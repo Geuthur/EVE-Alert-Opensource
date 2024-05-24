@@ -50,13 +50,16 @@ Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releas
 
 ### Install Python<a name="step2"></a>
 
-You need Python for <a name="step3">Step 3</a>
+You need Python for <a href="#step3">Step 3</a>
 Here is a Guide to install Python
 
 Windows User:
-you need to install Python you can download it from [Python Download](https://www.python.org/downloads/)
+
+Install `Python` you can download it from [Python Download](https://www.python.org/downloads/)
 
 Linux User:
+
+On Linux Python is automaticly installed you can update it with
 
 ```bash
 sudo apt update
