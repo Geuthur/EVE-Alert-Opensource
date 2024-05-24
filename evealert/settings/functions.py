@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 def get_resource_path(relative_path):
     if getattr(sys, "frozen", False):
         # Wenn das Skript mit PyInstaller kompiliert wurde
