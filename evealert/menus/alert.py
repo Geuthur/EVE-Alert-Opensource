@@ -1,20 +1,20 @@
+from datetime import datetime
+from threading import Thread
+
 import customtkinter
 import pyautogui
+from PIL import Image
 from pynput import keyboard, mouse
 
 from evealert import __version__
 from evealert.exceptions import ScreenshotError
 from evealert.managers.alertmanager import AlertAgent, wincap
+from evealert.managers.regionmanager import RegionDisplay
 from evealert.managers.settingsmanager import SettingsManager
 from evealert.menus.configuration import ConfigMenu
 from evealert.menus.description import DescriptionMenu
-from evealert.settings.constants import ICON_PATH
-from evealert.settings.functions import (
-    create_alert_region,
-    create_faction_region,
-    create_screenshot_region,
-    get_resource_path,
-)
+from evealert.settings.constants import ICON
+from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
 
 logger = logging.getLogger("alert")
@@ -23,7 +23,7 @@ customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
 
 WINDOW_WIDTH = 500
-WINDOW_HEIGHT = 300
+WINDOW_HEIGHT = 350
 
 
 class Screenshot:
@@ -44,20 +44,24 @@ class AlertButton:
         self.init_buttons()
 
     def init_buttons(self):
+        # Create Settings System
+        self.settings_label_frame = customtkinter.CTkFrame(self.main)
+        self.alert_label_frame = customtkinter.CTkFrame(self.main)
+
         self.save_button = customtkinter.CTkButton(
-            self.main.settings_label_frame,
+            self.settings_label_frame,
             text="Save",
             command=self.save_button_clicked,
         )
 
         self.description_button = customtkinter.CTkButton(
-            self.main.settings_label_frame,
+            self.settings_label_frame,
             text="Config Mode",
             command=self.description_mode_toggle,
         )
 
         self.config_button = customtkinter.CTkButton(
-            self.main.settings_label_frame,
+            self.settings_label_frame,
             text="Settings",
             command=self.config_mode_toggle,
         )
@@ -65,11 +69,33 @@ class AlertButton:
         self.description_button.grid(row=0, column=1, padx=(0, 10))
         self.config_button.grid(row=0, column=2)
 
-    def save_button_clicked(self):
-        self.main.system_label.configure(
-            text="System: ✅ Settings Saved.", text_color="green"
+        # Create Buttons
+        self.show_alert_button = customtkinter.CTkButton(
+            self.alert_label_frame,
+            text="Show Alert Region",
+            command=self.main.display_alert_region,
+        )
+        self.show_faction_button = customtkinter.CTkButton(
+            self.alert_label_frame,
+            text="Show Faction Region",
+            command=self.main.display_faction_region,
+        )
+        self.show_status_label = customtkinter.CTkLabel(
+            self.alert_label_frame,
+            text="",
+            compound="left",
+            font=customtkinter.CTkFont(size=15, weight="bold"),
         )
 
+        self.show_status_label.grid(row=0, column=0, padx=20, pady=20)
+        self.show_alert_button.grid(row=0, column=1, padx=(0, 10))
+        self.show_faction_button.grid(row=0, column=2)
+
+    def save_button_clicked(self):
+        self.main.write_message(
+            "Settings Saved.",
+            "green",
+        )
         self.main.save_settings()
 
     def description_mode_toggle(self):
@@ -85,108 +111,114 @@ class AlertMenu(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title(f"Alert - {__version__}")
-        self.iconbitmap(default=get_resource_path(ICON_PATH))
-        self.init_menu()
+        self.alarm = AlertAgent(self)
         self.settings = SettingsManager()
-        self.alarm = AlertAgent()
         self.configmenu = ConfigMenu(self)
         self.descmenu = DescriptionMenu(self)
         self.screenshot = Screenshot(self)
+        self.display = RegionDisplay(self)
         self.buttons = AlertButton(self)
+        self.init_widgets()
+        self.init_menu()
         self.config_mode = False
         self.set_alert_region = False
         self.alert_region_mode = 0
         self.set_faction_region = False
         self.faction_region_mode = 0
         self.taking_screenshot = False
+        self.current_status = False
+        self.check_status()
 
-    def init_menu(self):
-        """Initializes the Main Menu for the Alert System."""
-        # Setze die Größe des Fensters
+    def check_status(self):
+        online = customtkinter.CTkImage(
+            Image.open(get_resource_path("img/online.png")), size=(24, 24)
+        )
+        offline = customtkinter.CTkImage(
+            Image.open(get_resource_path("img/offline.png")), size=(24, 24)
+        )
+
+        new_status = self.alarm.is_running()
+
+        if new_status != self.current_status:
+            if new_status:
+                self.buttons.show_status_label.configure(image=online)
+                self.buttons.show_status_label.image = (
+                    online  # Keep a reference to the image
+                )
+            else:
+                self.buttons.show_status_label.configure(image=offline)
+                self.buttons.show_status_label.image = (
+                    offline  # Keep a reference to the image
+                )
+
+            self.current_status = new_status
+
+        # Check the status again after (2 seconds)
+        self.buttons.show_status_label.after(1000, self.check_status)
+
+    # Call the function for the first time to start the loop
+
+    def init_widgets(self):
+        # Create the main window
+        self.iconbitmap(default=get_resource_path(ICON))
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
-        # 1 Row - Init
+        self.log_field = customtkinter.CTkTextbox(self, height=100, width=450)
+        self.log_field.tag_config("normal", foreground="white")
+        self.log_field.tag_config("green", foreground="lightgreen")
+        self.log_field.tag_config("red", foreground="orange")
+
+        # Create mouse position label
         self.mouse_position_label = customtkinter.CTkLabel(
             self, text="", justify="left"
         )
-        self.timer_var = customtkinter.CTkEntry(self)
 
-        # Row 12
-        # System Info
-        # self.system_label = customtkinter.CTkLabel(root, text="System: ")
-        credit_label = customtkinter.CTkLabel(self, text="Powered by Geuthur")
+        # self.timer_var = customtkinter.CTkEntry(self)
 
-        self.mouse_position_label.pack()
-
-        # Settings System
-        self.settings_label_frame = customtkinter.CTkFrame(self)
-
-        self.settings_label_frame.pack()
-
-        empty_label = customtkinter.CTkLabel(self, text="")
-        empty_label.pack()
-
-        # Alert System
-        alert_label_frame = customtkinter.CTkFrame(self)
-
-        # Erstellen Sie das system_label im Frame
-        show_alert_button = customtkinter.CTkButton(
-            alert_label_frame,
-            text="Show Alert Region",
-            command=self.display_alert_region,
-        )
-        show_faction_button = customtkinter.CTkButton(
-            alert_label_frame,
-            text="Show Faction Region",
-            command=self.display_faction_region,
-        )
-
-        # Platzieren Sie das Frame mit pack oder grid, je nach Ihren Anforderungen
-        show_alert_button.grid(row=0, column=1, padx=(0, 10))
-        show_faction_button.grid(
-            row=0,
-            column=2,
-        )
-
-        alert_label_frame.pack()
-
-        empty_label = customtkinter.CTkLabel(self, text="")
-        empty_label.pack()
+        # Create Empty Space
+        self.empty_label = customtkinter.CTkLabel(self, text="")
+        # Create Empty Space
+        self.empty_label2 = customtkinter.CTkLabel(self, text="")
+        # Create Empty Space
+        self.empty_label3 = customtkinter.CTkLabel(self, text="")
 
         # Start Stopp System
-        engine_label_frame = customtkinter.CTkFrame(self)
+        self.engine_label_frame = customtkinter.CTkFrame(self)
 
-        start_button = customtkinter.CTkButton(
-            engine_label_frame,
+        self.start_button = customtkinter.CTkButton(
+            self.engine_label_frame,
             text="Start Script",
-            command=lambda: self.start_alert_script(self.system_label),
+            command=self.start_alert_script,
         )
-        stop_button = customtkinter.CTkButton(
-            engine_label_frame, text="Stop Script", command=self.stop_alert_script
+        self.stop_button = customtkinter.CTkButton(
+            self.engine_label_frame, text="Stop Script", command=self.stop_alert_script
         )
-        exit_button = customtkinter.CTkButton(
-            engine_label_frame, text="Exit", command=self.exit_button_clicked
+        self.exit_button = customtkinter.CTkButton(
+            self.engine_label_frame, text="Exit", command=self.exit_button_clicked
         )
 
-        # Platzieren Sie das Frame mit pack oder grid, je nach Ihren Anforderungen
-        start_button.grid(row=0, column=0, padx=(0, 10))
-        stop_button.grid(row=0, column=1, padx=(0, 10))
-        exit_button.grid(row=0, column=2)
+        self.start_button.grid(row=0, column=0, padx=(0, 10))
+        self.stop_button.grid(row=0, column=1, padx=(0, 10))
+        self.exit_button.grid(row=0, column=2)
 
-        engine_label_frame.pack()
-
-        # System Info Label
-        system_label_frame = customtkinter.CTkFrame(self)
-
-        # Erstellen Sie das system_label im Frame
-        self.system_label = customtkinter.CTkLabel(system_label_frame, text="")
-
-        # Platzieren Sie das Frame mit pack oder grid, je nach Ihren Anforderungen
-        self.system_label.grid(row=1, column=2)
-
-        system_label_frame.pack()
-
-        credit_label.pack()
+    def init_menu(self):
+        """Initializes the Main Menu for the Alert System."""
+        # Mouse Position Label
+        self.mouse_position_label.pack()
+        # Settings Label
+        self.buttons.settings_label_frame.pack()
+        # Empty Label
+        self.empty_label.pack()
+        # Alert Buttons Label
+        self.buttons.alert_label_frame.pack()
+        # Empty Label
+        self.empty_label2.pack()
+        # Engine Label
+        self.engine_label_frame.pack()
+        # Create Empty Space
+        self.empty_label3.pack()
+        # Log Field Label
+        self.log_field.pack()
 
         # Other
         mouse_listener = mouse.Listener(on_click=self.on_click)
@@ -196,6 +228,10 @@ class AlertMenu(customtkinter.CTk):
         keyboard_listener.start()
 
         self.update_mouse_position_label()
+
+    def write_message(self, text, color="normal"):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.log_field.insert("1.0", f"[{now}] {text}\n", color)
 
     # Save Files
     def save_settings(self):
@@ -207,9 +243,9 @@ class AlertMenu(customtkinter.CTk):
             self.configmenu.alert_region_x_second.get()
             and self.configmenu.alert_region_y_second.get()
         ):
-            self.system_label.configure(
-                text="System: ❎ Empty Fields. Minimum is Alert Region",
-                text_color="red",
+            self.write_message(
+                "Empty Fields. Minimum is Alert Region.",
+                "red",
             )
             return
         self.settings.save_settings(
@@ -250,7 +286,7 @@ class AlertMenu(customtkinter.CTk):
         if selected_mode == "picture":
             self.after(0, self.alarm.set_vision)
         else:
-            self.after(0, create_alert_region(self, self.system_label))
+            self.after(0, self.display.create_alert_region())
 
     def display_faction_region(self):
         """Display the faction region on the screen."""
@@ -258,17 +294,15 @@ class AlertMenu(customtkinter.CTk):
         if selected_mode == "picture":
             self.after(0, self.alarm.set_vision_faction)
         else:
-            self.after(0, create_faction_region(self, self.system_label))
+            self.after(0, self.display.create_faction_region())
 
     def display_screenshot_region(self, x, y, width, height):
         """Display the screenshot region on the screen."""
-        self.screenshot.screenshot_overlay = create_screenshot_region(
+        self.screenshot.screenshot_overlay = self.display.create_screenshot_region(
             x,
             y,
             width,
             height,
-            self,
-            self.system_label,
             self.screenshot.screenshot_overlay,
         )
         self.after(0)
@@ -308,8 +342,9 @@ class AlertMenu(customtkinter.CTk):
                     self.set_alert_region = False
                     self.alert_region_mode = 0
                     self.save_settings()
-                    self.system_label.configure(
-                        text="✅ Positions Saved", text_color="green"
+                    self.write_message(
+                        "Alert Region Positions Saved.",
+                        "green",
                     )
 
             if (
@@ -338,8 +373,9 @@ class AlertMenu(customtkinter.CTk):
                     self.set_faction_region = False
                     self.faction_region_mode = 0
                     self.save_settings()
-                    self.system_label.configure(
-                        text="✅ Positions Saved", text_color="green"
+                    self.write_message(
+                        "Faction Region Positions Saved.",
+                        "green",
                     )
 
             if (
@@ -363,7 +399,7 @@ class AlertMenu(customtkinter.CTk):
                 elif self.screenshot.screenshot_mode == 1:
                     self.screenshot.end_x, self.screenshot.end_y = x, y
                     print("Screenshot Position 2 Set")
-                    self.system_label.configure(text="Press F3 to confirm")
+                    self.write_message("Press F3 to confirm.")
                     self.screenshot.screenshot_mode = 0
                     try:
                         self.display_screenshot_region(
@@ -374,9 +410,9 @@ class AlertMenu(customtkinter.CTk):
                         )
                     except Exception as e:
                         logger.error("Screenshot Error: %s", e)
-                        self.system_label.configure(
-                            text="System: ❎ Draw Screenshot something Wrong.",
-                            text_color="red",
+                        self.write_message(
+                            "System: Screenshot Error.",
+                            "red",
                         )
 
     # pylint: disable=too-many-nested-blocks
@@ -388,20 +424,18 @@ class AlertMenu(customtkinter.CTk):
                     self.taking_screenshot = False
                     self.set_faction_region = False
                     self.set_alert_region = True
-                    self.system_label.configure(
-                        text="Alert Mode: ✅ Active.", text_color="yellow"
-                    )
+                    self.write_message("Alert Mode: Activated.")
                 else:
+                    self.write_message("Alert Mode: Deactivated.")
                     self.set_alert_region = False
             if key == keyboard.Key.f2:
                 if not self.set_faction_region:
                     self.taking_screenshot = False
                     self.set_alert_region = False
                     self.set_faction_region = True
-                    self.system_label.configure(
-                        text="Faction Mode: ✅ Active.", text_color="yellow"
-                    )
+                    self.write_message("Faction Mode: Activated.")
                 else:
+                    self.write_message("Faction Mode: Deactivated.")
                     self.set_faction_region = False
             if key == keyboard.Key.f3:
                 if not self.taking_screenshot:
@@ -410,11 +444,10 @@ class AlertMenu(customtkinter.CTk):
                     self.set_alert_region = False
                     self.screenshot.start_x, self.screenshot.start_y = None, None
                     self.screenshot.end_x, self.screenshot.end_y = None, None
-                    self.system_label.configure(
-                        text="Screenshot Mode: ✅ Active.", text_color="yellow"
-                    )
+                    self.write_message("Screenshot Mode: Activated.")
                 else:
                     self.taking_screenshot = False
+                    self.write_message("Screenshot Mode: Deactivated.")
                     if (
                         self.screenshot.start_x is not None
                         and self.screenshot.start_y is not None
@@ -432,16 +465,17 @@ class AlertMenu(customtkinter.CTk):
                             )
                             # screenshot = pyautogui.screenshot(region=(start_x, start_y, end_x - start_x, end_y - start_y))
                             if screenshot:
-                                self.system_label.configure(
-                                    text="✅ Screenshot Saved.", text_color="green"
+                                self.write_message(
+                                    "Screenshot Saved.",
+                                    "green",
                                 )
                             else:
                                 raise ScreenshotError("Screenshot Error")
                         except Exception as e:
-                            print(e)
-                            self.system_label.configure(
-                                text="Screenshot Mode: ❎ Positions wrong.",
-                                text_color="red",
+                            logger.error("Screenshot Error: %s", e)
+                            self.write_message(
+                                "Screenshot Positions wrong.",
+                                "red",
                             )
 
     # Menu Button Section
@@ -449,46 +483,28 @@ class AlertMenu(customtkinter.CTk):
     def exit_button_clicked(self):
         if self.alarm.is_running():
             self.alarm.stop()
-            self.system_label.configure(
-                text="System: ❎ EVE Alert stopped.", text_color="red"
-            )
+            self.write_message("System: ❎ EVE Alert stopped.", "red")
         else:
-            self.system_label.configure(
-                text="System: ❎ EVE Alert isn't running.", text_color="red"
+            self.write_message(
+                "System: ❎ EVE Alert isn't running.",
+                "red",
             )
         self.destroy()
 
     # Starten Sie den Alert-Thread, indem Sie die Alert-Funktion aus alert.py aufrufen
-    def start_alert_script(self, system_label):
-        if self.settings:
+    def start_alert_script(self):
+        try:
             if not self.alarm.is_running():
-                self.alarm.set_system_label(system_label)
-                alarm = self.alarm.start()
-                if alarm:
-                    self.system_label.configure(
-                        text="System: ✅ EVE Alert started", text_color="green"
-                    )
-                else:
-                    self.system_label.configure(
-                        text="System: ❎ Wrong Alert settings.", text_color="red"
-                    )
+                Thread(target=self.alarm.start).start()
             else:
-                self.system_label.configure(
-                    text="System: ❎ EVE Alert is already running.", text_color="green"
-                )
-        else:
-            self.system_label.configure(
-                text="System: ❎ No Settings found.", text_color="red"
-            )
+                self.write_message("System: EVE Alert is already running.")
+        except Exception as e:
+            logger.error("Start Alert Error: %s", e, exc_info=True)
+            self.write_message("System: Something went wrong.", "red")
 
     def stop_alert_script(self):
         if self.alarm.is_running():
-            self.alarm.set_system_label(self.system_label)
             self.alarm.stop()
-            self.system_label.configure(
-                text="System: ❎ EVE Alert stopped.", text_color="red"
-            )
+            self.write_message("System: EVE Alert stopped.", "red")
             return
-        self.system_label.configure(
-            text="System: ❎ EVE Alert isn't running.", text_color="red"
-        )
+        self.write_message("System: EVE Alert isn't running.")

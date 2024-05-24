@@ -64,5 +64,43 @@ class SettingsManager:
         with open(SETTINGS_FILE, "w", encoding="utf-8") as file:
             json.dump(settings_data, file, indent=4)
 
-    def set_system_label(self):
-        pass
+    def load_settings(self):
+        # Settings Menu
+        settings_data = self.open_settings()
+        if settings_data:
+            settings = {
+                "x1": int(
+                    settings_data.get("alert_region_1", {}).get("x", "default_value")
+                ),
+                "y1": int(
+                    settings_data.get("alert_region_1", {}).get("y", "default_value")
+                ),
+                "x2": int(
+                    settings_data.get("alert_region_2", {}).get("x", "default_value")
+                ),
+                "y2": int(
+                    settings_data.get("alert_region_2", {}).get("y", "default_value")
+                ),
+                "x1_faction": int(
+                    settings_data.get("faction_region_1", {}).get("x", "default_value")
+                ),
+                "y1_faction": int(
+                    settings_data.get("faction_region_1", {}).get("y", "default_value")
+                ),
+                "x2_faction": int(
+                    settings_data.get("faction_region_2", {}).get("x", "default_value")
+                ),
+                "y2_faction": int(
+                    settings_data.get("faction_region_2", {}).get("y", "default_value")
+                ),
+                "detection": settings_data.get("detectionscale", {}).get("value", None),
+                "mode": settings_data.get("detection_mode", {}).get("value", "picture"),
+                "cooldowntimer": settings_data.get("cooldown_timer", {}).get(
+                    "value", 60
+                ),
+                "change": False,
+            }
+            if settings["detection"] is not None:
+                settings["detection"] = settings["detection"] / 100
+            return settings
+        return None

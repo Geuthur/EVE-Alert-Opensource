@@ -75,7 +75,6 @@ class DescriptionMenu:
                 )
                 self.main.config_mode = False
                 self.main.toggle_configmode()
-                self.main.system_label.configure(text="", text_color="green")
                 self.description_window.destroy()
 
             self.description_window.protocol(
@@ -93,5 +92,4 @@ class DescriptionMenu:
             )
             self.main.config_mode = False
             self.main.toggle_configmode()
-            self.main.system_label.configure(text="", text_color="green")
             self.description_window.destroy()

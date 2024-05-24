@@ -1,6 +1,6 @@
 import customtkinter
 
-from evealert.settings.constants import ICON_PATH
+from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
 
 
@@ -11,7 +11,7 @@ class ConfigMenu:
         self.main = main
         self.active = False
         self.config_window_y = None
-        self.main.iconbitmap(default=get_resource_path(ICON_PATH))
+        self.main.iconbitmap(default=get_resource_path(ICON))
 
         self.load_settings()
 

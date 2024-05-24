@@ -1,9 +1,8 @@
 customtkinter
 mss
 opencv-python==4.8.1.78
-pillow
-pyaudio
-pyautogui
-pycolorise
+pillow==10.3.0
+pyaudio==0.2.14
+pyautogui==0.9.54
 pyinstaller
 pynput
