@@ -92,9 +92,8 @@ class AlertButton:
         self.show_faction_button.grid(row=0, column=2)
 
     def save_button_clicked(self):
-        self.main.log_field.insert(
-            "1.0",
-            f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Settings Saved.\n",
+        self.main.write_message(
+            "Settings Saved.",
             "green",
         )
         self.main.save_settings()
@@ -165,6 +164,7 @@ class AlertMenu(customtkinter.CTk):
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
         self.log_field = customtkinter.CTkTextbox(self, height=100, width=450)
+        self.log_field.tag_config("normal", foreground="white")
         self.log_field.tag_config("green", foreground="lightgreen")
         self.log_field.tag_config("red", foreground="orange")
 
@@ -229,6 +229,10 @@ class AlertMenu(customtkinter.CTk):
 
         self.update_mouse_position_label()
 
+    def write_message(self, text, color="normal"):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.log_field.insert("1.0", f"[{now}] {text}\n", color)
+
     # Save Files
     def save_settings(self):
         """Save the settings to the settings.json file."""
@@ -239,9 +243,8 @@ class AlertMenu(customtkinter.CTk):
             self.configmenu.alert_region_x_second.get()
             and self.configmenu.alert_region_y_second.get()
         ):
-            self.log_field.insert(
-                "1.0",
-                f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Empty Fields. Minimum is Alert Region.\n",
+            self.write_message(
+                "Empty Fields. Minimum is Alert Region.",
                 "red",
             )
             return
@@ -312,7 +315,6 @@ class AlertMenu(customtkinter.CTk):
         self.after(100, self.update_mouse_position_label)
 
     def on_click(self, x, y, button, pressed):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if self.config_mode:
             if (
                 pressed
@@ -340,9 +342,8 @@ class AlertMenu(customtkinter.CTk):
                     self.set_alert_region = False
                     self.alert_region_mode = 0
                     self.save_settings()
-                    self.log_field.insert(
-                        "1.0",
-                        f"[{now}] Alert Region Positions Saved.\n",
+                    self.write_message(
+                        "Alert Region Positions Saved.",
                         "green",
                     )
 
@@ -372,9 +373,8 @@ class AlertMenu(customtkinter.CTk):
                     self.set_faction_region = False
                     self.faction_region_mode = 0
                     self.save_settings()
-                    self.log_field.insert(
-                        "1.0",
-                        f"[{now}] Faction Region Positions Saved.\n",
+                    self.write_message(
+                        "Faction Region Positions Saved.",
                         "green",
                     )
 
@@ -399,7 +399,7 @@ class AlertMenu(customtkinter.CTk):
                 elif self.screenshot.screenshot_mode == 1:
                     self.screenshot.end_x, self.screenshot.end_y = x, y
                     print("Screenshot Position 2 Set")
-                    self.log_field.insert("1.0", f"[{now}] Press F3 to confirm.\n")
+                    self.write_message("Press F3 to confirm.")
                     self.screenshot.screenshot_mode = 0
                     try:
                         self.display_screenshot_region(
@@ -410,36 +410,32 @@ class AlertMenu(customtkinter.CTk):
                         )
                     except Exception as e:
                         logger.error("Screenshot Error: %s", e)
-                        self.log_field.insert(
-                            "1.0",
-                            f"[{now}] System: Screenshot Error.\n",
+                        self.write_message(
+                            "System: Screenshot Error.",
                             "red",
                         )
 
     # pylint: disable=too-many-nested-blocks
     # Keyboard Functions
     def on_key_release(self, key):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if self.config_mode:
             if key == keyboard.Key.f1:
                 if not self.set_alert_region:
                     self.taking_screenshot = False
                     self.set_faction_region = False
                     self.set_alert_region = True
-                    self.log_field.insert("1.0", f"[{now}] Alert Mode: Activated.\n")
+                    self.write_message("Alert Mode: Activated.")
                 else:
-                    self.log_field.insert("1.0", f"[{now}] Alert Mode: Deactivated.\n")
+                    self.write_message("Alert Mode: Deactivated.")
                     self.set_alert_region = False
             if key == keyboard.Key.f2:
                 if not self.set_faction_region:
                     self.taking_screenshot = False
                     self.set_alert_region = False
                     self.set_faction_region = True
-                    self.log_field.insert("1.0", f"[{now}] Faction Mode: Activated.\n")
+                    self.write_message("Faction Mode: Activated.")
                 else:
-                    self.log_field.insert(
-                        "1.0", f"[{now}] Faction Mode: Deactivated.\n"
-                    )
+                    self.write_message("Faction Mode: Deactivated.")
                     self.set_faction_region = False
             if key == keyboard.Key.f3:
                 if not self.taking_screenshot:
@@ -448,15 +444,10 @@ class AlertMenu(customtkinter.CTk):
                     self.set_alert_region = False
                     self.screenshot.start_x, self.screenshot.start_y = None, None
                     self.screenshot.end_x, self.screenshot.end_y = None, None
-                    self.log_field.insert(
-                        "1.0",
-                        f"[{now}] Screenshot Mode: Activated.\n",
-                    )
+                    self.write_message("Screenshot Mode: Activated.")
                 else:
                     self.taking_screenshot = False
-                    self.log_field.insert(
-                        "1.0", f"[{now}] Screenshot Mode: Deactivated.\n"
-                    )
+                    self.write_message("Screenshot Mode: Deactivated.")
                     if (
                         self.screenshot.start_x is not None
                         and self.screenshot.start_y is not None
@@ -474,58 +465,46 @@ class AlertMenu(customtkinter.CTk):
                             )
                             # screenshot = pyautogui.screenshot(region=(start_x, start_y, end_x - start_x, end_y - start_y))
                             if screenshot:
-                                self.log_field.insert(
-                                    "1.0",
-                                    f"[{now}] Screenshot Saved.\n",
+                                self.write_message(
+                                    "Screenshot Saved.",
                                     "green",
                                 )
                             else:
                                 raise ScreenshotError("Screenshot Error")
                         except Exception as e:
                             logger.error("Screenshot Error: %s", e)
-                            self.log_field.insert(
-                                "1.0",
-                                f"[{now}] Screenshot Positions wrong.\n",
+                            self.write_message(
+                                "Screenshot Positions wrong.",
                                 "red",
                             )
 
     # Menu Button Section
 
     def exit_button_clicked(self):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if self.alarm.is_running():
             self.alarm.stop()
-            self.log_field.insert(
-                "1.0", f"[{now}] System: ❎ EVE Alert stopped.\n", "red"
-            )
+            self.write_message("System: ❎ EVE Alert stopped.", "red")
         else:
-            self.log_field.insert(
-                "1.0",
-                f"[{now}] System: ❎ EVE Alert isn't running.\n",
+            self.write_message(
+                "System: ❎ EVE Alert isn't running.",
                 "red",
             )
         self.destroy()
 
     # Starten Sie den Alert-Thread, indem Sie die Alert-Funktion aus alert.py aufrufen
     def start_alert_script(self):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         try:
             if not self.alarm.is_running():
                 Thread(target=self.alarm.start).start()
             else:
-                self.log_field.insert(
-                    "1.0", f"[{now}] System: EVE Alert is already running.\n"
-                )
+                self.write_message("System: EVE Alert is already running.")
         except Exception as e:
             logger.error("Start Alert Error: %s", e, exc_info=True)
-            self.log_field.insert(
-                "1.0", f"[{now}] System: Something went wrong.\n", "red"
-            )
+            self.write_message("System: Something went wrong.", "red")
 
     def stop_alert_script(self):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if self.alarm.is_running():
             self.alarm.stop()
-            self.log_field.insert("1.0", f"[{now}] System: EVE Alert stopped.\n", "red")
+            self.write_message("System: EVE Alert stopped.", "red")
             return
-        self.log_field.insert("1.0", f"[{now}] System: EVE Alert isn't running.\n")
+        self.write_message("System: EVE Alert isn't running.")
