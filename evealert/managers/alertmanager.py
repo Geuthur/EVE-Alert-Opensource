@@ -9,7 +9,6 @@ import pyaudio
 from evealert.managers.settingsmanager import SettingsManager
 from evealert.settings.functions import get_resource_path
 from evealert.tools.vision import Vision
-from evealert.tools.windowscapture import WindowCapture
 
 # Den Dateinamen des Alarmklangs angeben
 ALERT_SOUND = "sound/alarm.wav"
@@ -31,7 +30,6 @@ image_faction_filenames = [
 ]
 vision = Vision(image_filenames)
 vision_faction = Vision(image_faction_filenames)
-wincap = WindowCapture()
 
 logger = logging.getLogger("alert")
 
@@ -45,7 +43,8 @@ class AlertAgent:
         # Main Settings
         self.running = False
         self.check = False
-        self.settings = SettingsManager()
+        self.wincap = self.main.wincap
+        self.settings = SettingsManager(self.main)
 
         # Locks to prevent overstacking
         self.lock = asyncio.Lock()
@@ -75,17 +74,18 @@ class AlertAgent:
     def load_settings(self):
         settings = self.settings.load_settings()
         if settings:
-            self.x1 = settings["x1"]
-            self.y1 = settings["y1"]
-            self.x2 = settings["x2"]
-            self.y2 = settings["y2"]
-            self.x1_faction = settings["x1_faction"]
-            self.y1_faction = settings["y1_faction"]
-            self.x2_faction = settings["x2_faction"]
-            self.y2_faction = settings["y2_faction"]
-            self.detection = settings["detection"]
-            self.mode = settings["mode"]
-            self.cooldowntimer = settings["cooldowntimer"]
+            self.alert_regions = settings.get("alarm_locations", [])
+            self.x1 = self.alert_regions[0].get("vision_1", {}).get("x1")
+            self.y1 = self.alert_regions[0].get("vision_1", {}).get("y1")
+            self.x2 = self.alert_regions[0].get("vision_1", {}).get("x2")
+            self.y2 = self.alert_regions[0].get("vision_1", {}).get("y2")
+            self.x1_faction = settings.get("faction_region_1", {}).get("x")
+            self.y1_faction = settings.get("faction_region_1", {}).get("y")
+            self.x2_faction = settings.get("faction_region_2", {}).get("x")
+            self.y2_faction = settings.get("faction_region_2", {}).get("y")
+            self.detection = settings.get("detectionscale", {}).get("value")
+            self.mode = settings.get("detection_mode", {}).get("value")
+            self.cooldowntimer = settings.get("cooldown_timer", {}).get("value")
 
     def start(self):
         self.loop.run_until_complete(self.vision_check())
@@ -132,7 +132,7 @@ class AlertAgent:
 
     async def vision_check(self):
         self.load_settings()
-        screenshot, _ = wincap.get_screenshot_value(self.y1, self.x1, self.x2, self.y2)
+        screenshot, _ = self.wincap.get_screenshot_value(self.y1, self.x1, self.x2, self.y2)
         if screenshot is not None:
             self.check = True
         else:
@@ -142,7 +142,7 @@ class AlertAgent:
     async def vision_thread(self):
         async with self.visionlock:
             while True:
-                screenshot, screenshot_data = wincap.get_screenshot_value(
+                screenshot, screenshot_data = self.wincap.get_screenshot_value(
                     self.y1, self.x1, self.x2, self.y2
                 )
                 if screenshot is not None:
@@ -156,7 +156,7 @@ class AlertAgent:
                         else:
                             self.enemy = False
                     else:
-                        # screenshot, screenshot_data = wincap.get_screenshot()
+                        print(self.detection)
                         enemy = vision.find(screenshot, self.detection)
                         if enemy == "Error":
                             break
@@ -172,7 +172,7 @@ class AlertAgent:
     async def vision_faction_thread(self):
         async with self.factionlock:
             while True:
-                screenshot_faction, _ = wincap.get_screenshot_value(
+                screenshot_faction, _ = self.wincap.get_screenshot_value(
                     self.y1_faction, self.x1_faction, self.x2_faction, self.y2_faction
                 )
                 if screenshot_faction is not None:

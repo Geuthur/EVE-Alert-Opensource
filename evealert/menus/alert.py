@@ -8,9 +8,10 @@ from pynput import keyboard, mouse
 
 from evealert import __version__
 from evealert.exceptions import ScreenshotError
-from evealert.managers.alertmanager import AlertAgent, wincap
+from evealert.managers.alertmanager import AlertAgent
 from evealert.managers.regionmanager import RegionDisplay
 from evealert.managers.settingsmanager import SettingsManager
+from evealert.tools.windowscapture import WindowCapture
 from evealert.menus.configuration import ConfigMenu
 from evealert.menus.description import DescriptionMenu
 from evealert.settings.constants import ICON
@@ -111,8 +112,9 @@ class AlertMenu(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title(f"Alert - {__version__}")
+        self.wincap = WindowCapture()
         self.alarm = AlertAgent(self)
-        self.settings = SettingsManager()
+        self.settings = SettingsManager(self)
         self.configmenu = ConfigMenu(self)
         self.descmenu = DescriptionMenu(self)
         self.screenshot = Screenshot(self)
@@ -236,34 +238,13 @@ class AlertMenu(customtkinter.CTk):
     # Save Files
     def save_settings(self):
         """Save the settings to the settings.json file."""
-        if not (
-            self.configmenu.alert_region_x_first.get()
-            and self.configmenu.alert_region_y_first.get()
-        ) or not (
-            self.configmenu.alert_region_x_second.get()
-            and self.configmenu.alert_region_y_second.get()
-        ):
+        if not self.configmenu.entries:
             self.write_message(
                 "Empty Fields. Minimum is Alert Region.",
                 "red",
             )
             return
-        self.settings.save_settings(
-            {
-                "logging": self.configmenu.logging.get(),
-                "alert_region_x_first": self.configmenu.alert_region_x_first.get(),
-                "alert_region_y_first": self.configmenu.alert_region_y_first.get(),
-                "alert_region_x_second": self.configmenu.alert_region_x_second.get(),
-                "alert_region_y_second": self.configmenu.alert_region_y_second.get(),
-                "faction_region_x_first": self.configmenu.faction_region_x_first.get(),
-                "faction_region_y_first": self.configmenu.faction_region_y_first.get(),
-                "faction_region_x_second": self.configmenu.faction_region_x_second.get(),
-                "faction_region_y_second": self.configmenu.faction_region_y_second.get(),
-                "detectionscale": self.configmenu.detectionscale.get(),
-                "mode_var": self.configmenu.mode_var.get(),
-                "cooldown_timer": self.configmenu.cooldown_timer.get(),
-            }
-        )
+        self.settings.save_settings()
         self.alarm.set_settings()
 
     def is_configmode(self):
@@ -328,17 +309,17 @@ class AlertMenu(customtkinter.CTk):
 
                 if self.alert_region_mode == 0:
                     print("First Region Set.")
-                    self.configmenu.alert_region_x_first.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_y_first.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_x_first.insert(0, str(y))
-                    self.configmenu.alert_region_y_first.insert(0, str(x))
+                    self.configmenu.alarm_entry["x1"][1].delete(0, customtkinter.END)
+                    self.configmenu.alarm_entry["y1"][1].delete(0, customtkinter.END)
+                    self.configmenu.alarm_entry["x1"][1].insert(0, str(y))
+                    self.configmenu.alarm_entry["y1"][1].insert(0, str(x))
                     self.alert_region_mode = self.alert_region_mode + 1
                 else:
                     print("Second Region Set")
-                    self.configmenu.alert_region_x_second.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_y_second.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_x_second.insert(0, str(y))
-                    self.configmenu.alert_region_y_second.insert(0, str(x))
+                    self.configmenu.alarm_entry["x2"][1].delete(0, customtkinter.END)
+                    self.configmenu.alarm_entry["y2"][1].delete(0, customtkinter.END)
+                    self.configmenu.alarm_entry["x2"][1].insert(0, str(y))
+                    self.configmenu.alarm_entry["y2"][1].insert(0, str(x))
                     self.set_alert_region = False
                     self.alert_region_mode = 0
                     self.save_settings()
@@ -457,7 +438,7 @@ class AlertMenu(customtkinter.CTk):
                         try:
                             if self.screenshot.screenshot_overlay:
                                 self.screenshot.screenshot_overlay.destroy()
-                            screenshot = wincap.take_screenshot(
+                            screenshot = self.wincap.take_screenshot(
                                 self.screenshot.start_x,
                                 self.screenshot.start_y,
                                 self.screenshot.end_y - self.screenshot.start_y,
