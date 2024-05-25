@@ -35,6 +35,7 @@ class Vision:
         self.faction = None
 
     def find(self, haystack_img, threshold=0.5):
+        threshold = (threshold / 100 if threshold > 1 else threshold)
         all_points = []
         color = (0, 255, 0)
         for needle_img, needle_dim in zip(self.needle_imgs, self.needle_dims):
