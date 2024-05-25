@@ -158,7 +158,6 @@ class AlertAgent:
                         else:
                             self.enemy = False
                     else:
-                        print(self.detection)
                         enemy = vision.find(screenshot, self.detection)
                         if enemy == "Error":
                             break
