@@ -49,7 +49,7 @@ class SettingsManager:
         alarm_locations = []
         for i in range(0, len(self.root.configmenu.entries), 4):
             alarm_location = {
-                f"vision_{i//4 + 1}": {
+                f"vision_{i // 4 + 1}": {
                     "x1": int(self.root.configmenu.entries[i].get()),
                     "y1": int(self.root.configmenu.entries[i + 1].get()),
                     "x2": int(self.root.configmenu.entries[i + 2].get()),
