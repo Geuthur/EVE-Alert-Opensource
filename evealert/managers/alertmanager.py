@@ -132,7 +132,9 @@ class AlertAgent:
 
     async def vision_check(self):
         self.load_settings()
-        screenshot, _ = self.wincap.get_screenshot_value(self.y1, self.x1, self.x2, self.y2)
+        screenshot, _ = self.wincap.get_screenshot_value(
+            self.y1, self.x1, self.x2, self.y2
+        )
         if screenshot is not None:
             self.check = True
         else:

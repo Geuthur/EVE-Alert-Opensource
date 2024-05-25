@@ -11,12 +11,12 @@ from evealert.exceptions import ScreenshotError
 from evealert.managers.alertmanager import AlertAgent
 from evealert.managers.regionmanager import RegionDisplay
 from evealert.managers.settingsmanager import SettingsManager
-from evealert.tools.windowscapture import WindowCapture
 from evealert.menus.configuration import ConfigMenu
 from evealert.menus.description import DescriptionMenu
 from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
+from evealert.tools.windowscapture import WindowCapture
 
 logger = logging.getLogger("alert")
 

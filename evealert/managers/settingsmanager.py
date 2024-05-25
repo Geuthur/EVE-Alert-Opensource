@@ -16,22 +16,8 @@ class SettingsManager:
             "settings": {
                 "logging": "ERROR",
                 "alarm_locations": [
-                    {"vision_1": 
-                        {
-                            "x1": 0, 
-                            "y1": 0, 
-                            "x2": 0, 
-                            "y2": 0
-                        }
-                    }, 
-                    {"vision_2": 
-                        {
-                            "x1": 0, 
-                            "y1": 0, 
-                            "x2": 0, 
-                            "y2": 0
-                        }
-                    }
+                    {"vision_1": {"x1": 0, "y1": 0, "x2": 0, "y2": 0}},
+                    {"vision_2": {"x1": 0, "y1": 0, "x2": 0, "y2": 0}},
                 ],
                 "faction_region_1": {"x": 0, "y": 0},
                 "faction_region_2": {"x": 0, "y": 0},
@@ -65,40 +51,38 @@ class SettingsManager:
             alarm_location = {
                 f"vision_{i//4 + 1}": {
                     "x1": int(self.root.configmenu.entries[i].get()),
-                    "y1": int(self.root.configmenu.entries[i+1].get()),
-                    "x2": int(self.root.configmenu.entries[i+2].get()),
-                    "y2": int(self.root.configmenu.entries[i+3].get()),
+                    "y1": int(self.root.configmenu.entries[i + 1].get()),
+                    "x2": int(self.root.configmenu.entries[i + 2].get()),
+                    "y2": int(self.root.configmenu.entries[i + 3].get()),
                 }
             }
             alarm_locations.append(alarm_location)
 
-        settings =  {
-            "settings": {        
-                        "logging": self.root.configmenu.logging.get(),
-                        "alarm_locations": alarm_locations,
-                        "faction_region_1": {
-                            "x": int(self.root.configmenu.faction_region_x_first.get()),
-                            "y": int(self.root.configmenu.faction_region_y_first.get()),
-                        },
-                        "faction_region_2": {
-                            "x": int(self.root.configmenu.faction_region_x_second.get()),
-                            "y": int(self.root.configmenu.faction_region_y_second.get()),
-                        },
-                        "detectionscale": {
-                            "value": float(self.root.configmenu.detectionscale.get())
-                        },
-                        "detection_mode": {
-                            "value": self.root.configmenu.mode_var.get()
-                        },
-                        "cooldown_timer": {
-                            "value": int(self.root.configmenu.cooldown_timer.get())
-                        }
-                }
+        settings = {
+            "settings": {
+                "logging": self.root.configmenu.logging.get(),
+                "alarm_locations": alarm_locations,
+                "faction_region_1": {
+                    "x": int(self.root.configmenu.faction_region_x_first.get()),
+                    "y": int(self.root.configmenu.faction_region_y_first.get()),
+                },
+                "faction_region_2": {
+                    "x": int(self.root.configmenu.faction_region_x_second.get()),
+                    "y": int(self.root.configmenu.faction_region_y_second.get()),
+                },
+                "detectionscale": {
+                    "value": float(self.root.configmenu.detectionscale.get())
+                },
+                "detection_mode": {"value": self.root.configmenu.mode_var.get()},
+                "cooldown_timer": {
+                    "value": int(self.root.configmenu.cooldown_timer.get())
+                },
             }
+        }
 
         # Hier speichern Sie die Einstellungen in einer Datei oder Datenbank
         # Zum Beispiel:
-        with open('settings.json', "w", encoding="utf-8") as f:
+        with open("settings.json", "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=4)
 
         return "Settings saved successfully"

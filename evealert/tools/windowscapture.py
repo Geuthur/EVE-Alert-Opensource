@@ -2,6 +2,7 @@ import mss
 import numpy as np
 from PIL import Image
 
+
 class WindowCapture:
     def __init__(self):
         pass

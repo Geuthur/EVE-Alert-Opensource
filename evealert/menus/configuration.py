@@ -1,4 +1,15 @@
-from customtkinter import CTk, CTkFrame, CTkLabel, CTkEntry, CTkSlider, CTkCheckBox, DoubleVar, CTkButton, CTkToplevel, StringVar
+from customtkinter import (
+    CTk,
+    CTkButton,
+    CTkCheckBox,
+    CTkEntry,
+    CTkFrame,
+    CTkLabel,
+    CTkSlider,
+    CTkToplevel,
+    DoubleVar,
+    StringVar,
+)
 
 from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
@@ -41,9 +52,8 @@ class ConfigMenu:
         self.label_y_axis = CTkLabel(self.menu_frame, text="Y-Achse")
 
         self.alert_button = CTkButton(
-                self.menu_frame, text="Alarm Settings", command=self.open_alert_window
-            )
-
+            self.menu_frame, text="Alarm Settings", command=self.open_alert_window
+        )
 
         # 4 Row - Init
         # Alert Region Position 1
@@ -63,9 +73,7 @@ class ConfigMenu:
 
         # Row 6 - Init
         # Slider
-        self.slider_label = CTkLabel(
-            self.menu_frame, text="Detection Threshold"
-        )
+        self.slider_label = CTkLabel(self.menu_frame, text="Detection Threshold")
         self.detectionscale = DoubleVar()
         self.detectionscale.set(70)  # Setzen Sie den Standardwert auf 70
         self.slider = CTkSlider(
@@ -108,7 +116,9 @@ class ConfigMenu:
         self.alert_window.withdraw()
 
         # Laden der Alarmregionen
-        for i, alert_location in enumerate(self.settingsvalue["alarm_locations"], start=1):
+        for i, alert_location in enumerate(
+            self.settingsvalue["alarm_locations"], start=1
+        ):
             for _, coordinates in alert_location.items():
                 # Erstellen Sie dynamisch Labels und Eingabefelder für jede Alarmregion
                 label = CTkLabel(self.alert_window, text=f"Alarmregion {i}")
@@ -163,7 +173,7 @@ class ConfigMenu:
 
     def open_alert_window(self):
         """Opoens the alarm window for the configuration mode."""
-            
+
         if not self.alert_menu:
             self.root_menu_position()
             self.alert_menu = True
@@ -180,25 +190,21 @@ class ConfigMenu:
             self.alert_window.deiconify()
 
             def close_alert_window():
-                self.alert_button.configure(
-                    fg_color="#1f538d", hover_color="#14375e"
-                )
+                self.alert_button.configure(fg_color="#1f538d", hover_color="#14375e")
                 self.alert_menu = False
                 self.alert_window.withdraw()
 
             self.alert_window.protocol("WM_DELETE_WINDOW", close_alert_window)
 
             # Check if the close button has already been created
-            if not hasattr(self, 'alarm_close_button'):
+            if not hasattr(self, "alarm_close_button"):
                 self.alarm_close_button = CTkButton(
                     self.alert_window, text="Schließen", command=close_alert_window
                 )
                 self.alarm_close_button.pack()
         else:
             self.alert_menu = False
-            self.alert_button.configure(
-                fg_color="#1f538d", hover_color="#14375e"
-            )
+            self.alert_button.configure(fg_color="#1f538d", hover_color="#14375e")
             self.alert_window.withdraw()
 
     def open_description_window(self):
@@ -229,12 +235,8 @@ class ConfigMenu:
 
             self.config_window.deiconify()
 
-            self.empty_label_1 = CTkLabel(
-                self.menu_frame, text=self.slider.get()
-            )
-            self.empty_label_00 = CTkLabel(
-                self.menu_frame, text=self.mode_var.get()
-            )
+            self.empty_label_1 = CTkLabel(self.menu_frame, text=self.slider.get())
+            self.empty_label_00 = CTkLabel(self.menu_frame, text=self.mode_var.get())
 
             self.label_x_axis.grid(row=0, column=1)
             self.label_y_axis.grid(row=0, column=2)
@@ -280,7 +282,7 @@ class ConfigMenu:
             self.config_window.protocol("WM_DELETE_WINDOW", close_config_window)
 
             # Check if the close button has already been created
-            if not hasattr(self, 'close_button'):
+            if not hasattr(self, "close_button"):
                 self.close_button = CTkButton(
                     self.menu_frame, text="Schließen", command=close_config_window
                 )
