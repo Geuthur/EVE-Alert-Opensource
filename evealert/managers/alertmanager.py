@@ -28,8 +28,9 @@ image_faction_filenames = [
     for filename in os.listdir(IMG_FOLDER)
     if filename.startswith("faction_")
 ]
-vision = Vision(image_filenames)
-vision_faction = Vision(image_faction_filenames)
+
+# vision = Vision(image_filenames)
+# vision_faction = Vision(image_faction_filenames)
 
 logger = logging.getLogger("alert")
 
@@ -55,6 +56,7 @@ class AlertAgent:
         # Vison Settings
         self.enemy = False
         self.faction = False
+        self.vision_settings = {}
 
         # Alarm Settings
         self.alarm_detected = False
@@ -70,6 +72,10 @@ class AlertAgent:
         self.red_tolerance = 20
         self.green_blue_tolerance = 4
         self.rgb_group = [(128, 12, 12)]
+
+    def create_vision(self, image, name):
+        vision = Vision(image, name)
+        return vision
 
     def load_settings(self):
         settings = self.settings.load_settings()
@@ -109,8 +115,7 @@ class AlertAgent:
         self.loop.stop()
         self.running = False
         self.alarm_counter = {"Enemy": 0, "Faction": 0}
-        vision.debug_mode = False
-        vision_faction.debug_mode_faction = False
+        self.vision_settings = {}
 
     def is_running(self):
         return self.running
@@ -118,20 +123,16 @@ class AlertAgent:
     def set_settings(self):
         self.load_settings()
 
-    def set_vision(self):
-        if not vision.debug_mode:
-            vision.debug_mode = True
-        else:
-            vision.debug_mode = False
+    def set_vision(self, vision_name):
+        current_value = self.vision_settings.get(vision_name, False)
+        self.vision_settings[vision_name] = not current_value
 
-    def get_vision(self):
-        return vision.debug_mode
+    def check_vision(self, instance, screenshot, detection, name):
+        # Check if the "enemy" vision setting is enabled
+        vision_check = self.vision_settings.get(name)
 
-    def set_vision_faction(self):
-        if not vision_faction.debug_mode_faction:
-            vision_faction.debug_mode_faction = True
-        else:
-            vision_faction.debug_mode_faction = False
+        enemy = instance.find(screenshot, vision_check, detection)
+        return enemy
 
     async def vision_check(self):
         self.load_settings()
@@ -145,6 +146,7 @@ class AlertAgent:
             self.check = False
 
     async def vision_thread(self):
+        self.alarm_vision = self.create_vision(image_filenames, "Alert")
         async with self.visionlock:
             while True:
                 screenshot, screenshot_data = self.wincap.get_screenshot_value(
@@ -161,7 +163,10 @@ class AlertAgent:
                         else:
                             self.enemy = False
                     else:
-                        enemy = vision.find(screenshot, self.detection)
+                        enemy = self.check_vision(
+                            self.alarm_vision, screenshot, self.detection, "Alert"
+                        )
+                        # enemy = self.alarm_vision.find(screenshot, vision_check, self.detection)
                         if enemy == "Error":
                             break
                         if enemy:
@@ -174,13 +179,17 @@ class AlertAgent:
                 await asyncio.sleep(0.1)  # Add a small delay
 
     async def vision_faction_thread(self):
+        self.faction_vision = self.create_vision(image_faction_filenames, "Faction")
         async with self.factionlock:
             while True:
                 screenshot_faction, _ = self.wincap.get_screenshot_value(
                     self.y1_faction, self.x1_faction, self.x2_faction, self.y2_faction
                 )
                 if screenshot_faction is not None:
-                    faction = vision_faction.find(screenshot_faction, 0.7)
+                    faction = self.check_vision(
+                        self.faction_vision, screenshot_faction, 0.7, "Faction"
+                    )
+                    # faction = self.faction_vision.find(screenshot_faction, 0.7)
                     if faction == "Error":
                         break
                     if faction:

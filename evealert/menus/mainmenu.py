@@ -265,7 +265,7 @@ class MainMenu(customtkinter.CTk):
         """Display the alert region on the screen."""
         selected_mode = self.configmenu.mode_var.get()
         if selected_mode == "picture":
-            self.after(0, self.alarm.set_vision)
+            self.after(0, self.alarm.set_vision("Alert"))
         else:
             self.after(0, self.display.create_alert_region())
 
@@ -273,7 +273,7 @@ class MainMenu(customtkinter.CTk):
         """Display the faction region on the screen."""
         selected_mode = self.configmenu.mode_var.get()
         if selected_mode == "picture":
-            self.after(0, self.alarm.set_vision_faction)
+            self.after(0, self.alarm.set_vision("Faction"))
         else:
             self.after(0, self.display.create_faction_region())
 

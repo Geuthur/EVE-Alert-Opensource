@@ -34,7 +34,7 @@ class Vision:
         # TM_CCOEFF, TM_CCOEFF_NORMED, TM_CCORR, TM_CCORR_NORMED, TM_SQDIFF, TM_SQDIFF_NORMED
         self.method = cv.TM_CCOEFF_NORMED
 
-    def find(self, haystack_img, show_vision = False, threshold=0.5):
+    def find(self, haystack_img, show_vision=False, threshold=0.5):
         threshold = threshold / 100 if threshold > 1 else threshold
         all_points = []
         color = (0, 255, 0)
@@ -67,12 +67,12 @@ class Vision:
 
             if show_vision:
                 if not self.window_created:
-                    cv.namedWindow(f'Vision {self.vision_name}', cv.WINDOW_NORMAL)
+                    cv.namedWindow(f"Vision {self.vision_name}", cv.WINDOW_NORMAL)
                     self.window_created = True
-                cv.imshow(f'Vision {self.vision_name}', haystack_img)
+                cv.imshow(f"Vision {self.vision_name}", haystack_img)
                 cv.waitKey(1)
             elif self.window_created:
-                cv.destroyWindow(f'Vision {self.vision_name}')
+                cv.destroyWindow(f"Vision {self.vision_name}")
                 self.window_created = False
 
             points = []
