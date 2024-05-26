@@ -10,6 +10,7 @@ now = datetime.now()
 
 class Vision:
 
+    draw_rectangle = False
     # properties
     needle_img = None
     needle_w = 0
@@ -17,7 +18,10 @@ class Vision:
     method = None
 
     # constructor
-    def __init__(self, needle_img_paths, method=cv.TM_CCOEFF_NORMED):
+    def __init__(self, needle_img_paths, vision_name):
+
+        self.vision_name = vision_name
+        self.window_created = False
         # Load the images we're trying to match
         self.needle_imgs = [
             cv.imread(path, cv.IMREAD_UNCHANGED) for path in needle_img_paths
@@ -28,13 +32,9 @@ class Vision:
 
         # There are 6 methods to choose from:
         # TM_CCOEFF, TM_CCOEFF_NORMED, TM_CCORR, TM_CCORR_NORMED, TM_SQDIFF, TM_SQDIFF_NORMED
-        self.method = method
-        self.debug_mode = False
-        self.debug_mode_faction = False
-        self.enemy = None
-        self.faction = None
+        self.method = cv.TM_CCOEFF_NORMED
 
-    def find(self, haystack_img, threshold=0.5):
+    def find(self, haystack_img, show_vision = False, threshold=0.5):
         threshold = threshold / 100 if threshold > 1 else threshold
         all_points = []
         color = (0, 255, 0)
@@ -62,6 +62,19 @@ class Vision:
             # Apply group rectangles.
             rectangles, _ = cv.groupRectangles(rectangles, groupThreshold=1, eps=0.5)
 
+            # Copy the image to draw on
+            haystack_img = haystack_img.copy()
+
+            if show_vision:
+                if not self.window_created:
+                    cv.namedWindow(f'Vision {self.vision_name}', cv.WINDOW_NORMAL)
+                    self.window_created = True
+                cv.imshow(f'Vision {self.vision_name}', haystack_img)
+                cv.waitKey(1)
+            elif self.window_created:
+                cv.destroyWindow(f'Vision {self.vision_name}')
+                self.window_created = False
+
             points = []
             if len(rectangles):
                 # Loop over all the rectangles
@@ -71,27 +84,11 @@ class Vision:
                     center_y = y + int(h / 2)
                     # Save the points
                     points.append((center_x, center_y))
-                    if self.debug_mode:
-                        # Determine the box position
-                        top_left = (x, y)
-                        bottom_right = (x + w, y + h)
-                        # Draw the box
-                        try:
-                            cv.rectangle(
-                                haystack_img,
-                                top_left,
-                                bottom_right,
-                                color=color,
-                                lineType=cv.LINE_4,
-                                thickness=2,
-                            )
-                        except Exception as e:
-                            logger.error("Reactangle Error: %s", e)
-                    if self.debug_mode_faction:
-                        # Determine the box position
-                        top_left = (x, y)
-                        bottom_right = (x + w, y + h)
-                        # Draw the box
+                    # Determine the box position
+                    top_left = (x, y)
+                    bottom_right = (x + w, y + h)
+                    # Draw the box
+                    try:
                         cv.rectangle(
                             haystack_img,
                             top_left,
@@ -100,24 +97,8 @@ class Vision:
                             lineType=cv.LINE_4,
                             thickness=2,
                         )
+                    except Exception as e:
+                        logger.error("Reactangle Error: %s", e)
 
             all_points.extend(points)
-
-        if self.debug_mode:
-            cv.imshow("Enemy Vision", haystack_img)
-            self.enemy = True
-            cv.waitKey(1)
-        else:
-            if self.enemy:
-                cv.destroyWindow("Enemy Vision")
-                self.enemy = None
-
-        if self.debug_mode_faction:
-            cv.imshow("Faction Vision", haystack_img)
-            self.faction = True
-            cv.waitKey(1)
-        else:
-            if self.faction:
-                cv.destroyWindow("Faction Vision")
-                self.faction = None
         return all_points
