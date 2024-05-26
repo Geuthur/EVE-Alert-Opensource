@@ -1,3 +1,18 @@
+## \[0.4.2b1\] - 2024-05-26
+
+### Upcoming
+
+- Multiple Detection, Support to Locate on different Clients the Local and detect Neuts.
+
+### Added
+
+- Create Own Alarm Menu for Multiple Detection
+
+### Changed
+
+- Settingsmanager renamed settings, you need to delete your old settings.json
+- All Save, Load functions are now handled by Settingsmanager completly
+
 ## \[0.4.1b1\] - 2024-05-24
 
 ### Added
