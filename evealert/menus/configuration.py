@@ -20,6 +20,8 @@ class ConfigMenu:
 
     def __init__(self, root: CTk):
         self.root = root
+        if self.root.settings:
+            self.settingsvalue = self.root.settings.open_settings()
         self.entries = []
         self.active = False
         self.alert_menu = False
@@ -32,52 +34,67 @@ class ConfigMenu:
             "y2": {},
         }
 
-        self.load_settings()
+        self.config_menu()
+        self.alarm_menu()
 
-    def load_settings(self):
+    def config_menu(self):
         """Load the settings from the settings file."""
         self.config_window = CTkToplevel(self.root)
         self.config_window.title("Settings")
 
         self.config_window.withdraw()
 
+        parent_frame = CTkFrame(self.config_window)
+        parent_frame.pack()
+
         # Verwende ein eigenes Frame für das Menü
-        self.menu_frame = CTkFrame(self.config_window)
-        self.menu_frame.pack(side="left", padx=20, pady=20)
-
-        self.logging = CTkEntry(self.menu_frame)
-
-        # 1 Row - Init
-        self.label_x_axis = CTkLabel(self.menu_frame, text="X-Achse")
-        self.label_y_axis = CTkLabel(self.menu_frame, text="Y-Achse")
+        menu_frame = CTkFrame(parent_frame)
+        menu_frame.pack(side="left", padx=10)
 
         self.alert_button = CTkButton(
-            self.menu_frame, text="Alarm Settings", command=self.open_alert_window
+            menu_frame, text="Alarm Settings", command=self.open_alert_window
         )
 
-        # 4 Row - Init
-        # Alert Region Position 1
         self.faction_region_label_1 = CTkLabel(
-            self.menu_frame, text="Faction Region Left Upper Corner:", justify="left"
+            menu_frame, text="Faction Region Left Upper Corner:", justify="left"
         )
-        self.faction_region_x_first = CTkEntry(self.menu_frame)
-        self.faction_region_y_first = CTkEntry(self.menu_frame)
 
-        # 5 Row - Init
-        # Alert Region Position 2
         self.faction_region_label_2 = CTkLabel(
-            self.menu_frame, text="Faction Region Right Lower Corner:", justify="left"
+            menu_frame, text="Faction Region Right Lower Corner:", justify="left"
         )
-        self.faction_region_x_second = CTkEntry(self.menu_frame)
-        self.faction_region_y_second = CTkEntry(self.menu_frame)
 
+        self.cooldown_timer_label = CTkLabel(
+            menu_frame, text="Cooldown Timer:", justify="left"
+        )
+
+        # Verwende ein eigenes Frame für das Menü
+        menu_frame = CTkFrame(parent_frame)
+        menu_frame.pack(side="left", padx=10)
+
+        self.label_x_axis = CTkLabel(menu_frame, text="X-Achse")
+        self.faction_region_x_first = CTkEntry(menu_frame)
+        self.faction_region_x_second = CTkEntry(menu_frame)
+        self.cooldown_timer = CTkEntry(menu_frame)
+
+        # Verwende ein eigenes Frame für das Menü
+        menu_frame = CTkFrame(parent_frame)
+        menu_frame.pack(side="left", padx=10)
+
+        self.label_y_axis = CTkLabel(menu_frame, text="Y-Achse")
+        self.faction_region_y_first = CTkEntry(menu_frame)
+        self.faction_region_y_second = CTkEntry(menu_frame)
+        self.cooldown_timer_text = CTkLabel(menu_frame, text="Seconds", justify="left")
+
+        # Verwende ein eigenes Frame für das Menü
+        menu_frame = CTkFrame(parent_frame)
+        menu_frame.pack(side="left", padx=10)
         # Row 6 - Init
         # Slider
-        self.slider_label = CTkLabel(self.menu_frame, text="Detection Threshold")
+        self.slider_label = CTkLabel(menu_frame, text="Detection Threshold")
         self.detectionscale = DoubleVar()
         self.detectionscale.set(70)  # Setzen Sie den Standardwert auf 70
         self.slider = CTkSlider(
-            self.menu_frame,
+            menu_frame,
             from_=0,
             to=100,
             orientation="horizontal",
@@ -90,7 +107,7 @@ class ConfigMenu:
         # Row 7
         # Config / Detection Mode- Init
         self.mode_checkbox = CTkCheckBox(
-            self.menu_frame,
+            menu_frame,
             text="Detection Mode",
             variable=self.mode_var,
             onvalue="color",
@@ -98,50 +115,65 @@ class ConfigMenu:
             command=self.update_mode,
         )
 
-        self.cooldown_timer_label = CTkLabel(
-            self.menu_frame, text="Cooldown Timer:", justify="left"
-        )
-        self.cooldown_timer = CTkEntry(self.menu_frame)
-        self.cooldown_timer_text = CTkLabel(
-            self.menu_frame, text="Seconds", justify="left"
-        )
+        self.empty_label_1 = CTkLabel(menu_frame, text=self.slider.get())
+        self.empty_label_00 = CTkLabel(menu_frame, text=self.mode_var.get())
 
-        if self.root.settings:
-            self.settingsvalue = self.root.settings.open_settings()
-            self.logging.insert(0, self.settingsvalue["logging"])
+        self.close_button = CTkButton(
+            self.config_window, text="Schließen", command=self.close_windows
+        )
+        self.close_button.pack()
 
+        self.logging = CTkEntry(menu_frame)
+        self.logging.insert(0, self.settingsvalue["logging"])
+
+    def alarm_menu(self):
         # Erstellen Sie ein neues Fenster für die Alarmregionen
         self.alert_window = CTkToplevel(self.root)
 
         self.alert_window.withdraw()
+
+        parent_frame = CTkFrame(self.alert_window)
+        parent_frame.pack()
+
+        info = CTkFrame(parent_frame)
+        info.pack(padx=10, pady=10)
+        label = CTkLabel(info, text="")
+        label.grid(row=0, column=0, padx=40)
+        label = CTkLabel(info, text="X-Achse")
+        label.grid(row=0, column=1, padx=50)
+        label = CTkLabel(info, text="Y-Achse")
+        label.grid(row=0, column=2, padx=50)
 
         # Laden der Alarmregionen
         for i, alert_location in enumerate(
             self.settingsvalue["alarm_locations"], start=1
         ):
             for _, coordinates in alert_location.items():
-                # Erstellen Sie dynamisch Labels und Eingabefelder für jede Alarmregion
-                label = CTkLabel(self.alert_window, text=f"Alarmregion {i}")
-                label.pack()
+                # Erstellen Sie ein neues Frame für jede Alarmregion
+                frame = CTkFrame(parent_frame)
+                frame.pack(padx=10, pady=10)
 
-                self.alert_entry["x1"][i] = CTkEntry(self.alert_window)
+                label = CTkLabel(frame, text=f"Alarmregion {i}: ")
+                label.grid(row=0, column=0)
+
+                self.alert_entry["x1"][i] = CTkEntry(frame)
                 self.alert_entry["x1"][i].insert(0, coordinates["x1"])
-                self.alert_entry["x1"][i].pack()
+                self.alert_entry["x1"][i].grid(row=0, column=1)
                 self.entries.append(self.alert_entry["x1"][i])
 
-                self.alert_entry["y1"][i] = CTkEntry(self.alert_window)
+                self.alert_entry["y1"][i] = CTkEntry(frame)
                 self.alert_entry["y1"][i].insert(0, coordinates["y1"])
-                self.alert_entry["y1"][i].pack()
+                self.alert_entry["y1"][i].grid(row=0, column=2)
                 self.entries.append(self.alert_entry["y1"][i])
 
-                self.alert_entry["x2"][i] = CTkEntry(self.alert_window)
+                self.alert_entry["x2"][i] = CTkEntry(frame)
                 self.alert_entry["x2"][i].insert(0, coordinates["x2"])
-                self.alert_entry["x2"][i].pack()
+                self.alert_entry["x2"][i].grid(row=1, column=1)
                 self.entries.append(self.alert_entry["x2"][i])
 
-                self.alert_entry["y2"][i] = CTkEntry(self.alert_window)
+                self.alert_entry["y2"][i] = CTkEntry(frame)
                 self.alert_entry["y2"][i].insert(0, coordinates["y2"])
-                self.alert_entry["y2"][i].pack()
+                self.alert_entry["y2"][i].grid(row=1, column=2)
                 self.entries.append(self.alert_entry["y2"][i])
 
         self.faction_region_x_first.insert(
@@ -177,29 +209,26 @@ class ConfigMenu:
         if not self.alert_menu:
             self.root_menu_position()
             self.alert_menu = True
+            self.alert_button.configure(fg_color="#fa0202", hover_color="#bd291e")
             alert_window_x = self.root_menu_x + self.root_menu_width + 10
             alert_window_y = self.root_menu_y + self.root_menu_height + 40
-            alert_window_width = 300
-            alert_window_height = 400
+            self.alert_window.update_idletasks()
+            required_width = self.alert_window.winfo_reqwidth()
+            required_height = self.alert_window.winfo_reqheight()
 
             self.alert_window.geometry(
-                f"{alert_window_width}x{alert_window_height}+{alert_window_x}+{alert_window_y}"
+                f"{required_width}x{required_height}+{alert_window_x}+{alert_window_y}"
             )
 
             self.alert_window.title("Alarm Settings")
             self.alert_window.deiconify()
 
-            def close_alert_window():
-                self.alert_button.configure(fg_color="#1f538d", hover_color="#14375e")
-                self.alert_menu = False
-                self.alert_window.withdraw()
-
-            self.alert_window.protocol("WM_DELETE_WINDOW", close_alert_window)
+            self.alert_window.protocol("WM_DELETE_WINDOW", self.close_alert_window)
 
             # Check if the close button has already been created
             if not hasattr(self, "alarm_close_button"):
                 self.alarm_close_button = CTkButton(
-                    self.alert_window, text="Schließen", command=close_alert_window
+                    self.alert_window, text="Schließen", command=self.close_alert_window
                 )
                 self.alarm_close_button.pack()
         else:
@@ -217,9 +246,42 @@ class ConfigMenu:
                 fg_color="#fa0202", hover_color="#bd291e"
             )
 
+            self.label_x_axis.pack()
+            self.label_y_axis.pack()
+
+            self.alert_button.pack()
+
+            # Faction Region 1 Visual
+            self.faction_region_label_1.pack()
+            self.faction_region_x_first.pack()
+            self.faction_region_y_first.pack()
+
+            # Faction Region 2 Visual
+            self.faction_region_label_2.pack()
+            self.faction_region_x_second.pack()
+            self.faction_region_y_second.pack()
+
+            # Faction Region 2 Visual
+            self.cooldown_timer_label.pack()
+            self.cooldown_timer.pack()
+            self.cooldown_timer_text.pack()
+
+            # Slider Visual
+            self.empty_label_1.pack()
+
+            # Slider Visual
+            self.slider_label.pack()
+            self.slider.pack()
+
+            # Mode Change
+            self.mode_checkbox.pack()
+            self.empty_label_00.pack()
+
             # Position des Beschreibungsfensters rechts neben dem Hauptmenü
-            config_window_width = 650
-            config_window_height = 320
+            self.config_window.update_idletasks()
+
+            required_width = self.config_window.winfo_reqwidth()
+            required_height = self.config_window.winfo_reqheight()
             config_window_x = self.root_menu_x + self.root_menu_width + 10
             config_window_y = (
                 self.root_menu_y + self.root_menu_height + 40
@@ -230,72 +292,31 @@ class ConfigMenu:
                 config_window_y = self.root_menu_y
 
             self.config_window.geometry(
-                f"{config_window_width}x{config_window_height}+{config_window_x}+{config_window_y}"
+                f"{required_width - 120}x{required_height}+{config_window_x}+{config_window_y}"
             )
 
             self.config_window.deiconify()
 
-            self.empty_label_1 = CTkLabel(self.menu_frame, text=self.slider.get())
-            self.empty_label_00 = CTkLabel(self.menu_frame, text=self.mode_var.get())
-
-            self.label_x_axis.grid(row=0, column=1)
-            self.label_y_axis.grid(row=0, column=2)
-
-            self.alert_button.grid(row=0, column=0)
-
-            # Faction Region 1 Visual
-            self.faction_region_label_1.grid(row=3, column=0, padx=20)
-            self.faction_region_x_first.grid(row=3, column=1)
-            self.faction_region_y_first.grid(row=3, column=2)
-
-            # Faction Region 2 Visual
-            self.faction_region_label_2.grid(row=4, column=0, padx=20)
-            self.faction_region_x_second.grid(row=4, column=1)
-            self.faction_region_y_second.grid(row=4, column=2)
-
-            # Faction Region 2 Visual
-            self.cooldown_timer_label.grid(row=5, column=0, padx=20)
-            self.cooldown_timer.grid(row=5, column=1, padx=20)
-            self.cooldown_timer_text.grid(row=5, column=2)
-
-            # Slider Visual
-            self.empty_label_1.grid(row=6, column=2)
-
-            # Slider Visual
-            self.slider_label.grid(row=6, column=0)
-            self.slider.grid(row=6, column=1)
-
-            # Mode Change
-            self.mode_checkbox.grid(row=7, column=1)
-            self.empty_label_00.grid(row=7, column=2)
-
-            def close_config_window():
-                self.root.buttons.config_button.configure(
-                    fg_color="#1f538d", hover_color="#14375e"
-                )
-                self.root.configmenu.active = False
-                self.root.configmenu.alert_menu = False
-                self.root.config_mode = False
-                self.config_window.withdraw()
-                self.alert_window.withdraw()
-
-            self.config_window.protocol("WM_DELETE_WINDOW", close_config_window)
-
-            # Check if the close button has already been created
-            if not hasattr(self, "close_button"):
-                self.close_button = CTkButton(
-                    self.menu_frame, text="Schließen", command=close_config_window
-                )
-                self.close_button.grid(column=1, pady=10)
+            self.config_window.protocol("WM_DELETE_WINDOW", self.close_windows)
         else:
-            self.root.configmenu.active = False
-            self.root.config_mode = False
-            self.root.buttons.config_button.configure(
-                fg_color="#1f538d", hover_color="#14375e"
-            )
-            self.root.configmenu.alert_menu = False
-            self.config_window.withdraw()
-            self.alert_window.withdraw()
+            self.close_windows()
+
+    def close_alert_window(self):
+        self.alert_button.configure(fg_color="#1f538d", hover_color="#14375e")
+        self.alert_menu = False
+        self.alert_window.withdraw()
+
+    def close_config_window(self):
+        self.root.buttons.config_button.configure(
+            fg_color="#1f538d", hover_color="#14375e"
+        )
+        self.active = False
+        self.root.config_mode = False
+        self.config_window.withdraw()
+
+    def close_windows(self):
+        self.close_alert_window()
+        self.close_config_window()
 
     def update_mode(self):
         selected_mode = self.mode_var.get()
