@@ -124,6 +124,9 @@ class AlertAgent:
         else:
             vision.debug_mode = False
 
+    def get_vision(self):
+        return vision.debug_mode
+
     def set_vision_faction(self):
         if not vision_faction.debug_mode_faction:
             vision_faction.debug_mode_faction = True
