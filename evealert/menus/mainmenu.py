@@ -106,7 +106,7 @@ class AlertButton:
         self.main.configmenu.open_description_window()
 
 
-class AlertMenu(customtkinter.CTk):
+class MainMenu(customtkinter.CTk):
     """Main Menu for the Alert System"""
 
     def __init__(self):
@@ -309,17 +309,17 @@ class AlertMenu(customtkinter.CTk):
 
                 if self.alert_region_mode == 0:
                     print("First Region Set.")
-                    self.configmenu.alarm_entry["x1"][1].delete(0, customtkinter.END)
-                    self.configmenu.alarm_entry["y1"][1].delete(0, customtkinter.END)
-                    self.configmenu.alarm_entry["x1"][1].insert(0, str(y))
-                    self.configmenu.alarm_entry["y1"][1].insert(0, str(x))
+                    self.configmenu.alert_entry["x1"][1].delete(0, customtkinter.END)
+                    self.configmenu.alert_entry["y1"][1].delete(0, customtkinter.END)
+                    self.configmenu.alert_entry["x1"][1].insert(0, str(y))
+                    self.configmenu.alert_entry["y1"][1].insert(0, str(x))
                     self.alert_region_mode = self.alert_region_mode + 1
                 else:
                     print("Second Region Set")
-                    self.configmenu.alarm_entry["x2"][1].delete(0, customtkinter.END)
-                    self.configmenu.alarm_entry["y2"][1].delete(0, customtkinter.END)
-                    self.configmenu.alarm_entry["x2"][1].insert(0, str(y))
-                    self.configmenu.alarm_entry["y2"][1].insert(0, str(x))
+                    self.configmenu.alert_entry["x2"][1].delete(0, customtkinter.END)
+                    self.configmenu.alert_entry["y2"][1].delete(0, customtkinter.END)
+                    self.configmenu.alert_entry["x2"][1].insert(0, str(y))
+                    self.configmenu.alert_entry["y2"][1].insert(0, str(x))
                     self.set_alert_region = False
                     self.alert_region_mode = 0
                     self.save_settings()
