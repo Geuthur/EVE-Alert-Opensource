@@ -232,7 +232,7 @@ repos:
           - --py-version=3.8
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.3
+    rev: 0.28.4
     hooks:
       - id: check-github-actions
         name: Check GitHub Actions
