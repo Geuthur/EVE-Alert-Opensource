@@ -1,6 +1,6 @@
 customtkinter
 mss
-opencv-python==4.9.0
+opencv-python==4.9.0.80
 pillow==10.3.0
 pyaudio==0.2.14
 pyautogui==0.9.54
