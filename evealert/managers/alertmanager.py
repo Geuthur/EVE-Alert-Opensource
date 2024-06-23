@@ -117,13 +117,13 @@ class AlertAgent:
 
     def set_settings(self):
         self.load_settings()
-        
+
     def get_vision(self):
         return vision.debug_mode
 
     def get_vision_faction(self):
         return vision_faction.debug_mode_faction
-    
+
     def set_vision(self):
         if not vision.debug_mode:
             vision.debug_mode = True
