@@ -320,9 +320,9 @@ class ConfigMenu:
 
     def update_mode(self):
         selected_mode = self.mode_var.get()
-        if selected_mode == "color" and self.root.alarm.get_vision() is True:
-            self.root.alarm.set_vision()
-            self.root.alarm.set_vision_faction()
+        if selected_mode == "color" and self.root.alarm.get_vision("Alert") is True:
+            self.root.alarm.set_vision("Alert")
+            self.root.alarm.set_vision("Faction")
         self.root.save_settings()
         self.empty_label_00.configure(text=selected_mode)
 

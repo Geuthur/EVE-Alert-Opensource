@@ -4,6 +4,7 @@ import os
 import random
 import wave
 
+import numpy as np
 import pyaudio
 
 from evealert.managers.settingsmanager import SettingsManager
@@ -123,6 +124,9 @@ class AlertAgent:
     def set_settings(self):
         self.load_settings()
 
+    def get_vision(self, vision_name):
+        return self.vision_settings.get(vision_name, False)
+
     def set_vision(self, vision_name):
         current_value = self.vision_settings.get(vision_name, False)
         self.vision_settings[vision_name] = not current_value
@@ -155,13 +159,14 @@ class AlertAgent:
                 if screenshot is not None:
                     if self.mode == "color":
                         # Check if the target color is in the screenshot
-                        enemy = self.is_color_in_screenshot(
+                        enemy = await self.is_color_in_screenshot(
                             screenshot_data.pixels, self.rgb_group[0], tolerance=10
                         )
                         if enemy:
                             self.enemy = True
                         else:
                             self.enemy = False
+                        await asyncio.sleep(1)  # Add a small delay
                     else:
                         enemy = self.check_vision(
                             self.alarm_vision, screenshot, self.detection, "Alert"
@@ -223,21 +228,18 @@ class AlertAgent:
         if alarm_type in self.timerlock and self.timerlock[alarm_type].locked():
             self.timerlock[alarm_type].release()
 
-    def is_color_in_screenshot(self, pixels, target_color, tolerance):
-        # Check if the target color is in the screenshot pixels with tolerance
-        for pixel_row in pixels:
-            for pixel in pixel_row:
-                # Berechnen Sie die Differenzen für jeden Farbkanal separat
-                channel_diffs = [abs(c1 - c2) for c1, c2 in zip(pixel, target_color)]
+    async def is_color_in_screenshot(self, pixels, target_color, tolerance):
+        # Konvertieren Sie pixels in ein NumPy-Array für effiziente Berechnungen
+        pixels_array = np.array(pixels)
 
-                # Überprüfen Sie, ob alle Differenzen innerhalb der Toleranz liegen
-                if all(
-                    isinstance(diff, (int, float)) and diff <= tolerance
-                    for diff in channel_diffs
-                ):
-                    return True
+        # Berechnen Sie die absolute Differenz zwischen den Pixeln und der Ziel-Farbe
+        diffs = np.abs(pixels_array - target_color)
 
-        return False
+        # Überprüfen Sie, ob die maximale Differenz in jedem Pixel innerhalb der Toleranz liegt
+        matches = np.all(diffs <= tolerance, axis=-1)
+
+        # Überprüfen Sie, ob irgendein Pixel die Bedingung erfüllt
+        return np.any(matches)
 
     async def alarm_detection(self, alarm_text, sound=alarm_sound, alarm_type="Enemy"):
         if self.alarm_counter.get(alarm_type, 0) >= self.alarm_frequency:

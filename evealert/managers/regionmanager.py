@@ -27,15 +27,15 @@ class RegionDisplay:
         return overlay
 
     def create_alert_region(self):
-        config = self.main.settings.open_settings()
+        settings = self.main.settings.load_settings()
         if self.alerttimer:
             return
         try:
-            # Annahme, dass die Einstellungen korrekte Werte für x1, y1, x2 und y2 enthalten
-            x1 = int(config.get("alert_region_1", {}).get("x", 0))
-            y1 = int(config.get("alert_region_1", {}).get("y", 0))
-            x2 = int(config.get("alert_region_2", {}).get("x", 100))
-            y2 = int(config.get("alert_region_2", {}).get("y", 100))
+            self.alert_regions = settings.get("alarm_locations", [])
+            x1 = self.alert_regions[0].get("vision_1", {}).get("x1")
+            y1 = self.alert_regions[0].get("vision_1", {}).get("y1")
+            x2 = self.alert_regions[0].get("vision_1", {}).get("x2")
+            y2 = self.alert_regions[0].get("vision_1", {}).get("y2")
 
             def close_alert_region():
                 alert_overlay.destroy()
