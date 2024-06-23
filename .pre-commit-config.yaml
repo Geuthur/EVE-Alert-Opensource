@@ -156,6 +156,7 @@ repos:
         description: Upgrade syntax to newer versions of Python.
         args:
           - --py38-plus
+        exclude: '^main\.py$'
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.0.0
@@ -170,6 +171,7 @@ repos:
       - id: yesqa
         name: YesQA
         description: Check for extraneous `# noqa` comments.
+        exclude: '^main\.py$'
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
