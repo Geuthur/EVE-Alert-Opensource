@@ -171,6 +171,7 @@ repos:
       - id: yesqa
         name: YesQA
         description: Check for extraneous `# noqa` comments.
+        exclude: '^main\.py$'
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
