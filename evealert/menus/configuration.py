@@ -1,4 +1,5 @@
 import customtkinter
+from PIL import Image, ImageTk
 
 from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
@@ -6,7 +7,6 @@ from evealert.settings.logger import logging
 
 logger = logging.getLogger("alert")
 
-from PIL import Image, ImageTk
 
 class ConfigMenu:
     """Configuration menu for the Alert System."""
@@ -27,8 +27,8 @@ class ConfigMenu:
             self.icon = ImageTk.PhotoImage(img)
             self.main.iconphoto(True, self.icon)
         except Exception as e:
-            logger.exception(f"Error setting icon: {e}")
-            
+            logger.exception("Error setting icon: %s", e)
+
     def load_settings(self):
         """Load the settings from the settings file."""
         self.config_window = customtkinter.CTkToplevel(self.main)
