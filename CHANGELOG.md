@@ -1,3 +1,13 @@
+## \[0.4.2\] - 2024-10-18
+
+### Added
+
+- Window Installation Guide
+
+### Fixed
+
+- Window Installer not working correctly if executed as Admin
+
 ## \[0.4.1b1\] - 2024-05-24
 
 ### Added
