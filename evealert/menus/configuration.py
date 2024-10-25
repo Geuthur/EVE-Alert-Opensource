@@ -15,13 +15,13 @@ class ConfigMenu:
         self.main = main
         self.active = False
         self.config_window_y = None
-        self.set_icon()
+        self.set_icon(ICON)
 
         self.load_settings()
 
-    def set_icon(self):
+    def set_icon(self, icon):
         try:
-            icon_path = get_resource_path(ICON)
+            icon_path = get_resource_path(icon)
             img = Image.open(icon_path)
             self.icon = ImageTk.PhotoImage(img)
             self.main.iconphoto(True, self.icon)

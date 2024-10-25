@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from threading import Thread
 
@@ -160,7 +161,7 @@ class AlertMenu(customtkinter.CTk):
 
     def init_widgets(self):
         # Create the main window
-        self.iconbitmap(default=get_resource_path(ICON))
+        self.set_icon(ICON)
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
         self.log_field = customtkinter.CTkTextbox(self, height=100, width=450)
@@ -200,6 +201,18 @@ class AlertMenu(customtkinter.CTk):
         self.start_button.grid(row=0, column=0, padx=(0, 10))
         self.stop_button.grid(row=0, column=1, padx=(0, 10))
         self.exit_button.grid(row=0, column=2)
+
+    def set_icon(self, icon):
+        try:
+            icon_path = get_resource_path(icon)
+            if icon_path and os.path.exists(icon_path):
+                self.iconbitmap(icon_path)
+            else:
+                logger.warning("Icon file not found: %s", icon_path)
+
+            self.iconbitmap(default=icon_path)
+        except Exception as e:
+            logger.exception("Error setting icon: %s", e)
 
     def init_menu(self):
         """Initializes the Main Menu for the Alert System."""
