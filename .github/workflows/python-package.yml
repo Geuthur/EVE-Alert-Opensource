@@ -58,20 +58,24 @@ jobs:
           - '3.10'
           - '3.11'
           - '3.12'
-        # Set up Python
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: |
-          sudo apt-get install -y portaudio19-dev
+          sudo apt-get install -y portaudio19-dev xvfb
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      # Test with pytest
-      - name: Run main.py
+
+      - name: Run main.py with Xvfb
         run: |
+          sudo Xvfb :99 -screen 0 1024x768x16 &
+          export DISPLAY=:99
           python main.py
