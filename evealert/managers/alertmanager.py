@@ -2,9 +2,9 @@ import asyncio
 import logging
 import os
 import random
-import wave
 
-import pyaudio
+import sounddevice as sd
+import soundfile as sf
 
 from evealert.managers.settingsmanager import SettingsManager
 from evealert.settings.functions import get_resource_path
@@ -63,7 +63,7 @@ class AlertAgent:
         self.alarm_frequency = 3
 
         # PyAudio-Objekt erstellen
-        self.p = pyaudio.PyAudio()
+        self.p = sd
 
         # Color Detection Settings
         # neut 117,117,117
@@ -191,7 +191,7 @@ class AlertAgent:
                         self.faction = False
                 await asyncio.sleep(
                     0.1
-                )  # Warten Sie 3 Sekunden zwischen den Alarmüberprüfungen
+                )  # Add a small delay to prevent overstacking the CPU
 
     # Alarm Cooldown - Run in Background
     async def alarm_timer_check(self, alarm_type):
@@ -248,28 +248,17 @@ class AlertAgent:
             asyncio.ensure_future(self._play_sound(sound))
 
     async def _play_sound(self, sound):
-        chunk = 1024
-        wf = wave.open(sound, "rb")
         try:
-            stream = self.p.open(
-                format=self.p.get_format_from_width(wf.getsampwidth()),
-                channels=wf.getnchannels(),
-                rate=wf.getframerate(),
-                output=True,
-            )
-        except OSError as e:
-            logger.error("Error opening audio stream: %s", e)
+            # Lese die Audiodaten mit soundfile
+            data, samplerate = sf.read(sound, dtype="int16")
+
+            # Spiele die Audiodaten ab
+            sd.play(data, samplerate)
+            sd.wait()
+        except Exception as e:
+            logger.error("Error playing audio: %s", e)
             self.stop()
             self.main.write_message("Something went wrong.", "red")
-            wf.close()
-            return
-
-        data = wf.readframes(chunk)
-        while data:
-            stream.write(data)
-            data = wf.readframes(chunk)
-
-        wf.close()
 
     # Run Alert Agent
     async def run(self):
