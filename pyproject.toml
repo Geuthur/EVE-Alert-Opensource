@@ -37,6 +37,7 @@ dependencies = [
     "pynput==1.7.7",
     "sounddevice==0.5.1",
     "soundfile==0.12.1",
+    "pyinstaller==6.11.0",
 ]
 urls.Changelog = "https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/CHANGELOG.md"
 urls.Documentation = "https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/README.md"
