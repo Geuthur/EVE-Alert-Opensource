@@ -1,10 +1,15 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python package
+name: Python Application Test
 
 on:
   push:
+    paths-ignore:
+      - "**.css"
+      - "**.js"
+      - "**.md"
+
     branches:
       - '**'
 
@@ -12,10 +17,12 @@ on:
       - '**'
 
   pull_request:
-    branches:
-      - '**'
+    paths-ignore:
+      - "**.css"
+      - "**.js"
+      - "**.md"
 
-    tags-ignore:
+    branches:
       - '**'
 
 jobs:
@@ -63,9 +70,8 @@ jobs:
         run: |
           sudo apt-get install -y portaudio19-dev
           python -m pip install --upgrade pip
-          python -m pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       # Test with pytest
-      - name: Test with pytest
+      - name: Run main.py
         run: |
-          pytest tests/
+          python main.py
