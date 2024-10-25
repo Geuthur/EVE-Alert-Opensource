@@ -52,6 +52,9 @@ Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releas
 
 ### Install Python<a name="step2"></a>
 
+> \[!CAUTION\]
+> This Script only works with Python `3.10`, `3.11`, `3.12`
+
 You need Python for <a href="#step3">Step 3</a>
 Here is a Guide to install Python
 
