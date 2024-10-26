@@ -1,0 +1,55 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = [
+    "hatchling",
+]
+
+[project]
+name = "eve-alert-opensource"
+description = "Simple Local Alert System for EvE Online"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Geuthur", email = "devgeuthur@gmail.com" },
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dynamic = [
+    "version",
+]
+dependencies = [
+    "customtkinter==5.2.2",
+    "mss==9.0.2",
+    "numpy==2.1.2",
+    "opencv-python==4.10.0.84",
+    "pillow==11.0.0",
+    "pyautogui==0.9.54",
+    "pynput==1.7.7",
+    "sounddevice==0.5.1",
+    "soundfile==0.12.1",
+    "pyinstaller==6.11.0",
+]
+urls.Changelog = "https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/CHANGELOG.md"
+urls.Documentation = "https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/README.md"
+urls.Donations = "https://ko-fi.com/Geuthur"
+urls.Homepage = "https://github.com/Geuthur/EVE-Alert-Opensource"
+urls.Source = "https://github.com/Geuthur/EVE-Alert-Opensource"
+urls.Tracker = "https://github.com/Geuthur/EVE-Alert-Opensource/issues"
+
+[tool.hatch.build]
+include = [
+    "/evealert",
+]
+
+[tool.hatch.version]
+path = "evealert/__init__.py"

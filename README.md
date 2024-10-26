@@ -52,6 +52,9 @@ Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releas
 
 ### Install Python<a name="step2"></a>
 
+> \[!CAUTION\]
+> This Script only works with Python `3.10`, `3.11`, `3.12`
+
 You need Python for <a href="#step3">Step 3</a>
 Here is a Guide to install Python
 
@@ -104,13 +107,6 @@ If you want more, simply add more images to the "img/" folder with naming image_
 - The Color Mode alert react to all RED Colors
 
 - You Symbols must look like the upove icons to work.
-
-### Detection Modes<a name="detectionmode"></a>
-
-![ingame](https://github.com/Geuthur/EVE-Alert/assets/761682/78e24aec-780a-4d70-95c9-60de480dbb75)
-![no detection](https://github.com/Geuthur/EVE-Alert/assets/761682/aa21ac7d-4413-40be-8c16-43d598600820)
-![ingame2](https://github.com/Geuthur/EVE-Alert/assets/761682/fc097678-bb3f-4198-b186-d753c0bf5c11)
-![detection](https://github.com/Geuthur/EVE-Alert/assets/761682/e1b8bc65-f647-4b32-a8b6-690bdc2d5305)
 
 Ingame / No Detection (Vision Window) / Ingame RED Local / Detection (Vision Window)
 

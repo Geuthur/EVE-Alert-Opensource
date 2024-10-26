@@ -1,3 +1,20 @@
+## \[0.4.3\] - 2024-10-18
+
+### Added
+
+- Dependency Requirment Info
+
+### Changed
+
+- Requirments
+- Moved from PyAudio to sounddevice and soundfile
+- Update Preview Video
+- Update Window Installer
+
+### Fixed
+
+- Icon Bitmap Error on Linux [#9](https://github.com/Geuthur/EVE-Alert-Opensource/issues/9)
+
 ## \[0.4.2\] - 2024-10-18
 
 ### Added
