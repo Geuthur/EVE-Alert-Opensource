@@ -80,6 +80,7 @@ class RegionDisplay:
                 text="System: ❎ Something is wrong.", text_color="red"
             )
 
+    # pylint: disable=too-many-positional-arguments
     def create_screenshot_region(self, x, y, width, height, screenshot_overlay=None):
         """Create a screenshot region overlay."""
         try:
