@@ -70,7 +70,9 @@ class Vision:
                     center_y = y + int(h / 2)
                     # Save the points
                     points.append((center_x, center_y))
-                    if self.debug_mode:
+                    if self.debug_mode or self.debug_mode_faction:
+                        # Ensure the image is writable
+                        haystack_img = haystack_img.copy()
                         # Determine the box position
                         top_left = (x, y)
                         bottom_right = (x + w, y + h)
@@ -85,20 +87,7 @@ class Vision:
                                 thickness=2,
                             )
                         except Exception as e:
-                            logger.error("Reactangle Error: %s", e)
-                    if self.debug_mode_faction:
-                        # Determine the box position
-                        top_left = (x, y)
-                        bottom_right = (x + w, y + h)
-                        # Draw the box
-                        cv.rectangle(
-                            haystack_img,
-                            top_left,
-                            bottom_right,
-                            color=color,
-                            lineType=cv.LINE_4,
-                            thickness=2,
-                        )
+                            logger.error("Rectangle Error: %s", e)
 
             all_points.extend(points)
 
