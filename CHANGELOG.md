@@ -1,3 +1,14 @@
+## \[0.4.4\] - 2024-11-23
+
+### Changed
+
+- print to logger in regionmanager
+- Alarm Sound
+
+### Fixed
+
+- Faction Region can't be open if a error occurs [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
+
 ## \[0.4.3\] - 2024-10-18
 
 ### Added
