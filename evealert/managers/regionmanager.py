@@ -1,6 +1,9 @@
+import logging
 import tkinter as tk
 
 import customtkinter
+
+logger = logging.getLogger("alert")
 
 
 class RegionDisplay:
@@ -48,7 +51,7 @@ class RegionDisplay:
             alert_overlay = self.create_overlay(x1, y1, width, height)
             self.main.after(5000, close_alert_region)
         except Exception as e:
-            print(e)
+            logger.error(e)
             self.main.log_field.configure(
                 text="System: ❎ Something is wrong.", text_color="red"
             )
@@ -75,7 +78,7 @@ class RegionDisplay:
             alert_overlay = self.create_overlay(x1, y1, width, height)
             self.main.after(5000, close_alert_region)
         except Exception as e:
-            print(e)
+            logger.error(e)
             self.main.log_field.configure(
                 text="System: ❎ Something is wrong.", text_color="red"
             )
