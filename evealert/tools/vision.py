@@ -4,6 +4,8 @@ from datetime import datetime
 import cv2 as cv
 import numpy as np
 
+from evealert.exceptions import RegionSizeError, WrongImageType
+
 logger = logging.getLogger("alert")
 now = datetime.now()
 
@@ -40,26 +42,19 @@ class Vision:
         for needle_img, needle_dim in zip(self.needle_imgs, self.needle_dims):
             # Ensure both images have the same type and depth
             if haystack_img.dtype != needle_img.dtype:
-                print(
-                    "Detection Error: The Region Image doesn't match the formats please use png."
-                )
-                logger.error(
-                    "Detection Error: The Region Image doesn't match the formats please use png."
-                )
                 needle_img = needle_img.astype(haystack_img.dtype)
+                raise WrongImageType(
+                    "Detection Error: The Region Image doesn't match the formats please use png."
+                )
 
             # Check if the haystack image is larger than the needle image
             if (
                 haystack_img.shape[0] < needle_img.shape[0]
                 or haystack_img.shape[1] < needle_img.shape[1]
             ):
-                print(
+                raise RegionSizeError(
                     "Detection Error: Region is smaller than Detection Region please make a larger Area."
                 )
-                logger.error(
-                    "Detection Error: Region is smaller than Detection Region please make a larger Area."
-                )
-                return "Error"
 
             # Run the OpenCV algorithm
             try:
@@ -67,7 +62,7 @@ class Vision:
             except Exception as e:
                 logger.error("Alert Region Error: %s", e)
                 print("Something went wrong please set the Alert Region new")
-                return "Error"
+                return None
 
             # Get the positions from the match result that exceed our threshold
             locations = np.where(result >= threshold)
