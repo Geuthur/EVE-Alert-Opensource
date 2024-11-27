@@ -305,7 +305,6 @@ class AlertMenu(customtkinter.CTk):
         if monitor:
             self.overlay = customtkinter.CTkToplevel(self)
             self.overlay.attributes("-alpha", 0.3)
-            self.overlay.attributes("-fullscreen", True)
             self.overlay.attributes("-topmost", True)
             self.overlay.configure(bg="black")
             self.overlay.geometry(
@@ -339,6 +338,14 @@ class AlertMenu(customtkinter.CTk):
                     self.set_faction_region = True
                     self.write_message("Faction Mode: Activated.")
                     self.after(0, self.start_overlay)
+            elif key == keyboard.Key.esc:
+                if self.set_alert_region or self.set_faction_region:
+                    self.set_alert_region = False
+                    self.set_faction_region = False
+                    self.write_message("Operation Aborted.")
+                    if hasattr(self, "overlay") and self.overlay:
+                        self.overlay.destroy()
+                        self.overlay = None
 
     # Menu Button Section
     def exit_button_clicked(self):
@@ -413,6 +420,14 @@ class OverlayApp:
             self.start_x, self.end_x = self.end_x, self.start_x
         if self.end_y < self.start_y:
             self.start_y, self.end_y = self.end_y, self.start_y
+
+        # Get the current monitor where the mouse is
+        monitor = self.root.get_current_monitor()
+        if monitor:
+            self.start_x += monitor.x
+            self.start_y += monitor.y
+            self.end_x += monitor.x
+            self.end_y += monitor.y
 
         if self.root.set_alert_region:
             self.set_alert_region()
