@@ -54,10 +54,6 @@ class DescriptionMenu:
             description_text += (
                 "If activated Press MIDDLE Mouse Button to set positions.\n"
             )
-            description_text += "Screenshot Mode: Press F3 to activate.\n"
-            description_text += (
-                "If activated Press MIDDLE Mouse Button to set positions.\n"
-            )
             description_text += "\nImportant: You must begin \nfrom the left upper corner to the right lower corner.\n"
 
             # Verwende ein eigenes Frame für das Menü
