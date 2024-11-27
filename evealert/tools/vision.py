@@ -38,6 +38,29 @@ class Vision:
         all_points = []
         color = (0, 255, 0)
         for needle_img, needle_dim in zip(self.needle_imgs, self.needle_dims):
+            # Ensure both images have the same type and depth
+            if haystack_img.dtype != needle_img.dtype:
+                print(
+                    "Detection Error: The Region Image doesn't match the formats please use png."
+                )
+                logger.error(
+                    "Detection Error: The Region Image doesn't match the formats please use png."
+                )
+                needle_img = needle_img.astype(haystack_img.dtype)
+
+            # Check if the haystack image is larger than the needle image
+            if (
+                haystack_img.shape[0] < needle_img.shape[0]
+                or haystack_img.shape[1] < needle_img.shape[1]
+            ):
+                print(
+                    "Detection Error: Region is smaller than Detection Region please make a larger Area."
+                )
+                logger.error(
+                    "Detection Error: Region is smaller than Detection Region please make a larger Area."
+                )
+                return "Error"
+
             # Run the OpenCV algorithm
             try:
                 result = cv.matchTemplate(haystack_img, needle_img, self.method)
