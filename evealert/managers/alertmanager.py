@@ -3,6 +3,7 @@ import logging
 import os
 import random
 
+import cv2 as cv
 import sounddevice as sd
 import soundfile as sf
 
@@ -177,14 +178,23 @@ class AlertAgent:
 
     async def vision_faction_thread(self):
         async with self.factionlock:
+            self.faction_state = True
             while True:
                 screenshot_faction, _ = wincap.get_screenshot_value(
                     self.y1_faction, self.x1_faction, self.x2_faction, self.y2_faction
                 )
                 if screenshot_faction is not None:
-                    faction = vision_faction.find(screenshot_faction, 0.7)
-                    if faction == "Error":
-                        break
+                    try:
+                        faction = vision_faction.find(screenshot_faction, 0.7)
+                    except Exception as e:
+                        faction = None
+                        logger.error(e)
+                        self.main.write_message(e, "red")
+                        if vision_faction.faction:
+                            cv.destroyWindow("Faction Vision")
+                            vision_faction.faction = False
+                        await asyncio.sleep(10)
+
                     if faction:
                         self.faction = True
                     else:
