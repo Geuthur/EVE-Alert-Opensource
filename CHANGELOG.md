@@ -2,21 +2,19 @@
 
 ### Changed
 
-- print to logger in regionmanager
-- Alarm Sound
-- Region Set is now directly with F1 and F2 for Faction and now show a Visual Box
-- Enemy & Faction Vision now work separately
+- Settings for Regions now have a visual interface
+- Enemy & Faction now work seperately
 
 ### Fixed
 
 - Faction Region can't be open if a error occurs [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
-- Multiple Monitors should now work correctly
-- Program Crash if detection is Zero or Below
-- Images with Alpha Channel not work
+- In some Cases Multiple Monitors not work [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15) (Testing)
+- Vision System not work if Detection Scale is Zero or below
+- Images with Alpha Channel triggers Error [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
 
 ### Added
 
-- Abort Settings mode with `ESC`
+- Abort Option on Settings with `ESC`
 - Faction Detection Scale
 
 ## \[0.4.4\] - 2024-11-23
