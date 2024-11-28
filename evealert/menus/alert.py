@@ -258,11 +258,12 @@ class AlertMenu(customtkinter.CTk):
                 "faction_region_x_second": self.configmenu.faction_region_x_second.get(),
                 "faction_region_y_second": self.configmenu.faction_region_y_second.get(),
                 "detectionscale": self.configmenu.detectionscale.get(),
+                "faction_scale": self.configmenu.faction_scale.get(),
                 "mode_var": self.configmenu.mode_var.get(),
                 "cooldown_timer": self.configmenu.cooldown_timer.get(),
             }
         )
-        self.alarm.set_settings()
+        self.alarm.load_settings()
 
     def is_configmode(self):
         """Returns the current config mode."""

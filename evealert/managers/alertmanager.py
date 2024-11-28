@@ -73,20 +73,24 @@ class AlertAgent:
         self.green_blue_tolerance = 4
         self.rgb_group = [(128, 12, 12)]
 
+        self.load_settings()
+
     def load_settings(self):
-        settings = self.settings.load_settings()
+        settings = self.settings.open_settings()
+
         if settings:
-            self.x1 = settings["x1"]
-            self.y1 = settings["y1"]
-            self.x2 = settings["x2"]
-            self.y2 = settings["y2"]
-            self.x1_faction = settings["x1_faction"]
-            self.y1_faction = settings["y1_faction"]
-            self.x2_faction = settings["x2_faction"]
-            self.y2_faction = settings["y2_faction"]
-            self.detection = settings["detection"]
-            self.mode = settings["mode"]
-            self.cooldowntimer = settings["cooldowntimer"]
+            self.x1 = int(settings["alert_region_1"]["x"])
+            self.y1 = int(settings["alert_region_1"]["y"])
+            self.x2 = int(settings["alert_region_2"]["x"])
+            self.y2 = int(settings["alert_region_2"]["y"])
+            self.x1_faction = int(settings["faction_region_1"]["x"])
+            self.y1_faction = int(settings["faction_region_1"]["y"])
+            self.x2_faction = int(settings["faction_region_2"]["x"])
+            self.y2_faction = int(settings["faction_region_2"]["y"])
+            self.detection = int(settings["detectionscale"]["value"])
+            self.detection_faction = int(settings["faction_scale"]["value"])
+            self.mode = settings["detection_mode"]["value"]
+            self.cooldowntimer = int(settings["cooldown_timer"]["value"])
 
     def start(self):
         self.loop.run_until_complete(self.vision_check())
@@ -115,9 +119,6 @@ class AlertAgent:
 
     def is_running(self):
         return self.running
-
-    def set_settings(self):
-        self.load_settings()
 
     def get_vision(self):
         return vision.debug_mode
@@ -185,7 +186,9 @@ class AlertAgent:
                 )
                 if screenshot_faction is not None:
                     try:
-                        faction = vision_faction.find(screenshot_faction, 0.7)
+                        faction = vision_faction.find_faction(
+                            screenshot_faction, self.detection_faction
+                        )
                     except Exception as e:
                         faction = None
                         logger.error(e)

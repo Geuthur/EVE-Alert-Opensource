@@ -95,7 +95,26 @@ class ConfigMenu:
         )
         self.mode_var = customtkinter.StringVar(value="color")
 
-        # Row 7
+        # Row 7 - Init
+        # Slider
+        self.faction_slider_label = customtkinter.CTkLabel(
+            self.menu_frame, text="Faction Detection Threshold"
+        )
+        self.faction_scale = customtkinter.DoubleVar()
+        self.faction_scale.set(70)  # Setzen Sie den Standardwert auf 70
+        self.slider2 = customtkinter.CTkSlider(
+            self.menu_frame,
+            from_=0,
+            to=100,
+            orientation="horizontal",
+            number_of_steps=100,
+            variable=self.faction_scale,
+            command=self.factionslider_event,
+        )
+
+        self.mode_var = customtkinter.StringVar(value="color")
+
+        # Row 8
         # Config / Detection Mode- Init
         self.mode_checkbox = customtkinter.CTkCheckBox(
             self.menu_frame,
@@ -116,7 +135,9 @@ class ConfigMenu:
 
         if self.main.settings:
             self.settingsvalue = self.main.settings.open_settings()
+
             self.logging.insert(0, self.settingsvalue["logging"])
+
             self.alert_region_x_first.insert(
                 0, self.settingsvalue["alert_region_1"]["x"]
             )
@@ -129,6 +150,7 @@ class ConfigMenu:
             self.alert_region_y_second.insert(
                 0, self.settingsvalue["alert_region_2"]["y"]
             )
+
             self.faction_region_x_first.insert(
                 0, self.settingsvalue["faction_region_1"]["x"]
             )
@@ -141,7 +163,10 @@ class ConfigMenu:
             self.faction_region_y_second.insert(
                 0, self.settingsvalue["faction_region_2"]["y"]
             )
+
             self.detectionscale.set(self.settingsvalue["detectionscale"]["value"])
+            self.faction_scale.set(self.settingsvalue["faction_scale"]["value"])
+
             self.mode_var.set(self.settingsvalue["detection_mode"]["value"])
             self.cooldown_timer.insert(0, self.settingsvalue["cooldown_timer"]["value"])
 
@@ -165,7 +190,7 @@ class ConfigMenu:
             )
 
             config_window_width = 650
-            config_window_height = 320
+            config_window_height = 340
             config_window_x = config_menu_x + config_menu_width + 10
             config_window_y = (
                 config_menu_y + config_menu_height + 40
@@ -184,6 +209,11 @@ class ConfigMenu:
             self.empty_label_1 = customtkinter.CTkLabel(
                 self.menu_frame, text=self.slider.get()
             )
+
+            self.empty_label_2 = customtkinter.CTkLabel(
+                self.menu_frame, text=self.slider2.get()
+            )
+
             self.empty_label_00 = customtkinter.CTkLabel(
                 self.menu_frame, text=self.mode_var.get()
             )
@@ -223,9 +253,16 @@ class ConfigMenu:
             self.slider_label.grid(row=6, column=0)
             self.slider.grid(row=6, column=1)
 
+            # Slider Visual
+            self.empty_label_2.grid(row=7, column=2)
+
+            # Slider Visual
+            self.faction_slider_label.grid(row=7, column=0)
+            self.slider2.grid(row=7, column=1)
+
             # Mode Change
-            self.mode_checkbox.grid(row=7, column=1)
-            self.empty_label_00.grid(row=7, column=2)
+            self.mode_checkbox.grid(row=8, column=1)
+            self.empty_label_00.grid(row=8, column=2)
 
             def close_config_window():
                 self.main.buttons.config_button.configure(
@@ -258,3 +295,6 @@ class ConfigMenu:
 
     def slider_event(self, slider_value):
         self.empty_label_1.configure(text=slider_value)
+
+    def factionslider_event(self, slider_value):
+        self.empty_label_2.configure(text=slider_value)
