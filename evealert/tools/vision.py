@@ -46,6 +46,12 @@ class Vision:
 
             logger.debug("Detecting %s %s", vision_mode, idx)
 
+            # Remove alpha channel if present (convert BGRA to BGR)
+            if needle_img.shape[-1] == 4:
+                needle_img = cv.cvtColor(needle_img, cv.COLOR_BGRA2BGR)
+
+            logger.debug("%s: %s %s", vision_mode, needle_img, needle_dim)
+
             # Convert images to same type if necessary
             if haystack_img.dtype != needle_img.dtype:
                 needle_img = needle_img.astype(haystack_img.dtype)
@@ -129,13 +135,15 @@ class Vision:
                             logger.error("Rectangle Error: %s", e)
 
             all_points.extend(points)
-        return all_points
+        return all_points, haystack_img
 
     def find(self, haystack_img, threshold=0.5):
-        all_points = self.vision_process(haystack_img, threshold, "Enemy")
+        all_points, detection_image = self.vision_process(
+            haystack_img, threshold, "Enemy"
+        )
 
         if self.debug_mode:
-            cv.imshow("Enemy Vision", haystack_img)
+            cv.imshow("Enemy Vision", detection_image)
             self.enemy = True
             cv.waitKey(1)
         else:
@@ -145,10 +153,12 @@ class Vision:
         return all_points
 
     def find_faction(self, haystack_img, threshold=0.5):
-        all_points = self.vision_process(haystack_img, threshold, "Faction")
+        all_points, detection_image = self.vision_process(
+            haystack_img, threshold, "Faction"
+        )
 
         if self.debug_mode_faction:
-            cv.imshow("Faction Vision", haystack_img)
+            cv.imshow("Faction Vision", detection_image)
             self.faction = True
             cv.waitKey(1)
         else:
