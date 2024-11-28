@@ -4,7 +4,7 @@ from datetime import datetime
 import cv2 as cv
 import numpy as np
 
-from evealert.exceptions import RegionSizeError, WrongImageType
+from evealert.exceptions import RegionSizeError, ScreenshotError
 
 logger = logging.getLogger("alert")
 now = datetime.now()
@@ -36,16 +36,29 @@ class Vision:
         self.enemy = None
         self.faction = None
 
-    def find(self, haystack_img, threshold=0.5):
+    def vision_process(self, haystack_img, threshold=0.5, vision_mode="Enemy"):
         all_points = []
         color = (0, 255, 0)
-        for needle_img, needle_dim in zip(self.needle_imgs, self.needle_dims):
-            # Ensure both images have the same type and depth
+
+        for idx, (needle_img, needle_dim) in enumerate(
+            zip(self.needle_imgs, self.needle_dims)
+        ):
+
+            logger.debug("Detecting %s %s", vision_mode, idx)
+
+            # Convert images to same type if necessary
             if haystack_img.dtype != needle_img.dtype:
                 needle_img = needle_img.astype(haystack_img.dtype)
-                raise WrongImageType(
-                    "Detection Error: The Region Image doesn't match the formats please use png."
-                )
+
+            # Ensure both images are in BGR format
+            if len(haystack_img.shape) == 2:
+                haystack_img = cv.cvtColor(haystack_img, cv.COLOR_GRAY2BGR)
+            if len(needle_img.shape) == 2:
+                needle_img = cv.cvtColor(needle_img, cv.COLOR_GRAY2BGR)
+
+            # Normalize images to improve matching
+            haystack_img_norm = cv.normalize(haystack_img, None, 0, 255, cv.NORM_MINMAX)
+            needle_img_norm = cv.normalize(needle_img, None, 0, 255, cv.NORM_MINMAX)
 
             # Check if the haystack image is larger than the needle image
             if (
@@ -53,19 +66,27 @@ class Vision:
                 or haystack_img.shape[1] < needle_img.shape[1]
             ):
                 raise RegionSizeError(
-                    "Detection Error: Region is smaller than Detection Region please make a larger Area."
+                    f"Detection {vision_mode} Error: Region is smaller than Detection Region please make a larger Area."
                 )
 
-            # Run the OpenCV algorithm
+            # Run the OpenCV algorithm with normalized images
             try:
-                result = cv.matchTemplate(haystack_img, needle_img, self.method)
+                result = cv.matchTemplate(
+                    haystack_img_norm, needle_img_norm, self.method
+                )
+                detection_treshhold = max(
+                    min(threshold / 100, 1.0), 0.1
+                )  # Ensures value between 0.1 and 1.0
+
             except Exception as e:
-                logger.error("Alert Region Error: %s", e)
-                print("Something went wrong please set the Alert Region new")
-                return None
+                logger.error("Detection %s Error: %s", vision_mode, e)
+                # pylint: disable=raise-missing-from
+                raise ScreenshotError(
+                    f"Detection {vision_mode} Error: Something went wrong"
+                )
 
             # Get the positions from the match result that exceed our threshold
-            locations = np.where(result >= threshold)
+            locations = np.where(result >= detection_treshhold)
             locations = list(zip(*locations[::-1]))
 
             # You'll notice a lot of overlapping rectangles get drawn.
@@ -108,6 +129,10 @@ class Vision:
                             logger.error("Rectangle Error: %s", e)
 
             all_points.extend(points)
+        return all_points
+
+    def find(self, haystack_img, threshold=0.5):
+        all_points = self.vision_process(haystack_img, threshold, "Enemy")
 
         if self.debug_mode:
             cv.imshow("Enemy Vision", haystack_img)
@@ -117,6 +142,10 @@ class Vision:
             if self.enemy:
                 cv.destroyWindow("Enemy Vision")
                 self.enemy = None
+        return all_points
+
+    def find_faction(self, haystack_img, threshold=0.5):
+        all_points = self.vision_process(haystack_img, threshold, "Faction")
 
         if self.debug_mode_faction:
             cv.imshow("Faction Vision", haystack_img)
