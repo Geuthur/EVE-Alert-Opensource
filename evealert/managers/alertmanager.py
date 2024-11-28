@@ -127,16 +127,10 @@ class AlertAgent:
         return vision_faction.debug_mode_faction
 
     def set_vision(self):
-        if not vision.debug_mode:
-            vision.debug_mode = True
-        else:
-            vision.debug_mode = False
+        vision.debug_mode = not vision.debug_mode
 
     def set_vision_faction(self):
-        if not vision_faction.debug_mode_faction:
-            vision_faction.debug_mode_faction = True
-        else:
-            vision_faction.debug_mode_faction = False
+        vision_faction.debug_mode_faction = not vision_faction.debug_mode_faction
 
     async def vision_check(self):
         self.load_settings()
@@ -267,7 +261,6 @@ class AlertAgent:
 
             # Spiele die Audiodaten ab
             sd.play(data, samplerate)
-            sd.wait()
         except Exception as e:
             logger.error("Error playing audio: %s", e)
             self.stop()
