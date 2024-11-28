@@ -12,6 +12,7 @@
 - Faction Region can't be open if a error occurs [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
 - Multiple Monitors should now work correctly
 - Program Crash if detection is Zero or Below
+- Images with Alpha Channel not work
 
 ### Added
 
