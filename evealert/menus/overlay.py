@@ -94,30 +94,30 @@ class OverlaySystem:
             self.set_faction_region()
 
     def set_alert_region(self):
-        self.root.configmenu.alert_region_x_first.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_y_first.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_x_first.insert(0, str(self.start_x))
-        self.root.configmenu.alert_region_y_first.insert(0, str(self.start_y))
+        self.root.settingsmenu.alert_region_x_first.delete(0, customtkinter.END)
+        self.root.settingsmenu.alert_region_y_first.delete(0, customtkinter.END)
+        self.root.settingsmenu.alert_region_x_first.insert(0, str(self.start_x))
+        self.root.settingsmenu.alert_region_y_first.insert(0, str(self.start_y))
 
-        self.root.configmenu.alert_region_x_second.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_y_second.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_x_second.insert(0, str(self.end_x))
-        self.root.configmenu.alert_region_y_second.insert(0, str(self.end_y))
+        self.root.settingsmenu.alert_region_x_second.delete(0, customtkinter.END)
+        self.root.settingsmenu.alert_region_y_second.delete(0, customtkinter.END)
+        self.root.settingsmenu.alert_region_x_second.insert(0, str(self.end_x))
+        self.root.settingsmenu.alert_region_y_second.insert(0, str(self.end_y))
         self.root.save_settings()
         self.root.set_alert_region = False
         self.cleanup()
         self.root.write_message("Settings: Enemy Deactivated.")
 
     def set_faction_region(self):
-        self.root.configmenu.faction_region_x_first.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_y_first.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_x_first.insert(0, str(self.start_x))
-        self.root.configmenu.faction_region_y_first.insert(0, str(self.start_y))
+        self.root.settingsmenu.faction_region_x_first.delete(0, customtkinter.END)
+        self.root.settingsmenu.faction_region_y_first.delete(0, customtkinter.END)
+        self.root.settingsmenu.faction_region_x_first.insert(0, str(self.start_x))
+        self.root.settingsmenu.faction_region_y_first.insert(0, str(self.start_y))
 
-        self.root.configmenu.faction_region_x_second.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_y_second.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_x_second.insert(0, str(self.end_x))
-        self.root.configmenu.faction_region_y_second.insert(0, str(self.end_y))
+        self.root.settingsmenu.faction_region_x_second.delete(0, customtkinter.END)
+        self.root.settingsmenu.faction_region_y_second.delete(0, customtkinter.END)
+        self.root.settingsmenu.faction_region_x_second.insert(0, str(self.end_x))
+        self.root.settingsmenu.faction_region_y_second.insert(0, str(self.end_y))
         self.root.save_settings()
         self.root.set_faction_region = False
         self.cleanup()

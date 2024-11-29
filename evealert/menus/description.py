@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING
+
 import customtkinter
+
+if TYPE_CHECKING:
+    from .alert import AlertMenu
 
 
 class DescriptionMenu:
     """Description Menu for the configuration mode."""
 
-    def __init__(self, main: customtkinter.CTk):
+    def __init__(self, main: "AlertMenu"):
         self.main = main
         self.active = False
 
@@ -39,7 +44,7 @@ class DescriptionMenu:
                 if self.main.config_mode
                 else main_menu_y
             )
-            if not self.main.configmenu.active:
+            if not self.main.settingsmenu.active:
                 description_window_y = main_menu_y
 
             self.description_window.geometry(

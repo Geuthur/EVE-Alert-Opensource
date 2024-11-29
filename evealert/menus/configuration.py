@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger("alert")
 
 
-class ConfigMenu:
+class SettingsMenu:
     """Configuration menu for the Alert System."""
 
     def __init__(self, main: "AlertMenu"):
@@ -22,7 +22,7 @@ class ConfigMenu:
         self.config_window_y = None
         self.set_icon(ICON)
 
-        self.load_settings()
+        self.create_menu()
 
     def set_icon(self, icon):
         try:
@@ -33,7 +33,21 @@ class ConfigMenu:
         except Exception as e:
             logger.exception("Error setting icon: %s", e)
 
-    def load_settings(self):
+    def cleanup(self):
+        self.main.buttons.config_button.configure(
+            fg_color="#1f538d", hover_color="#14375e"
+        )
+        self.config_window.destroy()
+        self.active = False
+
+    def close_menu(self):
+        self.main.buttons.config_button.configure(
+            fg_color="#1f538d", hover_color="#14375e"
+        )
+        self.config_window.withdraw()
+        self.active = False
+
+    def create_menu(self):
         """Load the settings from the settings file."""
         self.config_window = customtkinter.CTkToplevel(self.main)
         self.config_window.title("Settings")
@@ -124,6 +138,10 @@ class ConfigMenu:
             self.menu_frame, text="Seconds", justify="left"
         )
 
+        self.close_button = customtkinter.CTkButton(
+            self.menu_frame, text="Close", command=self.close_menu
+        )
+
         if self.main.settings:
             self.settingsvalue = self.main.settings.open_settings()
 
@@ -160,11 +178,11 @@ class ConfigMenu:
 
             self.cooldown_timer.insert(0, self.settingsvalue["cooldown_timer"]["value"])
 
-    def open_description_window(self):
-        """Opoens the description window for the configuration mode."""
+    def open_menu(self):
+        """Opens the settings window."""
         if not self.active:
             self.active = True
-            self.main.config_mode = True
+            # self.main.config_mode = True
             self.main.buttons.config_button.configure(
                 fg_color="#fa0202", hover_color="#bd291e"
             )
@@ -246,22 +264,12 @@ class ConfigMenu:
             self.faction_slider_label.grid(row=7, column=0)
             self.slider2.grid(row=7, column=1)
 
-            def close_config_window():
-                self.main.buttons.config_button.configure(
-                    fg_color="#1f538d", hover_color="#14375e"
-                )
-                self.main.config_mode = False
-                self.config_window.withdraw()
-
-            self.config_window.protocol("WM_DELETE_WINDOW", close_config_window)
-
-            self.close_button = customtkinter.CTkButton(
-                self.menu_frame, text="Schließen", command=close_config_window
-            )
+            # Close Button
             self.close_button.grid(column=1, pady=10)
+
+            self.config_window.protocol("WM_DELETE_WINDOW", self.close_menu)
         else:
             self.active = False
-            self.main.config_mode = False
             self.main.buttons.config_button.configure(
                 fg_color="#1f538d", hover_color="#14375e"
             )

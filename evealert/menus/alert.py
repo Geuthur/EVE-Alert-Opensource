@@ -12,7 +12,7 @@ from evealert import __version__
 from evealert.managers.alertmanager import AlertAgent
 from evealert.managers.regionmanager import RegionDisplay
 from evealert.managers.settingsmanager import SettingsManager
-from evealert.menus.configuration import ConfigMenu
+from evealert.menus.configuration import SettingsMenu
 from evealert.menus.description import DescriptionMenu
 from evealert.menus.overlay import OverlaySystem
 from evealert.settings.constants import ICON
@@ -53,7 +53,7 @@ class AlertButton:
         self.config_button = customtkinter.CTkButton(
             self.settings_label_frame,
             text="Settings",
-            command=self.config_mode_toggle,
+            command=self.settings_mode_toggle,
         )
         self.save_button.grid(row=0, column=0, padx=(0, 10))
         self.description_button.grid(row=0, column=1, padx=(0, 10))
@@ -91,8 +91,8 @@ class AlertButton:
     def description_mode_toggle(self):
         self.main.descmenu.open_description_window()
 
-    def config_mode_toggle(self):
-        self.main.configmenu.open_description_window()
+    def settings_mode_toggle(self):
+        self.main.settingsmenu.open_menu()
 
 
 class AlertMenu(customtkinter.CTk):
@@ -104,7 +104,7 @@ class AlertMenu(customtkinter.CTk):
         self.alarm = AlertAgent(self)
 
         self.settings = SettingsManager()
-        self.configmenu = ConfigMenu(self)
+        self.settingsmenu = SettingsMenu(self)
         self.descmenu = DescriptionMenu(self)
         self.display = RegionDisplay(self)
         self.buttons = AlertButton(self)
@@ -237,11 +237,11 @@ class AlertMenu(customtkinter.CTk):
     def save_settings(self):
         """Save the settings to the settings.json file."""
         if not (
-            self.configmenu.alert_region_x_first.get()
-            and self.configmenu.alert_region_y_first.get()
+            self.settingsmenu.alert_region_x_first.get()
+            and self.settingsmenu.alert_region_y_first.get()
         ) or not (
-            self.configmenu.alert_region_x_second.get()
-            and self.configmenu.alert_region_y_second.get()
+            self.settingsmenu.alert_region_x_second.get()
+            and self.settingsmenu.alert_region_y_second.get()
         ):
             self.write_message(
                 "Empty Fields. Minimum is Alert Region.",
@@ -250,18 +250,18 @@ class AlertMenu(customtkinter.CTk):
             return
         self.settings.save_settings(
             {
-                "logging": self.configmenu.logging.get(),
-                "alert_region_x_first": self.configmenu.alert_region_x_first.get(),
-                "alert_region_y_first": self.configmenu.alert_region_y_first.get(),
-                "alert_region_x_second": self.configmenu.alert_region_x_second.get(),
-                "alert_region_y_second": self.configmenu.alert_region_y_second.get(),
-                "faction_region_x_first": self.configmenu.faction_region_x_first.get(),
-                "faction_region_y_first": self.configmenu.faction_region_y_first.get(),
-                "faction_region_x_second": self.configmenu.faction_region_x_second.get(),
-                "faction_region_y_second": self.configmenu.faction_region_y_second.get(),
-                "detectionscale": self.configmenu.detectionscale.get(),
-                "faction_scale": self.configmenu.faction_scale.get(),
-                "cooldown_timer": self.configmenu.cooldown_timer.get(),
+                "logging": self.settingsmenu.logging.get(),
+                "alert_region_x_first": self.settingsmenu.alert_region_x_first.get(),
+                "alert_region_y_first": self.settingsmenu.alert_region_y_first.get(),
+                "alert_region_x_second": self.settingsmenu.alert_region_x_second.get(),
+                "alert_region_y_second": self.settingsmenu.alert_region_y_second.get(),
+                "faction_region_x_first": self.settingsmenu.faction_region_x_first.get(),
+                "faction_region_y_first": self.settingsmenu.faction_region_y_first.get(),
+                "faction_region_x_second": self.settingsmenu.faction_region_x_second.get(),
+                "faction_region_y_second": self.settingsmenu.faction_region_y_second.get(),
+                "detectionscale": self.settingsmenu.detectionscale.get(),
+                "faction_scale": self.settingsmenu.faction_scale.get(),
+                "cooldown_timer": self.settingsmenu.cooldown_timer.get(),
             }
         )
         self.alarm.load_settings()
