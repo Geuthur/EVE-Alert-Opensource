@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import customtkinter
 from PIL import Image, ImageTk
 
@@ -5,13 +7,16 @@ from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
 
+if TYPE_CHECKING:
+    from .alert import AlertMenu
+
 logger = logging.getLogger("alert")
 
 
 class ConfigMenu:
     """Configuration menu for the Alert System."""
 
-    def __init__(self, main: customtkinter.CTk):
+    def __init__(self, main: "AlertMenu"):
         self.main = main
         self.active = False
         self.config_window_y = None
@@ -93,7 +98,6 @@ class ConfigMenu:
             variable=self.detectionscale,
             command=self.slider_event,
         )
-        self.mode_var = customtkinter.StringVar(value="color")
 
         # Row 7 - Init
         # Slider
@@ -110,19 +114,6 @@ class ConfigMenu:
             number_of_steps=100,
             variable=self.faction_scale,
             command=self.factionslider_event,
-        )
-
-        self.mode_var = customtkinter.StringVar(value="color")
-
-        # Row 8
-        # Config / Detection Mode- Init
-        self.mode_checkbox = customtkinter.CTkCheckBox(
-            self.menu_frame,
-            text="Detection Mode",
-            variable=self.mode_var,
-            onvalue="color",
-            offvalue="picture",
-            command=self.update_mode,
         )
 
         self.cooldown_timer_label = customtkinter.CTkLabel(
@@ -167,7 +158,6 @@ class ConfigMenu:
             self.detectionscale.set(self.settingsvalue["detectionscale"]["value"])
             self.faction_scale.set(self.settingsvalue["faction_scale"]["value"])
 
-            self.mode_var.set(self.settingsvalue["detection_mode"]["value"])
             self.cooldown_timer.insert(0, self.settingsvalue["cooldown_timer"]["value"])
 
     def open_description_window(self):
@@ -214,10 +204,6 @@ class ConfigMenu:
                 self.menu_frame, text=self.slider2.get()
             )
 
-            self.empty_label_00 = customtkinter.CTkLabel(
-                self.menu_frame, text=self.mode_var.get()
-            )
-
             self.label_x_axis.grid(row=0, column=1)
             self.label_y_axis.grid(row=0, column=2)
 
@@ -260,10 +246,6 @@ class ConfigMenu:
             self.faction_slider_label.grid(row=7, column=0)
             self.slider2.grid(row=7, column=1)
 
-            # Mode Change
-            self.mode_checkbox.grid(row=8, column=1)
-            self.empty_label_00.grid(row=8, column=2)
-
             def close_config_window():
                 self.main.buttons.config_button.configure(
                     fg_color="#1f538d", hover_color="#14375e"
@@ -284,14 +266,6 @@ class ConfigMenu:
                 fg_color="#1f538d", hover_color="#14375e"
             )
             self.config_window.withdraw()
-
-    def update_mode(self):
-        selected_mode = self.mode_var.get()
-        if selected_mode == "color" and self.main.alarm.get_vision() is True:
-            self.main.alarm.set_vision()
-            self.main.alarm.set_vision_faction()
-        self.main.save_settings()
-        self.empty_label_00.configure(text=selected_mode)
 
     def slider_event(self, slider_value):
         self.empty_label_1.configure(text=slider_value)

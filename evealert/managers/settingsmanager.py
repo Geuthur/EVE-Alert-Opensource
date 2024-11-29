@@ -18,7 +18,6 @@ class SettingsManager:
             "faction_region_1": {"x": "0", "y": "0"},
             "faction_region_2": {"x": "0", "y": "0"},
             "detectionscale": {"value": 90.0},
-            "detection_mode": {"value": "picture"},
             "faction_scale": {"value": 90.0},
             "cooldown_timer": {"value": "60"},
         }
@@ -69,7 +68,6 @@ class SettingsManager:
             },
             "detectionscale": {"value": config_dict["detectionscale"]},
             "faction_scale": {"value": config_dict["faction_scale"]},
-            "detection_mode": {"value": config_dict["mode_var"]},
             "cooldown_timer": {"value": config_dict["cooldown_timer"]},
         }
         with open(SETTINGS_FILE, "w", encoding="utf-8") as file:

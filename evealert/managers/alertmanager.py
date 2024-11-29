@@ -66,13 +66,6 @@ class AlertAgent:
         # PyAudio-Objekt erstellen
         self.p = sd
 
-        # Color Detection Settings
-        # neut 117,117,117
-        # red 128,12,12
-        self.red_tolerance = 20
-        self.green_blue_tolerance = 4
-        self.rgb_group = [(128, 12, 12)]
-
         self.load_settings()
 
     def load_settings(self):
@@ -89,7 +82,6 @@ class AlertAgent:
             self.y2_faction = int(settings["faction_region_2"]["y"])
             self.detection = int(settings["detectionscale"]["value"])
             self.detection_faction = int(settings["faction_scale"]["value"])
-            self.mode = settings["detection_mode"]["value"]
             self.cooldowntimer = int(settings["cooldown_timer"]["value"])
 
     def start(self):
@@ -144,28 +136,17 @@ class AlertAgent:
     async def vision_thread(self):
         async with self.visionlock:
             while True:
-                screenshot, screenshot_data = wincap.get_screenshot_value(
+                screenshot, _ = wincap.get_screenshot_value(
                     self.y1, self.x1, self.x2, self.y2
                 )
                 if screenshot is not None:
-                    if self.mode == "color":
-                        # Check if the target color is in the screenshot
-                        enemy = self.is_color_in_screenshot(
-                            screenshot_data.pixels, self.rgb_group[0], tolerance=10
-                        )
-                        if enemy:
-                            self.enemy = True
-                        else:
-                            self.enemy = False
+                    enemy = vision.find(screenshot, self.detection)
+                    if enemy == "Error":
+                        break
+                    if enemy:
+                        self.enemy = True
                     else:
-                        # screenshot, screenshot_data = wincap.get_screenshot()
-                        enemy = vision.find(screenshot, self.detection)
-                        if enemy == "Error":
-                            break
-                        if enemy:
-                            self.enemy = True
-                        else:
-                            self.enemy = False
+                        self.enemy = False
                 else:
                     self.main.write_message("Wrong Alert Settings.", "red")
                     break
@@ -222,22 +203,6 @@ class AlertAgent:
         self.alarm_counter[alarm_type] = 0
         if alarm_type in self.timerlock and self.timerlock[alarm_type].locked():
             self.timerlock[alarm_type].release()
-
-    def is_color_in_screenshot(self, pixels, target_color, tolerance):
-        # Check if the target color is in the screenshot pixels with tolerance
-        for pixel_row in pixels:
-            for pixel in pixel_row:
-                # Berechnen Sie die Differenzen für jeden Farbkanal separat
-                channel_diffs = [abs(c1 - c2) for c1, c2 in zip(pixel, target_color)]
-
-                # Überprüfen Sie, ob alle Differenzen innerhalb der Toleranz liegen
-                if all(
-                    isinstance(diff, (int, float)) and diff <= tolerance
-                    for diff in channel_diffs
-                ):
-                    return True
-
-        return False
 
     async def alarm_detection(self, alarm_text, sound=alarm_sound, alarm_type="Enemy"):
         if self.alarm_counter.get(alarm_type, 0) >= self.alarm_frequency:
