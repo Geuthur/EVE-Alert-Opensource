@@ -96,13 +96,17 @@ class OverlaySystem:
     def set_alert_region(self):
         self.root.settingsmenu.alert_region_x_first.delete(0, customtkinter.END)
         self.root.settingsmenu.alert_region_y_first.delete(0, customtkinter.END)
-        self.root.settingsmenu.alert_region_x_first.insert(0, str(self.start_x))
-        self.root.settingsmenu.alert_region_y_first.insert(0, str(self.start_y))
+        self.root.settingsmenu.alert_region_x_first.insert(0, str(self.start_x + 10))
+        self.root.settingsmenu.alert_region_y_first.insert(
+            0, str(self.start_y + 30)
+        )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
         self.root.settingsmenu.alert_region_x_second.delete(0, customtkinter.END)
         self.root.settingsmenu.alert_region_y_second.delete(0, customtkinter.END)
-        self.root.settingsmenu.alert_region_x_second.insert(0, str(self.end_x))
-        self.root.settingsmenu.alert_region_y_second.insert(0, str(self.end_y))
+        self.root.settingsmenu.alert_region_x_second.insert(0, str(self.end_x + 10))
+        self.root.settingsmenu.alert_region_y_second.insert(
+            0, str(self.end_y + 30)
+        )  # Add 30 pixels to the y-coordinate to solve weird bug?
         self.root.save_settings()
         self.root.set_alert_region = False
         self.cleanup()
@@ -111,13 +115,13 @@ class OverlaySystem:
     def set_faction_region(self):
         self.root.settingsmenu.faction_region_x_first.delete(0, customtkinter.END)
         self.root.settingsmenu.faction_region_y_first.delete(0, customtkinter.END)
-        self.root.settingsmenu.faction_region_x_first.insert(0, str(self.start_x))
-        self.root.settingsmenu.faction_region_y_first.insert(0, str(self.start_y))
+        self.root.settingsmenu.faction_region_x_first.insert(0, str(self.start_x + 10))
+        self.root.settingsmenu.faction_region_y_first.insert(0, str(self.start_y + 30))
 
         self.root.settingsmenu.faction_region_x_second.delete(0, customtkinter.END)
         self.root.settingsmenu.faction_region_y_second.delete(0, customtkinter.END)
-        self.root.settingsmenu.faction_region_x_second.insert(0, str(self.end_x))
-        self.root.settingsmenu.faction_region_y_second.insert(0, str(self.end_y))
+        self.root.settingsmenu.faction_region_x_second.insert(0, str(self.end_x + 10))
+        self.root.settingsmenu.faction_region_y_second.insert(0, str(self.end_y + 30))
         self.root.save_settings()
         self.root.set_faction_region = False
         self.cleanup()
