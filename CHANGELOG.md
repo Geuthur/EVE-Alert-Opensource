@@ -14,6 +14,7 @@
 - Images with Alpha Channel triggers Error [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
 - It is not possible to switch Windows recognition off/on during sound playback
 - Overlapping Overlay when F1 and F2 was pressed
+- Background width is not correct
 
 ### Added
 
