@@ -12,9 +12,9 @@ from evealert import __version__
 from evealert.managers.alertmanager import AlertAgent
 from evealert.managers.regionmanager import RegionDisplay
 from evealert.managers.settingsmanager import SettingsManager
-from evealert.menus.configuration import SettingsMenu
 from evealert.menus.description import DescriptionMenu
 from evealert.menus.overlay import OverlaySystem
+from evealert.menus.settings import SettingsMenu
 from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
