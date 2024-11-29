@@ -30,7 +30,7 @@ class DescriptionMenu:
                 self.main.winfo_height(),
             )
 
-            description_window_width = 400
+            description_window_width = 420
             description_window_height = 300
 
             description_window_x = main_menu_x + main_menu_width + 10
@@ -47,14 +47,11 @@ class DescriptionMenu:
             )
 
             description_text = "Alert Region: Press F1 to activate.\n"
-            description_text += (
-                "If activated Press MIDDLE Mouse Button to set positions.\n"
-            )
             description_text += "Faction Mode: Press F2 to activate.\n"
             description_text += (
-                "If activated Press MIDDLE Mouse Button to set positions.\n"
+                "\nAfter pressing F1 or F2 set your region with Marquee Selection.\n"
             )
-            description_text += "\nImportant: You must begin \nfrom the left upper corner to the right lower corner.\n"
+            description_text += "\nTo abort everything you can Press ESC.\n"
 
             # Verwende ein eigenes Frame für das Menü
             menu_frame = customtkinter.CTkFrame(self.description_window)
