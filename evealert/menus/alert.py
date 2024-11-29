@@ -14,6 +14,7 @@ from evealert.managers.regionmanager import RegionDisplay
 from evealert.managers.settingsmanager import SettingsManager
 from evealert.menus.configuration import ConfigMenu
 from evealert.menus.description import DescriptionMenu
+from evealert.menus.overlay import OverlaySystem
 from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
@@ -28,7 +29,7 @@ WINDOW_HEIGHT = 350
 
 
 class AlertButton:
-    def __init__(self, main):
+    def __init__(self, main: "AlertMenu"):
         self.main = main
         self.init_buttons()
 
@@ -101,11 +102,14 @@ class AlertMenu(customtkinter.CTk):
         super().__init__()
         self.title(f"Alert - {__version__}")
         self.alarm = AlertAgent(self)
+
         self.settings = SettingsManager()
         self.configmenu = ConfigMenu(self)
         self.descmenu = DescriptionMenu(self)
         self.display = RegionDisplay(self)
         self.buttons = AlertButton(self)
+        self.overlay_app = OverlaySystem(self)
+
         self.init_widgets()
         self.init_menu()
         self.config_mode = False
@@ -116,8 +120,6 @@ class AlertMenu(customtkinter.CTk):
         self.taking_screenshot = False
         self.current_status = False
         self.check_status()
-
-        self.overlay = None
 
     def check_status(self):
         online = customtkinter.CTkImage(
@@ -259,13 +261,12 @@ class AlertMenu(customtkinter.CTk):
                 "faction_region_y_second": self.configmenu.faction_region_y_second.get(),
                 "detectionscale": self.configmenu.detectionscale.get(),
                 "faction_scale": self.configmenu.faction_scale.get(),
-                "mode_var": self.configmenu.mode_var.get(),
                 "cooldown_timer": self.configmenu.cooldown_timer.get(),
             }
         )
         self.alarm.load_settings()
 
-    def is_configmode(self):
+    def is_configmode(self) -> bool:
         """Returns the current config mode."""
         return self.config_mode
 
@@ -280,19 +281,11 @@ class AlertMenu(customtkinter.CTk):
 
     def display_alert_region(self):
         """Display the alert region on the screen."""
-        selected_mode = self.configmenu.mode_var.get()
-        if selected_mode == "picture":
-            self.after(0, self.alarm.set_vision)
-        else:
-            self.after(0, self.display.create_alert_region())
+        self.after(0, self.alarm.set_vision)
 
     def display_faction_region(self):
         """Display the faction region on the screen."""
-        selected_mode = self.configmenu.mode_var.get()
-        if selected_mode == "picture":
-            self.after(0, self.alarm.set_vision_faction)
-        else:
-            self.after(0, self.display.create_faction_region())
+        self.after(0, self.alarm.set_vision_faction)
 
     # Mouse Functions
     def update_mouse_position_label(self):
@@ -302,16 +295,10 @@ class AlertMenu(customtkinter.CTk):
         self.after(100, self.update_mouse_position_label)
 
     def start_overlay(self):
+        """Generate the overlay."""
         monitor = self.get_current_monitor()
         if monitor:
-            self.overlay = customtkinter.CTkToplevel(self)
-            self.overlay.attributes("-alpha", 0.3)
-            self.overlay.attributes("-topmost", True)
-            self.overlay.configure(bg="black")
-            self.overlay.geometry(
-                f"{monitor.width}x{monitor.height}+{monitor.x}+{monitor.y}"
-            )
-            self.overlay_app = OverlayApp(self)
+            self.overlay_app.create_overlay(monitor)
 
     def get_current_monitor(self):
         mouse_x, mouse_y = pyautogui.position()
@@ -326,30 +313,32 @@ class AlertMenu(customtkinter.CTk):
     # pylint: disable=too-many-nested-blocks
     # Keyboard Functions
     def on_key_release(self, key):
+        """Handle the key release event."""
         if self.config_mode:
             if key == keyboard.Key.f1:
-                if not self.set_alert_region:
+                if not self.set_alert_region and not self.set_faction_region:
                     self.set_faction_region = False
                     self.set_alert_region = True
-                    self.write_message("Alert Mode: Activated.")
+                    self.write_message("Settings: Enemy Active.")
                     self.after(0, self.start_overlay)
             if key == keyboard.Key.f2:
-                if not self.set_faction_region:
+                if not self.set_faction_region and not self.set_alert_region:
                     self.set_alert_region = False
                     self.set_faction_region = True
-                    self.write_message("Faction Mode: Activated.")
+                    self.write_message("Settings: Faction Active.")
                     self.after(0, self.start_overlay)
             elif key == keyboard.Key.esc:
-                if self.set_alert_region or self.set_faction_region:
-                    self.set_alert_region = False
+                if self.set_faction_region:
                     self.set_faction_region = False
-                    self.write_message("Operation Aborted.")
-                    if hasattr(self, "overlay") and self.overlay:
-                        self.overlay.destroy()
-                        self.overlay = None
+                if self.set_alert_region:
+                    self.set_alert_region = False
+                if self.overlay_app.overlay:
+                    self.overlay_app.cleanup()
+                    self.write_message("Settings: Aborted.")
 
     # Menu Button Section
     def exit_button_clicked(self):
+        """Stop the Alert System and close the application."""
         if self.alarm.is_running():
             self.alarm.stop()
             self.write_message("System: ❎ EVE Alert stopped.", "red")
@@ -362,6 +351,7 @@ class AlertMenu(customtkinter.CTk):
 
     # Starten Sie den Alert-Thread, indem Sie die Alert-Funktion aus alert.py aufrufen
     def start_alert_script(self):
+        """Start the Alert System (Thread)."""
         try:
             if not self.alarm.is_running():
                 Thread(target=self.alarm.start).start()
@@ -372,98 +362,9 @@ class AlertMenu(customtkinter.CTk):
             self.write_message("System: Something went wrong.", "red")
 
     def stop_alert_script(self):
+        """Stop the Alert System."""
         if self.alarm.is_running():
             self.alarm.stop()
             self.write_message("System: EVE Alert stopped.", "red")
             return
         self.write_message("System: EVE Alert isn't running.")
-
-
-class OverlayApp:
-    def __init__(self, root: AlertMenu):
-        self.root = root
-        self.start_x = None
-        self.start_y = None
-        self.end_x = None
-        self.end_y = None
-        self.rect = None
-        self.canvas = customtkinter.CTkCanvas(
-            self.root.overlay, bg="black", highlightthickness=0
-        )
-        self.canvas.pack(fill=customtkinter.BOTH, expand=True)
-        self.canvas.bind("<ButtonPress-1>", self.on_button_press)
-        self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
-        self.canvas.bind("<ButtonRelease-1>", self.on_button_release)
-
-    def on_button_press(self, event):
-        self.start_x = event.x
-        self.start_y = event.y
-        self.rect = self.canvas.create_rectangle(
-            self.start_x,
-            self.start_y,
-            self.start_x,
-            self.start_y,
-            outline="red",
-            width=3,
-        )
-
-    def on_mouse_drag(self, event):
-        cur_x, cur_y = (event.x, event.y)
-        self.canvas.coords(self.rect, self.start_x, self.start_y, cur_x, cur_y)
-
-    def on_button_release(self, event):
-        self.end_x, self.end_y = (event.x, event.y)
-        self.root.write_message(
-            f"Selected region: ({self.start_x}, {self.start_y}) to ({self.end_x}, {self.end_y})"
-        )
-
-        if self.end_x < self.start_x:
-            self.start_x, self.end_x = self.end_x, self.start_x
-        if self.end_y < self.start_y:
-            self.start_y, self.end_y = self.end_y, self.start_y
-
-        # Get the current monitor where the mouse is
-        monitor = self.root.get_current_monitor()
-        if monitor:
-            self.start_x += monitor.x
-            self.start_y += monitor.y
-            self.end_x += monitor.x
-            self.end_y += monitor.y
-
-        if self.root.set_alert_region:
-            self.set_alert_region()
-        elif self.root.set_faction_region:
-            self.set_faction_region()
-
-        self.root.overlay.destroy()
-
-    def set_alert_region(self):
-        self.root.configmenu.alert_region_x_first.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_y_first.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_x_first.insert(0, str(self.start_x))
-        self.root.configmenu.alert_region_y_first.insert(0, str(self.start_y))
-
-        self.root.configmenu.alert_region_x_second.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_y_second.delete(0, customtkinter.END)
-        self.root.configmenu.alert_region_x_second.insert(0, str(self.end_x))
-        self.root.configmenu.alert_region_y_second.insert(0, str(self.end_y))
-        self.root.save_settings()
-        self.root.set_alert_region = False
-        self.root.write_message("Alert Mode: Deactivated.")
-
-    def set_faction_region(self):
-        self.root.configmenu.faction_region_x_first.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_y_first.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_x_first.insert(0, str(self.start_x))
-        self.root.configmenu.faction_region_y_first.insert(0, str(self.start_y))
-
-        self.root.configmenu.faction_region_x_second.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_y_second.delete(0, customtkinter.END)
-        self.root.configmenu.faction_region_x_second.insert(0, str(self.end_x))
-        self.root.configmenu.faction_region_y_second.insert(0, str(self.end_y))
-        self.root.save_settings()
-        self.root.set_faction_region = False
-        self.root.write_message("Faction Mode: Deactivated.")
-
-
-# Selected region: (1323, 678) to (1113, 653) - Get Error
