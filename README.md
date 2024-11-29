@@ -107,7 +107,7 @@ If you want more, simply add more images to the "img/" folder with naming image_
 
 ## Showcase<a name="showcase"></a>
 
-https://github.com/Geuthur/EVE-Alert/assets/761682/0161a9c6-0656-4952-9a3c-7b27532ee2aa
+https://github.com/Geuthur/EVE-Alert-Opensource/evealert/docs/videos/detection.mp4
 
 ## Donation<a name="donation"></a>
 
