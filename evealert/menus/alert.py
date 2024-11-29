@@ -79,7 +79,7 @@ class AlertButton:
 
         self.show_status_label.grid(row=0, column=0, padx=20, pady=20)
         self.show_alert_button.grid(row=0, column=1, padx=(0, 10))
-        self.show_faction_button.grid(row=0, column=2)
+        self.show_faction_button.grid(row=0, column=2, padx=(0, 10))
 
     def save_button_clicked(self):
         self.main.write_message(

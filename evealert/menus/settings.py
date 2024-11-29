@@ -232,18 +232,18 @@ class SettingsMenu:
 
             # Alert Region 2 Visual
             self.alert_region_label_2.grid(row=2, column=0, padx=20)
-            self.alert_region_x_second.grid(row=2, column=1)
-            self.alert_region_y_second.grid(row=2, column=2)
+            self.alert_region_x_second.grid(row=2, column=1, padx=20)
+            self.alert_region_y_second.grid(row=2, column=2, padx=20)
 
             # Faction Region 1 Visual
             self.faction_region_label_1.grid(row=3, column=0, padx=20)
-            self.faction_region_x_first.grid(row=3, column=1)
-            self.faction_region_y_first.grid(row=3, column=2)
+            self.faction_region_x_first.grid(row=3, column=1, padx=20)
+            self.faction_region_y_first.grid(row=3, column=2, padx=20)
 
             # Faction Region 2 Visual
             self.faction_region_label_2.grid(row=4, column=0, padx=20)
-            self.faction_region_x_second.grid(row=4, column=1)
-            self.faction_region_y_second.grid(row=4, column=2)
+            self.faction_region_x_second.grid(row=4, column=1, padx=20)
+            self.faction_region_y_second.grid(row=4, column=2, padx=20)
 
             # Faction Region 2 Visual
             self.cooldown_timer_label.grid(row=5, column=0, padx=20)
