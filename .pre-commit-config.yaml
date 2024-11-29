@@ -38,7 +38,7 @@ repos:
         name: Check for large files
         description: Check for large files that were added to the repository.
         args:
-          - --maxkb=1000
+          - --maxkb=2000
 
       - id: detect-private-key
         name: Detect private key
