@@ -1,4 +1,4 @@
-## IN DEVELOPMENT
+## \[0.5.0\] - 2024-11-29
 
 ### Changed
 
