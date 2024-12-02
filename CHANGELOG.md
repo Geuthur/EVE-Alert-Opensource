@@ -1,4 +1,4 @@
-## \[0.4.4\] - 2024-11-23
+## [0.4.4] - 2024-11-23
 
 ### Changed
 
@@ -9,7 +9,7 @@
 
 - Faction Region can't be open if a error occurs [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
 
-## \[0.4.3\] - 2024-10-18
+## [0.4.3] - 2024-10-18
 
 ### Added
 
@@ -26,7 +26,7 @@
 
 - Icon Bitmap Error on Linux [#9](https://github.com/Geuthur/EVE-Alert-Opensource/issues/9)
 
-## \[0.4.2\] - 2024-10-18
+## [0.4.2] - 2024-10-18
 
 ### Added
 
@@ -36,7 +36,7 @@
 
 - Window Installer not working correctly if executed as Admin
 
-## \[0.4.1b1\] - 2024-05-24
+## [0.4.1b1] - 2024-05-24
 
 ### Added
 

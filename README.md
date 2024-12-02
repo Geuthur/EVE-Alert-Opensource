@@ -52,7 +52,7 @@ Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releas
 
 ### Install Python<a name="step2"></a>
 
-> \[!CAUTION\]
+> [!CAUTION]
 > This Script only works with Python `3.10`, `3.11`, `3.12`
 
 You need Python for <a href="#step3">Step 3</a>
@@ -72,7 +72,7 @@ sudo apt update
 
 ### Make Build<a name="step3"></a>
 
-> \[!NOTE\]
+> [!NOTE]
 > Ensure you have read/write permissions to this directory
 
 Windows:
@@ -93,8 +93,8 @@ Now you will find a folder called dist/ where the finished executable program is
 
 ### Image Detection<a name="imagedetection"></a>
 
-- Neutral:    ![Neutral](https://i.imgur.com/SdjoIs6.png)
-- Enemys:     ![Red](https://i.imgur.com/O0VTT69.png)
+- Neutral: ![Neutral](https://i.imgur.com/SdjoIs6.png)
+- Enemys: ![Red](https://i.imgur.com/O0VTT69.png)
 
 If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.
 
@@ -102,7 +102,7 @@ If you want more, simply add more images to the "img/" folder with naming image_
 
 - Neutral: ![Neutral](https://i.imgur.com/L7hy58Y.png)
 
-- Enemys:     ![Red](https://i.imgur.com/O0VTT69.png)
+- Enemys: ![Red](https://i.imgur.com/O0VTT69.png)
 
 - The Color Mode alert react to all RED Colors
 
@@ -112,7 +112,7 @@ Ingame / No Detection (Vision Window) / Ingame RED Local / Detection (Vision Win
 
 ## Resolution<a name="resolution"></a>
 
-> \[!NOTE\]
+> [!NOTE]
 > Resolution Scaling can be a issue
 
 ![Window](https://i.imgur.com/e0X2sGM.png)
@@ -130,7 +130,7 @@ https://www.paypal.com/paypalme/HellRiderZ
 
 ## Terms<a name="terms"></a>
 
-> \[!CAUTION\]
+> [!CAUTION]
 > This is an open-source project without any guarantees. Use it at your own risk.
 > Please ensure that you comply with EVE Online's terms of use and policies. The use of bots or automation may violate the game's terms of service.
 
