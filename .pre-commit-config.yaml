@@ -208,7 +208,7 @@ repos:
           - --target-version=py38
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.18
+    rev: 0.7.19
     hooks:
       - id: mdformat
         name: Mdformat
@@ -225,7 +225,7 @@ repos:
           - mdformat-shfmt==0.1.0  # Mdformat plugin to format shell code blocks » https://github.com/hukkin/mdformat-shfmt/tags
 
   - repo: https://github.com/pylint-dev/pylint
-    rev: v3.3.1
+    rev: v3.3.2
     hooks:
       - id: pylint
         name: Pylint
@@ -234,7 +234,7 @@ repos:
           - --py-version=3.8
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.4
+    rev: 0.30.0
     hooks:
       - id: check-github-actions
         name: Check GitHub Actions
