@@ -1,5 +1,4 @@
 import json
-import os
 
 # Pfad zur JSON-Datei für die Einstellungen
 SETTINGS_FILE = "settings.json"
@@ -19,24 +18,34 @@ class SettingsManager:
             "faction_region_1": {"x": "0", "y": "0"},
             "faction_region_2": {"x": "0", "y": "0"},
             "detectionscale": {"value": 90.0},
-            "detection_mode": {"value": "picture"},
+            "faction_scale": {"value": 90.0},
             "cooldown_timer": {"value": "60"},
         }
 
         try:
             with open(SETTINGS_FILE, encoding="utf-8") as file:
                 settings_data = json.load(file)
-            return settings_data
-        except FileNotFoundError:
-            if os.path.exists(SETTINGS_FILE):  # Überprüfen, ob die Datei existiert
-                # Wenn die Datei existiert, lösche sie
-                os.remove(SETTINGS_FILE)
+        except (FileNotFoundError, json.JSONDecodeError):
+            settings_data = default_settings
 
-            # Erstelle die Datei mit den Standardwerten
+        # Überprüfe und füge fehlende Attribute hinzu
+        updated = False
+        for key, value in default_settings.items():
+            if key not in settings_data:
+                settings_data[key] = value
+                updated = True
+            elif isinstance(value, dict):
+                for sub_key, sub_value in value.items():
+                    if sub_key not in settings_data[key]:
+                        settings_data[key][sub_key] = sub_value
+                        updated = True
+
+        # Speichere die aktualisierten Einstellungen, falls Änderungen vorgenommen wurden
+        if updated:
             with open(SETTINGS_FILE, "w", encoding="utf-8") as file:
-                json.dump(default_settings, file, indent=4)
+                json.dump(settings_data, file, indent=4)
 
-            return default_settings
+        return settings_data
 
     def save_settings(self, config_dict):
         settings_data = {
@@ -58,49 +67,8 @@ class SettingsManager:
                 "y": config_dict["faction_region_y_second"],
             },
             "detectionscale": {"value": config_dict["detectionscale"]},
-            "detection_mode": {"value": config_dict["mode_var"]},
+            "faction_scale": {"value": config_dict["faction_scale"]},
             "cooldown_timer": {"value": config_dict["cooldown_timer"]},
         }
         with open(SETTINGS_FILE, "w", encoding="utf-8") as file:
             json.dump(settings_data, file, indent=4)
-
-    def load_settings(self):
-        # Settings Menu
-        settings_data = self.open_settings()
-        if settings_data:
-            settings = {
-                "x1": int(
-                    settings_data.get("alert_region_1", {}).get("x", "default_value")
-                ),
-                "y1": int(
-                    settings_data.get("alert_region_1", {}).get("y", "default_value")
-                ),
-                "x2": int(
-                    settings_data.get("alert_region_2", {}).get("x", "default_value")
-                ),
-                "y2": int(
-                    settings_data.get("alert_region_2", {}).get("y", "default_value")
-                ),
-                "x1_faction": int(
-                    settings_data.get("faction_region_1", {}).get("x", "default_value")
-                ),
-                "y1_faction": int(
-                    settings_data.get("faction_region_1", {}).get("y", "default_value")
-                ),
-                "x2_faction": int(
-                    settings_data.get("faction_region_2", {}).get("x", "default_value")
-                ),
-                "y2_faction": int(
-                    settings_data.get("faction_region_2", {}).get("y", "default_value")
-                ),
-                "detection": settings_data.get("detectionscale", {}).get("value", None),
-                "mode": settings_data.get("detection_mode", {}).get("value", "picture"),
-                "cooldowntimer": settings_data.get("cooldown_timer", {}).get(
-                    "value", 60
-                ),
-                "change": False,
-            }
-            if settings["detection"] is not None:
-                settings["detection"] = settings["detection"] / 100
-            return settings
-        return None

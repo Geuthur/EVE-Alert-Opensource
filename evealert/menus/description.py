@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING
+
 import customtkinter
+
+if TYPE_CHECKING:
+    from .alert import AlertMenu
 
 
 class DescriptionMenu:
     """Description Menu for the configuration mode."""
 
-    def __init__(self, main: customtkinter.CTk):
+    def __init__(self, main: "AlertMenu"):
         self.main = main
         self.active = False
 
@@ -30,7 +35,7 @@ class DescriptionMenu:
                 self.main.winfo_height(),
             )
 
-            description_window_width = 400
+            description_window_width = 420
             description_window_height = 300
 
             description_window_x = main_menu_x + main_menu_width + 10
@@ -39,7 +44,7 @@ class DescriptionMenu:
                 if self.main.config_mode
                 else main_menu_y
             )
-            if not self.main.configmenu.active:
+            if not self.main.settingsmenu.active:
                 description_window_y = main_menu_y
 
             self.description_window.geometry(
@@ -47,18 +52,11 @@ class DescriptionMenu:
             )
 
             description_text = "Alert Region: Press F1 to activate.\n"
-            description_text += (
-                "If activated Press MIDDLE Mouse Button to set positions.\n"
-            )
             description_text += "Faction Mode: Press F2 to activate.\n"
             description_text += (
-                "If activated Press MIDDLE Mouse Button to set positions.\n"
+                "\nAfter pressing F1 or F2 set your region with Marquee Selection.\n"
             )
-            description_text += "Screenshot Mode: Press F3 to activate.\n"
-            description_text += (
-                "If activated Press MIDDLE Mouse Button to set positions.\n"
-            )
-            description_text += "\nImportant: You must begin \nfrom the left upper corner to the right lower corner.\n"
+            description_text += "\nTo abort everything you can Press ESC.\n"
 
             # Verwende ein eigenes Frame für das Menü
             menu_frame = customtkinter.CTkFrame(self.description_window)

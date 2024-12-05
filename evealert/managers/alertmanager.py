@@ -3,6 +3,7 @@ import logging
 import os
 import random
 
+import cv2 as cv
 import sounddevice as sd
 import soundfile as sf
 
@@ -65,27 +66,23 @@ class AlertAgent:
         # PyAudio-Objekt erstellen
         self.p = sd
 
-        # Color Detection Settings
-        # neut 117,117,117
-        # red 128,12,12
-        self.red_tolerance = 20
-        self.green_blue_tolerance = 4
-        self.rgb_group = [(128, 12, 12)]
+        self.load_settings()
 
     def load_settings(self):
-        settings = self.settings.load_settings()
+        settings = self.settings.open_settings()
+
         if settings:
-            self.x1 = settings["x1"]
-            self.y1 = settings["y1"]
-            self.x2 = settings["x2"]
-            self.y2 = settings["y2"]
-            self.x1_faction = settings["x1_faction"]
-            self.y1_faction = settings["y1_faction"]
-            self.x2_faction = settings["x2_faction"]
-            self.y2_faction = settings["y2_faction"]
-            self.detection = settings["detection"]
-            self.mode = settings["mode"]
-            self.cooldowntimer = settings["cooldowntimer"]
+            self.x1 = int(settings["alert_region_1"]["x"])
+            self.y1 = int(settings["alert_region_1"]["y"])
+            self.x2 = int(settings["alert_region_2"]["x"])
+            self.y2 = int(settings["alert_region_2"]["y"])
+            self.x1_faction = int(settings["faction_region_1"]["x"])
+            self.y1_faction = int(settings["faction_region_1"]["y"])
+            self.x2_faction = int(settings["faction_region_2"]["x"])
+            self.y2_faction = int(settings["faction_region_2"]["y"])
+            self.detection = int(settings["detectionscale"]["value"])
+            self.detection_faction = int(settings["faction_scale"]["value"])
+            self.cooldowntimer = int(settings["cooldown_timer"]["value"])
 
     def start(self):
         self.loop.run_until_complete(self.vision_check())
@@ -115,9 +112,6 @@ class AlertAgent:
     def is_running(self):
         return self.running
 
-    def set_settings(self):
-        self.load_settings()
-
     def get_vision(self):
         return vision.debug_mode
 
@@ -125,16 +119,10 @@ class AlertAgent:
         return vision_faction.debug_mode_faction
 
     def set_vision(self):
-        if not vision.debug_mode:
-            vision.debug_mode = True
-        else:
-            vision.debug_mode = False
+        vision.debug_mode = not vision.debug_mode
 
     def set_vision_faction(self):
-        if not vision_faction.debug_mode_faction:
-            vision_faction.debug_mode_faction = True
-        else:
-            vision_faction.debug_mode_faction = False
+        vision_faction.debug_mode_faction = not vision_faction.debug_mode_faction
 
     async def vision_check(self):
         self.load_settings()
@@ -148,28 +136,17 @@ class AlertAgent:
     async def vision_thread(self):
         async with self.visionlock:
             while True:
-                screenshot, screenshot_data = wincap.get_screenshot_value(
+                screenshot, _ = wincap.get_screenshot_value(
                     self.y1, self.x1, self.x2, self.y2
                 )
                 if screenshot is not None:
-                    if self.mode == "color":
-                        # Check if the target color is in the screenshot
-                        enemy = self.is_color_in_screenshot(
-                            screenshot_data.pixels, self.rgb_group[0], tolerance=10
-                        )
-                        if enemy:
-                            self.enemy = True
-                        else:
-                            self.enemy = False
+                    enemy = vision.find(screenshot, self.detection)
+                    if enemy == "Error":
+                        break
+                    if enemy:
+                        self.enemy = True
                     else:
-                        # screenshot, screenshot_data = wincap.get_screenshot()
-                        enemy = vision.find(screenshot, self.detection)
-                        if enemy == "Error":
-                            break
-                        if enemy:
-                            self.enemy = True
-                        else:
-                            self.enemy = False
+                        self.enemy = False
                 else:
                     self.main.write_message("Wrong Alert Settings.", "red")
                     break
@@ -177,14 +154,25 @@ class AlertAgent:
 
     async def vision_faction_thread(self):
         async with self.factionlock:
+            self.faction_state = True
             while True:
                 screenshot_faction, _ = wincap.get_screenshot_value(
                     self.y1_faction, self.x1_faction, self.x2_faction, self.y2_faction
                 )
                 if screenshot_faction is not None:
-                    faction = vision_faction.find(screenshot_faction, 0.7)
-                    if faction == "Error":
-                        break
+                    try:
+                        faction = vision_faction.find_faction(
+                            screenshot_faction, self.detection_faction
+                        )
+                    except Exception as e:
+                        faction = None
+                        logger.error(e)
+                        self.main.write_message(e, "red")
+                        if vision_faction.faction:
+                            cv.destroyWindow("Faction Vision")
+                            vision_faction.faction = False
+                        await asyncio.sleep(10)
+
                     if faction:
                         self.faction = True
                     else:
@@ -216,22 +204,6 @@ class AlertAgent:
         if alarm_type in self.timerlock and self.timerlock[alarm_type].locked():
             self.timerlock[alarm_type].release()
 
-    def is_color_in_screenshot(self, pixels, target_color, tolerance):
-        # Check if the target color is in the screenshot pixels with tolerance
-        for pixel_row in pixels:
-            for pixel in pixel_row:
-                # Berechnen Sie die Differenzen für jeden Farbkanal separat
-                channel_diffs = [abs(c1 - c2) for c1, c2 in zip(pixel, target_color)]
-
-                # Überprüfen Sie, ob alle Differenzen innerhalb der Toleranz liegen
-                if all(
-                    isinstance(diff, (int, float)) and diff <= tolerance
-                    for diff in channel_diffs
-                ):
-                    return True
-
-        return False
-
     async def alarm_detection(self, alarm_text, sound=alarm_sound, alarm_type="Enemy"):
         if self.alarm_counter.get(alarm_type, 0) >= self.alarm_frequency:
             return
@@ -254,7 +226,6 @@ class AlertAgent:
 
             # Spiele die Audiodaten ab
             sd.play(data, samplerate)
-            sd.wait()
         except Exception as e:
             logger.error("Error playing audio: %s", e)
             self.stop()

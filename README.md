@@ -17,7 +17,6 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
     - [Make Build](#step3)
   - [Detection](#detection)
     - [Image Detection](#imagedetection)
-    - [Color Detection](#colordetection)
     - [Detection Mode](#detectionmode)
   - [Resolution](#resolution)
   - [Showcase](#showcase)
@@ -30,15 +29,14 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 - Play Sound on Local Detection
 - Easy-Use Interface
 - Start/Stop System
-- Monitoring Region on Picture Mode in real-time (also possible to stream via Discord for friends)
-- Color Detection Mode - If Picture Mode not working for you simply use the Color Detection Mode (needs more ressources)
-- Faction Spawn Detection - Now you can set a Faction Spawn Detection and it will play a sound if a faction is in Site
+- Monitoring Region in real-time (also possible to stream via Discord for friends)
+- Faction Spawn Detection - Now you can set a Faction Spawn Detection and it will play a sound if a faction is in Site (can also used for other thing like active modules or something)
 
 ## Usage<a name="usage"></a>
 
 - Simply launch Alert.exe, and a menu will appear. You can configure all your settings there. Afterward, click on "Start."
 - If the Alert doesn't respond to the local chat, you can reduce the detection accuracy or double-check if you've set the region correctly.
-- If both settings are 100% accurate and your interface is not blurred, make sure that your neutral symbol looks like this:
+- If both settings are 100% accurate and your interface is not blurred, make a new screenshot from your neutral symbol and try it with your own image
 - You can edit all images & sounds by yourself only the name must be the same
 
 ## Installation<a name="installation"></a>
@@ -98,18 +96,6 @@ Now you will find a folder called dist/ where the finished executable program is
 
 If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.
 
-### Color Detection<a name="colordetection"></a>
-
-- Neutral: ![Neutral](https://i.imgur.com/L7hy58Y.png)
-
-- Enemys: ![Red](https://i.imgur.com/O0VTT69.png)
-
-- The Color Mode alert react to all RED Colors
-
-- You Symbols must look like the upove icons to work.
-
-Ingame / No Detection (Vision Window) / Ingame RED Local / Detection (Vision Window)
-
 ## Resolution<a name="resolution"></a>
 
 > [!NOTE]
@@ -121,7 +107,7 @@ Ingame / No Detection (Vision Window) / Ingame RED Local / Detection (Vision Win
 
 ## Showcase<a name="showcase"></a>
 
-https://github.com/Geuthur/EVE-Alert/assets/761682/0161a9c6-0656-4952-9a3c-7b27532ee2aa
+https://github.com/Geuthur/EVE-Alert-Opensource/evealert/docs/videos/detection.mp4
 
 ## Donation<a name="donation"></a>
 

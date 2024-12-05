@@ -1,3 +1,32 @@
+## [0.5.0] - 2024-11-29
+
+### Changed
+
+- Settings for Regions now have a visual interface
+- Setting Region now work per `Marquee Selection`
+- Enemy & Faction now work seperately
+
+### Fixed
+
+- Faction Region can't be open if a error occurs [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
+- In some Cases Multiple Monitors not work [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15) (Testing)
+- Vision System not work if Detection Scale is Zero or below
+- Images with Alpha Channel triggers Error [#15](https://github.com/Geuthur/EVE-Alert-Opensource/issues/15)
+- It is not possible to switch Windows recognition off/on during sound playback
+- Overlapping Overlay when F1 and F2 was pressed
+- Background width is not correct
+
+### Added
+
+- Abort Option on Settings with `ESC`
+- Faction Detection Scale
+- Overlay System
+
+### Removed
+
+- Drop Color Mode Support
+- Screenshot Mode
+
 ## [0.4.4] - 2024-11-23
 
 ### Changed

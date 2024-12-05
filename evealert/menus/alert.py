@@ -5,15 +5,16 @@ from threading import Thread
 import customtkinter
 import pyautogui
 from PIL import Image
-from pynput import keyboard, mouse
+from pynput import keyboard
+from screeninfo import get_monitors
 
 from evealert import __version__
-from evealert.exceptions import ScreenshotError
-from evealert.managers.alertmanager import AlertAgent, wincap
+from evealert.managers.alertmanager import AlertAgent
 from evealert.managers.regionmanager import RegionDisplay
 from evealert.managers.settingsmanager import SettingsManager
-from evealert.menus.configuration import ConfigMenu
 from evealert.menus.description import DescriptionMenu
+from evealert.menus.overlay import OverlaySystem
+from evealert.menus.settings import SettingsMenu
 from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
@@ -27,20 +28,8 @@ WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 350
 
 
-class Screenshot:
-    """Screenshot Class for the Alert System"""
-
-    def __init__(self, main):
-        self.main = main
-        self.taking_screenshot = False
-        self.screenshot_overlay = None
-        self.screenshot_mode = 0
-        self.start_x, self.start_y = None, None
-        self.end_x, self.end_y = None, None
-
-
 class AlertButton:
-    def __init__(self, main):
+    def __init__(self, main: "AlertMenu"):
         self.main = main
         self.init_buttons()
 
@@ -64,7 +53,7 @@ class AlertButton:
         self.config_button = customtkinter.CTkButton(
             self.settings_label_frame,
             text="Settings",
-            command=self.config_mode_toggle,
+            command=self.settings_mode_toggle,
         )
         self.save_button.grid(row=0, column=0, padx=(0, 10))
         self.description_button.grid(row=0, column=1, padx=(0, 10))
@@ -90,7 +79,7 @@ class AlertButton:
 
         self.show_status_label.grid(row=0, column=0, padx=20, pady=20)
         self.show_alert_button.grid(row=0, column=1, padx=(0, 10))
-        self.show_faction_button.grid(row=0, column=2)
+        self.show_faction_button.grid(row=0, column=2, padx=(0, 10))
 
     def save_button_clicked(self):
         self.main.write_message(
@@ -102,8 +91,8 @@ class AlertButton:
     def description_mode_toggle(self):
         self.main.descmenu.open_description_window()
 
-    def config_mode_toggle(self):
-        self.main.configmenu.open_description_window()
+    def settings_mode_toggle(self):
+        self.main.settingsmenu.open_menu()
 
 
 class AlertMenu(customtkinter.CTk):
@@ -113,12 +102,14 @@ class AlertMenu(customtkinter.CTk):
         super().__init__()
         self.title(f"Alert - {__version__}")
         self.alarm = AlertAgent(self)
+
         self.settings = SettingsManager()
-        self.configmenu = ConfigMenu(self)
+        self.settingsmenu = SettingsMenu(self)
         self.descmenu = DescriptionMenu(self)
-        self.screenshot = Screenshot(self)
         self.display = RegionDisplay(self)
         self.buttons = AlertButton(self)
+        self.overlay_app = OverlaySystem(self)
+
         self.init_widgets()
         self.init_menu()
         self.config_mode = False
@@ -233,10 +224,6 @@ class AlertMenu(customtkinter.CTk):
         # Log Field Label
         self.log_field.pack()
 
-        # Other
-        mouse_listener = mouse.Listener(on_click=self.on_click)
-        mouse_listener.start()
-
         keyboard_listener = keyboard.Listener(on_release=self.on_key_release)
         keyboard_listener.start()
 
@@ -250,11 +237,11 @@ class AlertMenu(customtkinter.CTk):
     def save_settings(self):
         """Save the settings to the settings.json file."""
         if not (
-            self.configmenu.alert_region_x_first.get()
-            and self.configmenu.alert_region_y_first.get()
+            self.settingsmenu.alert_region_x_first.get()
+            and self.settingsmenu.alert_region_y_first.get()
         ) or not (
-            self.configmenu.alert_region_x_second.get()
-            and self.configmenu.alert_region_y_second.get()
+            self.settingsmenu.alert_region_x_second.get()
+            and self.settingsmenu.alert_region_y_second.get()
         ):
             self.write_message(
                 "Empty Fields. Minimum is Alert Region.",
@@ -263,23 +250,23 @@ class AlertMenu(customtkinter.CTk):
             return
         self.settings.save_settings(
             {
-                "logging": self.configmenu.logging.get(),
-                "alert_region_x_first": self.configmenu.alert_region_x_first.get(),
-                "alert_region_y_first": self.configmenu.alert_region_y_first.get(),
-                "alert_region_x_second": self.configmenu.alert_region_x_second.get(),
-                "alert_region_y_second": self.configmenu.alert_region_y_second.get(),
-                "faction_region_x_first": self.configmenu.faction_region_x_first.get(),
-                "faction_region_y_first": self.configmenu.faction_region_y_first.get(),
-                "faction_region_x_second": self.configmenu.faction_region_x_second.get(),
-                "faction_region_y_second": self.configmenu.faction_region_y_second.get(),
-                "detectionscale": self.configmenu.detectionscale.get(),
-                "mode_var": self.configmenu.mode_var.get(),
-                "cooldown_timer": self.configmenu.cooldown_timer.get(),
+                "logging": self.settingsmenu.logging.get(),
+                "alert_region_x_first": self.settingsmenu.alert_region_x_first.get(),
+                "alert_region_y_first": self.settingsmenu.alert_region_y_first.get(),
+                "alert_region_x_second": self.settingsmenu.alert_region_x_second.get(),
+                "alert_region_y_second": self.settingsmenu.alert_region_y_second.get(),
+                "faction_region_x_first": self.settingsmenu.faction_region_x_first.get(),
+                "faction_region_y_first": self.settingsmenu.faction_region_y_first.get(),
+                "faction_region_x_second": self.settingsmenu.faction_region_x_second.get(),
+                "faction_region_y_second": self.settingsmenu.faction_region_y_second.get(),
+                "detectionscale": self.settingsmenu.detectionscale.get(),
+                "faction_scale": self.settingsmenu.faction_scale.get(),
+                "cooldown_timer": self.settingsmenu.cooldown_timer.get(),
             }
         )
-        self.alarm.set_settings()
+        self.alarm.load_settings()
 
-    def is_configmode(self):
+    def is_configmode(self) -> bool:
         """Returns the current config mode."""
         return self.config_mode
 
@@ -291,34 +278,14 @@ class AlertMenu(customtkinter.CTk):
             self.alert_region_mode = 0
             self.set_faction_region = False
             self.faction_region_mode = 0
-            self.taking_screenshot = False
 
     def display_alert_region(self):
         """Display the alert region on the screen."""
-        selected_mode = self.configmenu.mode_var.get()
-        if selected_mode == "picture":
-            self.after(0, self.alarm.set_vision)
-        else:
-            self.after(0, self.display.create_alert_region())
+        self.after(0, self.alarm.set_vision)
 
     def display_faction_region(self):
         """Display the faction region on the screen."""
-        selected_mode = self.configmenu.mode_var.get()
-        if selected_mode == "picture":
-            self.after(0, self.alarm.set_vision_faction)
-        else:
-            self.after(0, self.display.create_faction_region())
-
-    def display_screenshot_region(self, x, y, width, height):
-        """Display the screenshot region on the screen."""
-        self.screenshot.screenshot_overlay = self.display.create_screenshot_region(
-            x,
-            y,
-            width,
-            height,
-            self.screenshot.screenshot_overlay,
-        )
-        self.after(0)
+        self.after(0, self.alarm.set_vision_faction)
 
     # Mouse Functions
     def update_mouse_position_label(self):
@@ -327,173 +294,51 @@ class AlertMenu(customtkinter.CTk):
         self.mouse_position_label.configure(text=f"Mausposition: X={x}, Y={y}")
         self.after(100, self.update_mouse_position_label)
 
-    def on_click(self, x, y, button, pressed):
-        if self.config_mode:
+    def start_overlay(self):
+        """Generate the overlay."""
+        monitor = self.get_current_monitor()
+        if monitor:
+            self.overlay_app.create_overlay(monitor)
+
+    def get_current_monitor(self):
+        mouse_x, mouse_y = pyautogui.position()
+        for monitor in get_monitors():
             if (
-                pressed
-                and self.set_alert_region
-                and not self.set_faction_region
-                and not self.taking_screenshot
-                and button == mouse.Button.middle
+                monitor.x <= mouse_x <= monitor.x + monitor.width
+                and monitor.y <= mouse_y <= monitor.y + monitor.height
             ):
-                y, x = pyautogui.position()
-                self.alert_region_mode = (self.alert_region_mode) % 2
-
-                if self.alert_region_mode == 0:
-                    print("First Region Set.")
-                    self.configmenu.alert_region_x_first.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_y_first.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_x_first.insert(0, str(y))
-                    self.configmenu.alert_region_y_first.insert(0, str(x))
-                    self.alert_region_mode = self.alert_region_mode + 1
-                else:
-                    print("Second Region Set")
-                    self.configmenu.alert_region_x_second.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_y_second.delete(0, customtkinter.END)
-                    self.configmenu.alert_region_x_second.insert(0, str(y))
-                    self.configmenu.alert_region_y_second.insert(0, str(x))
-                    self.set_alert_region = False
-                    self.alert_region_mode = 0
-                    self.save_settings()
-                    self.write_message(
-                        "Alert Region Positions Saved.",
-                        "green",
-                    )
-
-            if (
-                pressed
-                and self.set_faction_region
-                and not self.set_alert_region
-                and not self.taking_screenshot
-                and button == mouse.Button.middle
-            ):
-                y, x = pyautogui.position()
-                self.faction_region_mode = (self.faction_region_mode) % 2
-
-                if self.faction_region_mode == 0:
-                    print("First Region Set.")
-                    self.configmenu.faction_region_x_first.delete(0, customtkinter.END)
-                    self.configmenu.faction_region_y_first.delete(0, customtkinter.END)
-                    self.configmenu.faction_region_x_first.insert(0, str(y))
-                    self.configmenu.faction_region_y_first.insert(0, str(x))
-                    self.faction_region_mode = self.faction_region_mode + 1
-                else:
-                    print("Second Region Set")
-                    self.configmenu.faction_region_x_second.delete(0, customtkinter.END)
-                    self.configmenu.faction_region_y_second.delete(0, customtkinter.END)
-                    self.configmenu.faction_region_x_second.insert(0, str(y))
-                    self.configmenu.faction_region_y_second.insert(0, str(x))
-                    self.set_faction_region = False
-                    self.faction_region_mode = 0
-                    self.save_settings()
-                    self.write_message(
-                        "Faction Region Positions Saved.",
-                        "green",
-                    )
-
-            if (
-                pressed
-                and self.taking_screenshot
-                and not self.set_faction_region
-                and not self.set_alert_region
-                and button == mouse.Button.middle
-            ):
-                x, y = pyautogui.position()
-                self.screenshot.screenshot_mode = (self.screenshot.screenshot_mode) % 2
-
-                if self.screenshot.screenshot_mode == 0:
-                    if self.screenshot.screenshot_overlay:
-                        self.screenshot.screenshot_overlay.destroy()
-                    self.screenshot.start_x, self.screenshot.start_y = x, y
-                    print("Screenshot Position Set")
-                    self.screenshot.screenshot_mode = (
-                        self.screenshot.screenshot_mode + 1
-                    )
-                elif self.screenshot.screenshot_mode == 1:
-                    self.screenshot.end_x, self.screenshot.end_y = x, y
-                    print("Screenshot Position 2 Set")
-                    self.write_message("Press F3 to confirm.")
-                    self.screenshot.screenshot_mode = 0
-                    try:
-                        self.display_screenshot_region(
-                            self.screenshot.start_x,
-                            self.screenshot.start_y,
-                            abs(self.screenshot.end_x - self.screenshot.start_x),
-                            abs(self.screenshot.end_y - self.screenshot.start_y),
-                        )
-                    except Exception as e:
-                        logger.error("Screenshot Error: %s", e)
-                        self.write_message(
-                            "System: Screenshot Error.",
-                            "red",
-                        )
+                return monitor
+        return None
 
     # pylint: disable=too-many-nested-blocks
     # Keyboard Functions
     def on_key_release(self, key):
+        """Handle the key release event."""
         if self.config_mode:
             if key == keyboard.Key.f1:
-                if not self.set_alert_region:
-                    self.taking_screenshot = False
+                if not self.set_alert_region and not self.set_faction_region:
                     self.set_faction_region = False
                     self.set_alert_region = True
-                    self.write_message("Alert Mode: Activated.")
-                else:
-                    self.write_message("Alert Mode: Deactivated.")
-                    self.set_alert_region = False
+                    self.write_message("Settings: Enemy Active.")
+                    self.after(0, self.start_overlay)
             if key == keyboard.Key.f2:
-                if not self.set_faction_region:
-                    self.taking_screenshot = False
+                if not self.set_faction_region and not self.set_alert_region:
                     self.set_alert_region = False
                     self.set_faction_region = True
-                    self.write_message("Faction Mode: Activated.")
-                else:
-                    self.write_message("Faction Mode: Deactivated.")
+                    self.write_message("Settings: Faction Active.")
+                    self.after(0, self.start_overlay)
+            elif key == keyboard.Key.esc:
+                if self.set_faction_region:
                     self.set_faction_region = False
-            if key == keyboard.Key.f3:
-                if not self.taking_screenshot:
-                    self.taking_screenshot = True
-                    self.set_faction_region = False
+                if self.set_alert_region:
                     self.set_alert_region = False
-                    self.screenshot.start_x, self.screenshot.start_y = None, None
-                    self.screenshot.end_x, self.screenshot.end_y = None, None
-                    self.write_message("Screenshot Mode: Activated.")
-                else:
-                    self.taking_screenshot = False
-                    self.write_message("Screenshot Mode: Deactivated.")
-                    if (
-                        self.screenshot.start_x is not None
-                        and self.screenshot.start_y is not None
-                        and self.screenshot.end_x is not None
-                        and self.screenshot.end_y is not None
-                    ):
-                        try:
-                            if self.screenshot.screenshot_overlay:
-                                self.screenshot.screenshot_overlay.destroy()
-                            screenshot = wincap.take_screenshot(
-                                self.screenshot.start_x,
-                                self.screenshot.start_y,
-                                self.screenshot.end_y - self.screenshot.start_y,
-                                self.screenshot.end_x - self.screenshot.start_x,
-                            )
-                            # screenshot = pyautogui.screenshot(region=(start_x, start_y, end_x - start_x, end_y - start_y))
-                            if screenshot:
-                                self.write_message(
-                                    "Screenshot Saved.",
-                                    "green",
-                                )
-                            else:
-                                raise ScreenshotError("Screenshot Error")
-                        except Exception as e:
-                            logger.error("Screenshot Error: %s", e)
-                            self.write_message(
-                                "Screenshot Positions wrong.",
-                                "red",
-                            )
+                if self.overlay_app.overlay:
+                    self.overlay_app.cleanup()
+                    self.write_message("Settings: Aborted.")
 
     # Menu Button Section
-
     def exit_button_clicked(self):
+        """Stop the Alert System and close the application."""
         if self.alarm.is_running():
             self.alarm.stop()
             self.write_message("System: ❎ EVE Alert stopped.", "red")
@@ -506,6 +351,7 @@ class AlertMenu(customtkinter.CTk):
 
     # Starten Sie den Alert-Thread, indem Sie die Alert-Funktion aus alert.py aufrufen
     def start_alert_script(self):
+        """Start the Alert System (Thread)."""
         try:
             if not self.alarm.is_running():
                 Thread(target=self.alarm.start).start()
@@ -516,6 +362,7 @@ class AlertMenu(customtkinter.CTk):
             self.write_message("System: Something went wrong.", "red")
 
     def stop_alert_script(self):
+        """Stop the Alert System."""
         if self.alarm.is_running():
             self.alarm.stop()
             self.write_message("System: EVE Alert stopped.", "red")

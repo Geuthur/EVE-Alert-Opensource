@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import customtkinter
 from PIL import Image, ImageTk
 
@@ -5,19 +7,22 @@ from evealert.settings.constants import ICON
 from evealert.settings.functions import get_resource_path
 from evealert.settings.logger import logging
 
+if TYPE_CHECKING:
+    from .alert import AlertMenu
+
 logger = logging.getLogger("alert")
 
 
-class ConfigMenu:
+class SettingsMenu:
     """Configuration menu for the Alert System."""
 
-    def __init__(self, main: customtkinter.CTk):
+    def __init__(self, main: "AlertMenu"):
         self.main = main
         self.active = False
         self.config_window_y = None
         self.set_icon(ICON)
 
-        self.load_settings()
+        self.create_menu()
 
     def set_icon(self, icon):
         try:
@@ -28,7 +33,21 @@ class ConfigMenu:
         except Exception as e:
             logger.exception("Error setting icon: %s", e)
 
-    def load_settings(self):
+    def cleanup(self):
+        self.main.buttons.config_button.configure(
+            fg_color="#1f538d", hover_color="#14375e"
+        )
+        self.config_window.destroy()
+        self.active = False
+
+    def close_menu(self):
+        self.main.buttons.config_button.configure(
+            fg_color="#1f538d", hover_color="#14375e"
+        )
+        self.config_window.withdraw()
+        self.active = False
+
+    def create_menu(self):
         """Load the settings from the settings file."""
         self.config_window = customtkinter.CTkToplevel(self.main)
         self.config_window.title("Settings")
@@ -93,17 +112,22 @@ class ConfigMenu:
             variable=self.detectionscale,
             command=self.slider_event,
         )
-        self.mode_var = customtkinter.StringVar(value="color")
 
-        # Row 7
-        # Config / Detection Mode- Init
-        self.mode_checkbox = customtkinter.CTkCheckBox(
+        # Row 7 - Init
+        # Slider
+        self.faction_slider_label = customtkinter.CTkLabel(
+            self.menu_frame, text="Faction Detection Threshold"
+        )
+        self.faction_scale = customtkinter.DoubleVar()
+        self.faction_scale.set(70)  # Setzen Sie den Standardwert auf 70
+        self.slider2 = customtkinter.CTkSlider(
             self.menu_frame,
-            text="Detection Mode",
-            variable=self.mode_var,
-            onvalue="color",
-            offvalue="picture",
-            command=self.update_mode,
+            from_=0,
+            to=100,
+            orientation="horizontal",
+            number_of_steps=100,
+            variable=self.faction_scale,
+            command=self.factionslider_event,
         )
 
         self.cooldown_timer_label = customtkinter.CTkLabel(
@@ -114,9 +138,15 @@ class ConfigMenu:
             self.menu_frame, text="Seconds", justify="left"
         )
 
+        self.close_button = customtkinter.CTkButton(
+            self.menu_frame, text="Close", command=self.close_menu
+        )
+
         if self.main.settings:
             self.settingsvalue = self.main.settings.open_settings()
+
             self.logging.insert(0, self.settingsvalue["logging"])
+
             self.alert_region_x_first.insert(
                 0, self.settingsvalue["alert_region_1"]["x"]
             )
@@ -129,6 +159,7 @@ class ConfigMenu:
             self.alert_region_y_second.insert(
                 0, self.settingsvalue["alert_region_2"]["y"]
             )
+
             self.faction_region_x_first.insert(
                 0, self.settingsvalue["faction_region_1"]["x"]
             )
@@ -141,15 +172,17 @@ class ConfigMenu:
             self.faction_region_y_second.insert(
                 0, self.settingsvalue["faction_region_2"]["y"]
             )
+
             self.detectionscale.set(self.settingsvalue["detectionscale"]["value"])
-            self.mode_var.set(self.settingsvalue["detection_mode"]["value"])
+            self.faction_scale.set(self.settingsvalue["faction_scale"]["value"])
+
             self.cooldown_timer.insert(0, self.settingsvalue["cooldown_timer"]["value"])
 
-    def open_description_window(self):
-        """Opoens the description window for the configuration mode."""
+    def open_menu(self):
+        """Opens the settings window."""
         if not self.active:
             self.active = True
-            self.main.config_mode = True
+            # self.main.config_mode = True
             self.main.buttons.config_button.configure(
                 fg_color="#fa0202", hover_color="#bd291e"
             )
@@ -165,7 +198,7 @@ class ConfigMenu:
             )
 
             config_window_width = 650
-            config_window_height = 320
+            config_window_height = 340
             config_window_x = config_menu_x + config_menu_width + 10
             config_window_y = (
                 config_menu_y + config_menu_height + 40
@@ -184,8 +217,9 @@ class ConfigMenu:
             self.empty_label_1 = customtkinter.CTkLabel(
                 self.menu_frame, text=self.slider.get()
             )
-            self.empty_label_00 = customtkinter.CTkLabel(
-                self.menu_frame, text=self.mode_var.get()
+
+            self.empty_label_2 = customtkinter.CTkLabel(
+                self.menu_frame, text=self.slider2.get()
             )
 
             self.label_x_axis.grid(row=0, column=1)
@@ -198,18 +232,18 @@ class ConfigMenu:
 
             # Alert Region 2 Visual
             self.alert_region_label_2.grid(row=2, column=0, padx=20)
-            self.alert_region_x_second.grid(row=2, column=1)
-            self.alert_region_y_second.grid(row=2, column=2)
+            self.alert_region_x_second.grid(row=2, column=1, padx=20)
+            self.alert_region_y_second.grid(row=2, column=2, padx=20)
 
             # Faction Region 1 Visual
             self.faction_region_label_1.grid(row=3, column=0, padx=20)
-            self.faction_region_x_first.grid(row=3, column=1)
-            self.faction_region_y_first.grid(row=3, column=2)
+            self.faction_region_x_first.grid(row=3, column=1, padx=20)
+            self.faction_region_y_first.grid(row=3, column=2, padx=20)
 
             # Faction Region 2 Visual
             self.faction_region_label_2.grid(row=4, column=0, padx=20)
-            self.faction_region_x_second.grid(row=4, column=1)
-            self.faction_region_y_second.grid(row=4, column=2)
+            self.faction_region_x_second.grid(row=4, column=1, padx=20)
+            self.faction_region_y_second.grid(row=4, column=2, padx=20)
 
             # Faction Region 2 Visual
             self.cooldown_timer_label.grid(row=5, column=0, padx=20)
@@ -223,38 +257,26 @@ class ConfigMenu:
             self.slider_label.grid(row=6, column=0)
             self.slider.grid(row=6, column=1)
 
-            # Mode Change
-            self.mode_checkbox.grid(row=7, column=1)
-            self.empty_label_00.grid(row=7, column=2)
+            # Slider Visual
+            self.empty_label_2.grid(row=7, column=2)
 
-            def close_config_window():
-                self.main.buttons.config_button.configure(
-                    fg_color="#1f538d", hover_color="#14375e"
-                )
-                self.main.config_mode = False
-                self.config_window.withdraw()
+            # Slider Visual
+            self.faction_slider_label.grid(row=7, column=0)
+            self.slider2.grid(row=7, column=1)
 
-            self.config_window.protocol("WM_DELETE_WINDOW", close_config_window)
-
-            self.close_button = customtkinter.CTkButton(
-                self.menu_frame, text="Schließen", command=close_config_window
-            )
+            # Close Button
             self.close_button.grid(column=1, pady=10)
+
+            self.config_window.protocol("WM_DELETE_WINDOW", self.close_menu)
         else:
             self.active = False
-            self.main.config_mode = False
             self.main.buttons.config_button.configure(
                 fg_color="#1f538d", hover_color="#14375e"
             )
             self.config_window.withdraw()
 
-    def update_mode(self):
-        selected_mode = self.mode_var.get()
-        if selected_mode == "color" and self.main.alarm.get_vision() is True:
-            self.main.alarm.set_vision()
-            self.main.alarm.set_vision_faction()
-        self.main.save_settings()
-        self.empty_label_00.configure(text=selected_mode)
-
     def slider_event(self, slider_value):
         self.empty_label_1.configure(text=slider_value)
+
+    def factionslider_event(self, slider_value):
+        self.empty_label_2.configure(text=slider_value)
