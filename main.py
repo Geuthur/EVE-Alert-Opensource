@@ -1,7 +1,7 @@
 import customtkinter
 
 from evealert import __version__
-from evealert.menus.alert import AlertMenu
+from evealert.menu.main import MainMenu
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
@@ -50,5 +50,5 @@ print(
 )
 
 # Start the application
-app = AlertMenu()
+app = MainMenu()
 app.mainloop()
