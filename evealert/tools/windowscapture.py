@@ -1,16 +1,22 @@
 import sys
+from typing import TYPE_CHECKING
 
 import mss
 import numpy as np
 from PIL import Image
 
-from evealert.managers.settingsmanager import SettingsManager
+from evealert.settings.logger import logging
+
+if TYPE_CHECKING:
+    from evealert.menu.main import MainMenu
+
+logger = logging.getLogger("tools")
 
 
 class WindowCapture:
-
-    def __init__(self):
-        config = SettingsManager.open_settings(self)
+    def __init__(self, mainmenu: "MainMenu"):
+        self.main = mainmenu
+        config = self.main.setting.load_settings()
         if config:
             self.x1 = int(config.get("alert_region_1", {}).get("x", None))
             self.y1 = int(config.get("alert_region_1", {}).get("y", None))
@@ -19,7 +25,7 @@ class WindowCapture:
             self.detection = config.get("detectionscale", {}).get("value", None)
             self.mode = config.get("detection_mode", {}).get("value", "picture")
             self.detection = self.detection / 100
-            # print(detection)
+            print(config)
         else:
             print("No configuration found...")
             sys.exit()

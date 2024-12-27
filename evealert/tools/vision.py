@@ -6,19 +6,18 @@ import numpy as np
 
 from evealert.exceptions import RegionSizeError, ScreenshotError
 
-logger = logging.getLogger("alert")
+logger = logging.getLogger("tools")
 now = datetime.now()
 
 
 class Vision:
-
-    # properties
     needle_img = None
     needle_w = 0
     needle_h = 0
     method = None
 
-    # constructor
+    # There are 6 methods to choose from:
+    # TM_CCOEFF, TM_CCOEFF_NORMED, TM_CCORR, TM_CCORR_NORMED, TM_SQDIFF, TM_SQDIFF_NORMED
     def __init__(self, needle_img_paths, method=cv.TM_CCOEFF_NORMED):
         # Load the images we're trying to match
         self.needle_imgs = [
@@ -28,8 +27,6 @@ class Vision:
         # Save the dimensions of the needle images
         self.needle_dims = [(img.shape[1], img.shape[0]) for img in self.needle_imgs]
 
-        # There are 6 methods to choose from:
-        # TM_CCOEFF, TM_CCOEFF_NORMED, TM_CCORR, TM_CCORR_NORMED, TM_SQDIFF, TM_SQDIFF_NORMED
         self.method = method
         self.debug_mode = False
         self.debug_mode_faction = False
