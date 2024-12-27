@@ -9,3 +9,4 @@ logs/
 build/
 dist/
 main.spec
+testing/
