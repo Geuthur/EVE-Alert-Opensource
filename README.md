@@ -17,7 +17,6 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
     - [Make Build](#step3)
   - [Detection](#detection)
     - [Image Detection](#imagedetection)
-    - [Detection Mode](#detectionmode)
   - [Resolution](#resolution)
   - [Showcase](#showcase)
   - [Donation](#donation)
