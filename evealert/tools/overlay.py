@@ -23,8 +23,12 @@ class OverlaySystem:
         self.overlay.attributes("-alpha", 0.3)
         self.overlay.attributes("-topmost", True)
         self.overlay.configure(bg="black")
+
+        monitor_x = monitor.x - 10 # Subtract 10 pixels to solve weird bug?
+        monitor_y = monitor.y
+
         self.overlay.geometry(
-            f"{monitor.width}x{monitor.height}+{monitor.x}+{monitor.y}"
+            f"{monitor.width}x{monitor.height}+{(monitor_x)}+{monitor_y}"
         )
 
         self.canvas = customtkinter.CTkCanvas(
