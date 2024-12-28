@@ -2,8 +2,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from evealert.managers.settingsmanager import SettingsManager
-
 # Logging
 LOG_PATH = Path("logs")
 LOG_PATH.mkdir(exist_ok=True)
@@ -26,18 +24,20 @@ def create_fh(name: str):
     return fh
 
 
-alert_log = logging.getLogger("alert")
-alert_log.addHandler(create_fh("alert"))
-settings_config = SettingsManager().open_settings()
-log_level = settings_config.get("logging")
+def setup_logger(name: str, level: str = "info"):
+    """Create a logger with the given name and level."""
 
-if log_level:
-    try:
-        alert_log.setLevel(log_level)
-    except Exception as e:
-        alert_log.setLevel(logging.ERROR)
-        alert_log.error("Wrong Logging Level: %s", e)
-else:
-    alert_log.setLevel(logging.ERROR)
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(create_fh(name))
+    return logger
+
+
+# Create loggers
+main_log = setup_logger("main", "INFO")
+test_log = setup_logger("test", "INFO")
+alert_log = setup_logger("alert", "INFO")
+menu_log = setup_logger("menu", "INFO")
+tools_log = setup_logger("tools", "INFO")
 
 logging.StreamHandler()
