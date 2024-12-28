@@ -1,6 +1,9 @@
+import json
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+
+from evealert.settings.helper import get_resource_path
 
 # Logging
 LOG_PATH = Path("logs")
@@ -24,8 +27,19 @@ def create_fh(name: str):
     return fh
 
 
-def setup_logger(name: str, level: str = "info"):
+def setup_logger(name: str, level: str = None):
     """Create a logger with the given name and level."""
+    config_path = get_resource_path("settings.json")
+
+    try:
+        with open(config_path, encoding="utf-8") as config_file:
+            settings = json.load(config_file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("Logger System: Error loading settings file. Use default settings.")
+        level = "INFO"
+
+    if level is None:
+        level = settings.get("log_level", "INFO")
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -34,10 +48,10 @@ def setup_logger(name: str, level: str = "info"):
 
 
 # Create loggers
-main_log = setup_logger("main", "INFO")
-test_log = setup_logger("test", "INFO")
-alert_log = setup_logger("alert", "INFO")
-menu_log = setup_logger("menu", "INFO")
-tools_log = setup_logger("tools", "INFO")
+main_log = setup_logger("main")
+alert_log = setup_logger("alert")
+menu_log = setup_logger("menu")
+tools_log = setup_logger("tools")
+test_log = setup_logger("test")
 
 logging.StreamHandler()
