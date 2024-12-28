@@ -30,6 +30,7 @@ class OverlaySystem:
         self.overlay.geometry(
             f"{monitor.width}x{monitor.height}+{(monitor_x)}+{monitor_y}"
         )
+        self.overlay.protocol("WM_DELETE_WINDOW", self.cleanup)
 
         self.canvas = customtkinter.CTkCanvas(
             self.overlay, bg="black", highlightthickness=0
@@ -43,6 +44,8 @@ class OverlaySystem:
         if self.overlay:
             self.overlay.destroy()
             self.overlay = None
+            self.main.menu.config.faction_region = False
+            self.main.menu.config.alert_region = False
         if self.canvas:
             self.canvas.destroy()
             self.canvas = None
@@ -51,6 +54,7 @@ class OverlaySystem:
         self.end_x = None
         self.end_y = None
         self.rect = None
+
 
     def on_button_press(self, event):
         self.start_x = event.x
@@ -110,8 +114,7 @@ class OverlaySystem:
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
         self.main.setting.save_settings(settings)
-        self.main.setting.apply_settings(settings)
-        self.main.menu.config.alert_region = False
+        self.main.menu.config.changed = True
         self.cleanup()
         self.main.write_message("Settings: Enemy Deactivated.")
 
@@ -128,7 +131,6 @@ class OverlaySystem:
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
         self.main.setting.save_settings(settings)
-        self.main.setting.apply_settings(settings)
-        self.main.menu.config.faction_region = False
+        self.main.menu.config.changed = True
         self.cleanup()
         self.main.write_message("Settings: Faction Deactivated.")
