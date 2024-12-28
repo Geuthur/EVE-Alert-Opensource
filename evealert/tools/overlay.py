@@ -18,7 +18,7 @@ class OverlaySystem:
         self.canvas = None
 
     def create_overlay(self, monitor):
-        self.cleanup()
+        self.clean_up()
         self.overlay = customtkinter.CTkToplevel(self.main)
         self.overlay.attributes("-alpha", 0.3)
         self.overlay.attributes("-topmost", True)
@@ -30,7 +30,7 @@ class OverlaySystem:
         self.overlay.geometry(
             f"{monitor.width}x{monitor.height}+{(monitor_x)}+{monitor_y}"
         )
-        self.overlay.protocol("WM_DELETE_WINDOW", self.cleanup)
+        self.overlay.protocol("WM_DELETE_WINDOW", self.clean_up)
 
         self.canvas = customtkinter.CTkCanvas(
             self.overlay, bg="black", highlightthickness=0
@@ -40,7 +40,7 @@ class OverlaySystem:
         self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_button_release)
 
-    def cleanup(self):
+    def clean_up(self):
         if self.overlay:
             self.overlay.destroy()
             self.overlay = None
@@ -103,34 +103,34 @@ class OverlaySystem:
 
     def set_alert_region(self):
         settings = self.main.setting.load_settings()
-        settings["alert_region_1"]["x"] = self.start_x + 10
+        settings["alert_region_1"]["x"] = self.start_x
         settings["alert_region_1"]["y"] = (
             self.start_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
-        settings["alert_region_2"]["x"] = self.end_x + 10
+        settings["alert_region_2"]["x"] = self.end_x
         settings["alert_region_2"]["y"] = (
             self.end_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
         self.main.setting.save_settings(settings)
         self.main.menu.config.changed = True
-        self.cleanup()
+        self.clean_up()
         self.main.write_message("Settings: Enemy Deactivated.")
 
     def set_faction_region(self):
         settings = self.main.setting.load_settings()
-        settings["faction_region_1"]["x"] = self.start_x + 10
+        settings["faction_region_1"]["x"] = self.start_x
         settings["faction_region_1"]["y"] = (
             self.start_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
-        settings["faction_region_2"]["x"] = self.end_x + 10
+        settings["faction_region_2"]["x"] = self.end_x
         settings["faction_region_2"]["y"] = (
             self.end_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
         self.main.setting.save_settings(settings)
         self.main.menu.config.changed = True
-        self.cleanup()
+        self.clean_up()
         self.main.write_message("Settings: Faction Deactivated.")
