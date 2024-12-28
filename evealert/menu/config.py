@@ -12,6 +12,7 @@ class ConfigModeMenu:
     def __init__(self, main: "MainMenu"):
         self.main = main
         self.open = False
+        self.changed = False
 
         self.alert_region = False
         self.faction_region = False
@@ -25,7 +26,7 @@ class ConfigModeMenu:
         description_text += (
             "\nAfter pressing F1 or F2 set your region with Marquee Selection.\n"
         )
-        description_text += "\nTo abort everything you can Press ESC.\n"
+        description_text += "\nTo abort everything Press ESC.\n"
 
         menu_frame = customtkinter.CTkFrame(self.description_window)
         menu_frame.pack(side="left", padx=20, pady=20)
@@ -56,6 +57,11 @@ class ConfigModeMenu:
     def is_faction_region(self):
         """Returns True if the faction region is active."""
         return self.faction_region
+    
+    @property
+    def is_changed(self):
+        """Returns True if the configuration mode has been changed."""
+        return self.changed
 
     def clean_up(self):
         """Closes the description window if it is open."""

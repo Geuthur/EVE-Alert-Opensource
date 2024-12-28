@@ -16,25 +16,21 @@ if TYPE_CHECKING:
     from evealert.menu.main import MainMenu
 
 # Den Dateinamen des Alarmklangs angeben
-ALERT_SOUND = "sound/alarm.wav"
-FACTION_SOUND = "sound/faction.wav"
 IMG_FOLDER = "evealert/img"
 
-alarm_sound = get_resource_path(ALERT_SOUND)
-faction_sound = get_resource_path(FACTION_SOUND)
+ALARM_SOUND = get_resource_path("sound/alarm.wav")
+FACTION_SOUND = get_resource_path("sound/faction.wav")
 
-image_filenames = [
+ALERT_FILES = [
     os.path.join(IMG_FOLDER, filename)
     for filename in os.listdir(IMG_FOLDER)
     if filename.startswith("image_")
 ]
-image_faction_filenames = [
+FACTION_FILES = [
     os.path.join(IMG_FOLDER, filename)
     for filename in os.listdir(IMG_FOLDER)
     if filename.startswith("faction_")
 ]
-vision = Vision(image_filenames)
-vision_faction = Vision(image_faction_filenames)
 
 logger = logging.getLogger("alert")
 
@@ -46,6 +42,8 @@ class AlertAgent:
         self.main = main
         self.loop = asyncio.get_event_loop()
         self.wincap = WindowCapture(self.main)
+        self.alert_vision = Vision(ALERT_FILES)
+        self.alert_vision_faction = Vision(FACTION_FILES)
 
         # Main Settings
         self.running = False
@@ -109,23 +107,23 @@ class AlertAgent:
         self.loop.stop()
         self.running = False
         self.alarm_counter = {"Enemy": 0, "Faction": 0}
-        vision.debug_mode = False
-        vision_faction.debug_mode_faction = False
+        self.alert_vision.debug_mode = False
+        self.alert_vision_faction.debug_mode_faction = False
 
     def is_running(self):
         return self.running
 
     def get_vision(self):
-        return vision.debug_mode
+        return self.alert_vision.debug_mode
 
     def get_vision_faction(self):
-        return vision_faction.debug_mode_faction
+        return self.alert_vision_faction.debug_mode_faction
 
     def set_vision(self):
-        vision.debug_mode = not vision.debug_mode
+        self.alert_vision.debug_mode = not self.alert_vision.debug_mode
 
     def set_vision_faction(self):
-        vision_faction.debug_mode_faction = not vision_faction.debug_mode_faction
+        self.alert_vision_faction.debug_mode_faction = not self.alert_vision_faction.debug_mode_faction
 
     async def vision_check(self):
         self.load_settings()
@@ -145,7 +143,7 @@ class AlertAgent:
                     self.y1, self.x1, self.x2, self.y2
                 )
                 if screenshot is not None:
-                    enemy = vision.find(screenshot, self.detection)
+                    enemy = self.alert_vision.find(screenshot, self.detection)
                     if enemy == "Error":
                         break
                     if enemy:
@@ -161,21 +159,24 @@ class AlertAgent:
         async with self.factionlock:
             self.faction_state = True
             while True:
+                if self.main.menu.config.is_changed:
+                    self.load_settings()
+                    self.main.menu.config.changed = False
                 screenshot_faction, _ = self.wincap.get_screenshot_value(
                     self.y1_faction, self.x1_faction, self.x2_faction, self.y2_faction
                 )
                 if screenshot_faction is not None:
                     try:
-                        faction = vision_faction.find_faction(
+                        faction = self.alert_vision_faction.find_faction(
                             screenshot_faction, self.detection_faction
                         )
                     except Exception as e:
                         faction = None
                         logger.error(e)
                         self.main.write_message(e, "red")
-                        if vision_faction.faction:
+                        if self.alert_vision_faction.faction:
                             cv.destroyWindow("Faction Vision")
-                            vision_faction.faction = False
+                            self.alert_vision_faction.faction = False
                         await asyncio.sleep(10)
 
                     if faction:
@@ -209,7 +210,7 @@ class AlertAgent:
         if alarm_type in self.timerlock and self.timerlock[alarm_type].locked():
             self.timerlock[alarm_type].release()
 
-    async def alarm_detection(self, alarm_text, sound=alarm_sound, alarm_type="Enemy"):
+    async def alarm_detection(self, alarm_text, sound=ALARM_SOUND, alarm_type="Enemy"):
         if self.alarm_counter.get(alarm_type, 0) >= self.alarm_frequency:
             return
         self.alarm_counter[alarm_type] = self.alarm_counter.get(alarm_type, 0) + 1
@@ -247,12 +248,12 @@ class AlertAgent:
                     if self.faction:
                         self.alarm_detected = True
                         await self.alarm_detection(
-                            "Faction Spawn!", faction_sound, "Faction"
+                            "Faction Spawn!", FACTION_SOUND, "Faction"
                         )
                     if self.enemy:
                         self.alarm_detected = True
                         await self.alarm_detection(
-                            "Enemy Appears!", alarm_sound, "Enemy"
+                            "Enemy Appears!", ALARM_SOUND, "Enemy"
                         )
                 except ValueError as e:
                     logger.error("Alert System Error: %s", e)
