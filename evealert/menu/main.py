@@ -155,7 +155,7 @@ class MainMenu(customtkinter.CTk):
 
         # Start Stopp System
         self.engine_label_frame = customtkinter.CTkFrame(self)
-        
+
         # Status Label
         self.show_status_label = customtkinter.CTkLabel(
             self.mainmenu_buttons.alert_label_frame,

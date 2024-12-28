@@ -1,4 +1,3 @@
-import sys
 from typing import TYPE_CHECKING
 
 import mss
@@ -32,7 +31,7 @@ class WindowCapture:
             :, :, :3
         ]  # Keep only RGB channels, drop the alpha channel
         # img_array.setflags(write=1)
-        
+
         # Create an Image object directly from the NumPy array
         img = Image.fromarray(img_array)
         # Convert the Image to a NumPy array and drop the alpha channel

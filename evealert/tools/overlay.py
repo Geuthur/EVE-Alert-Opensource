@@ -24,7 +24,7 @@ class OverlaySystem:
         self.overlay.attributes("-topmost", True)
         self.overlay.configure(bg="black")
 
-        monitor_x = monitor.x - 10 # Subtract 10 pixels to solve weird bug?
+        monitor_x = monitor.x - 10  # Subtract 10 pixels to solve weird bug?
         monitor_y = monitor.y
 
         self.overlay.geometry(
@@ -54,7 +54,6 @@ class OverlaySystem:
         self.end_x = None
         self.end_y = None
         self.rect = None
-
 
     def on_button_press(self, event):
         self.start_x = event.x

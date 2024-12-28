@@ -127,7 +127,9 @@ class AlertAgent:
         self.alert_vision.debug_mode = not self.alert_vision.debug_mode
 
     def set_vision_faction(self):
-        self.alert_vision_faction.debug_mode_faction = not self.alert_vision_faction.debug_mode_faction
+        self.alert_vision_faction.debug_mode_faction = (
+            not self.alert_vision_faction.debug_mode_faction
+        )
 
     async def vision_check(self):
         self.load_settings()

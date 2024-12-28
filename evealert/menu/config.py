@@ -57,7 +57,7 @@ class ConfigModeMenu:
     def is_faction_region(self):
         """Returns True if the faction region is active."""
         return self.faction_region
-    
+
     @property
     def is_changed(self):
         """Returns True if the configuration mode has been changed."""
