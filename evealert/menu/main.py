@@ -311,7 +311,7 @@ class MainMenu(customtkinter.CTk):
                     self.after(0, self.start_overlay)
             elif key == keyboard.Key.esc:
                 if self.overlay_system.overlay:
-                    self.overlay_system.cleanup()
+                    self.overlay_system.clean_up()
                     self.write_message("Settings: Aborted.")
 
     def start_alert_script(self):
