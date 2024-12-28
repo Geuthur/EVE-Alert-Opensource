@@ -16,12 +16,10 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
     - [Install Python](#step2)
     - [Make Build](#step3)
   - [Detection](#detection)
-    - [Image Detection](#imagedetection)
-  - [Resolution](#resolution)
   - [Showcase](#showcase)
   - [Donation](#donation)
   - [Terms](#terms)
-  - [Contributing](#contribute)
+  - [Contributing](#contributing)
 
 ## Features<a name="features"></a>
 
@@ -33,14 +31,15 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 
 ## Usage<a name="usage"></a>
 
-- Simply launch Alert.exe, and a menu will appear. You can configure all your settings there. Afterward, click on "Start."
+- Simply launch EveLocal.exe, and a menu will appear. You can configure all your settings there. Afterward, click on "Start."
 - If the Alert doesn't respond to the local chat, you can reduce the detection accuracy or double-check if you've set the region correctly.
 - If both settings are 100% accurate and your interface is not blurred, make a new screenshot from your neutral symbol and try it with your own image
 - You can edit all images & sounds by yourself only the name must be the same
 
 ## Installation<a name="installation"></a>
 
-To create an executable program, you need to download a release version and then run it through the installer in an environment.
+You can just execute the "EveLocal.exe" or make a own Build with Python.\
+To create an executable program, you need to download a release version and then run it through the installer in an environment.\
 You also need a Python Version installed on Windows or Linux
 
 ### Download Version<a name="step1"></a>
@@ -88,21 +87,11 @@ Now you will find a folder called dist/ where the finished executable program is
 
 ## Detection<a name="detection"></a>
 
-### Image Detection<a name="imagedetection"></a>
-
 - Neutral: ![Neutral](https://i.imgur.com/SdjoIs6.png)
 - Enemys: ![Red](https://i.imgur.com/O0VTT69.png)
 
-If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.
-
-## Resolution<a name="resolution"></a>
-
-> [!NOTE]
-> Resolution Scaling can be a issue
-
-![Window](https://i.imgur.com/e0X2sGM.png)
-
-![EVE](https://i.imgur.com/08hxzIj.png)
+If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.\
+Note: If you have different UI Scaling you need to add these images to the img folder like the `image_1_90%`
 
 ## Showcase<a name="showcase"></a>
 
@@ -111,7 +100,8 @@ https://github.com/Geuthur/EVE-Alert-Opensource/evealert/docs/videos/detection.m
 ## Donation<a name="donation"></a>
 
 I know it is simple Script, but if you want to support me here:
-https://www.paypal.com/paypalme/HellRiderZ
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W810Q5J4)
 
 ## Terms<a name="terms"></a>
 
@@ -119,7 +109,7 @@ https://www.paypal.com/paypalme/HellRiderZ
 > This is an open-source project without any guarantees. Use it at your own risk.
 > Please ensure that you comply with EVE Online's terms of use and policies. The use of bots or automation may violate the game's terms of service.
 
-## Contributing<a name="contribute"></a>
+## Contributing<a name="contributing"></a>
 
 Contributions are welcome! If you would like to contribute to this project and optimize the code, follow these steps:
 
