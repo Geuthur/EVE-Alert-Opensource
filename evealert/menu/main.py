@@ -300,10 +300,6 @@ class MainMenu(customtkinter.CTk):
                     self.write_message("Settings: Faction Active.")
                     self.after(0, self.start_overlay)
             elif key == keyboard.Key.esc:
-                if self.menu.config.is_faction_region:
-                    self.menu.config.faction_region = False
-                if self.menu.config.is_alert_region:
-                    self.menu.config.alert_region = False
                 if self.overlay_system.overlay:
                     self.overlay_system.cleanup()
                     self.write_message("Settings: Aborted.")
