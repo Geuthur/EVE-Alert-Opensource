@@ -124,6 +124,13 @@ class MainMenu(customtkinter.CTk):
         self.current_status = False
         self.check_status()
 
+    def clean_up(self):
+        """Cleanup the main system."""
+        self.overlay_system.clean_up()
+        self.menu.config.clean_up()
+        self.alert.clean_up()
+        self.destroy()
+
     def init_widgets(self):
         # Create the main window
         self.set_icon(ICON)
@@ -148,21 +155,22 @@ class MainMenu(customtkinter.CTk):
 
         # Start Stopp System
         self.engine_label_frame = customtkinter.CTkFrame(self)
-
+        
+        # Status Label
         self.show_status_label = customtkinter.CTkLabel(
             self.mainmenu_buttons.alert_label_frame,
             text="",
             compound="left",
             font=customtkinter.CTkFont(size=15, weight="bold"),
         )
-
+        # Status Icons
         self.online = customtkinter.CTkImage(
             Image.open(get_resource_path("img/online.png")), size=(24, 24)
         )
         self.offline = customtkinter.CTkImage(
             Image.open(get_resource_path("img/offline.png")), size=(24, 24)
         )
-
+        # Start Stop Buttons
         self.start_button = customtkinter.CTkButton(
             self.engine_label_frame,
             text="Start Script",
@@ -172,12 +180,10 @@ class MainMenu(customtkinter.CTk):
             self.engine_label_frame, text="Stop Script", command=self.stop_alert_script
         )
         self.exit_button = customtkinter.CTkButton(
-            self.engine_label_frame, text="Exit", command=self.exit_button_clicked
+            self.engine_label_frame, text="Exit", command=self.clean_up
         )
-
-        self.start_button.grid(row=0, column=0, padx=(0, 10))
-        self.stop_button.grid(row=0, column=1, padx=(0, 10))
-        self.exit_button.grid(row=0, column=2)
+        # Close Button per Window Exit
+        self.protocol("WM_DELETE_WINDOW", self.clean_up)
 
     def init_menu(self):
         """Initializes the Main Menu for the Alert System."""
@@ -200,6 +206,10 @@ class MainMenu(customtkinter.CTk):
         # Status Label
         self.mainmenu_buttons.show_status_label.configure(image=self.offline)
         self.mainmenu_buttons.show_status_label.image = self.offline
+        # Start Stop Buttons
+        self.start_button.grid(row=0, column=0, padx=(0, 10))
+        self.stop_button.grid(row=0, column=1, padx=(0, 10))
+        self.exit_button.grid(row=0, column=2)
 
         keyboard_listener = keyboard.Listener(on_release=self.on_key_release)
         keyboard_listener.start()
@@ -303,19 +313,6 @@ class MainMenu(customtkinter.CTk):
                 if self.overlay_system.overlay:
                     self.overlay_system.cleanup()
                     self.write_message("Settings: Aborted.")
-
-    # Menu Button Section
-    def exit_button_clicked(self):
-        """Stop the Alert System and close the application."""
-        if self.alert.is_running():
-            self.alert.stop()
-            self.write_message("System: ❎ EVE Alert stopped.", "red")
-        else:
-            self.write_message(
-                "System: ❎ EVE Alert isn't running.",
-                "red",
-            )
-        self.destroy()
 
     def start_alert_script(self):
         """Start the Alert System (Thread)."""
