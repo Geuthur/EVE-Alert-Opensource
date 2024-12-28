@@ -69,6 +69,10 @@ class AlertAgent:
 
         self.load_settings()
 
+    def clean_up(self):
+        self.stop()
+        self.main.write_message("System: EVE Alert stopped.", "green")
+
     def load_settings(self):
         settings = self.main.setting.load_settings()
 
