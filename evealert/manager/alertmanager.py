@@ -103,7 +103,7 @@ class AlertAgent:
             self.running = True
             self.main.write_message("System: EVE Alert started.", "green")
             self.loop.run_forever()
-            logger.info("Alle Tasks wurden gestartet")
+            logger.debug("Alle Tasks wurden gestartet")
             return True
         return False
 
