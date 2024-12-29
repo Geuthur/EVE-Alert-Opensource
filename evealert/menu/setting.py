@@ -102,6 +102,8 @@ class SettingMenu:
             json.dump(settings, config_file, indent=4)
 
         self.apply_settings(settings)
+        # Set the changed flag to True
+        self.main.menu.config.changed = True
 
     @property
     def is_open(self):
