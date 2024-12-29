@@ -86,7 +86,7 @@ class MainMenuButtons:
 
     def settings_mode_toggle(self):
         try:
-            self.main.setting.open_menu()
+            self.main.menu.setting.open_menu()
         except AttributeError as e:
             log_menu.exception("Setting Menu Error: %s", e)
             self.main.write_message(
@@ -98,6 +98,7 @@ class MenuManager:
     def __init__(self, main: "MainMenu"):
         self.mainmenu = main
         self.config = ConfigModeMenu(self.mainmenu)
+        self.setting = SettingMenu(self.mainmenu)
 
 
 class MainMenu(customtkinter.CTk):
@@ -110,8 +111,6 @@ class MainMenu(customtkinter.CTk):
         self.init_widgets()
         self.init_menu()
 
-        # Settings System
-        self.setting = SettingMenu(self)
         # Menu System
         self.menu = MenuManager(self)
         # Overlay System
@@ -263,17 +262,15 @@ class MainMenu(customtkinter.CTk):
 
     def check_status(self):
         """Check the status of the alert."""
-        new_status = self.alert.is_running()
-
-        if new_status != self.current_status:
-            if new_status:
+        if self.alert.is_running != self.current_status:
+            if self.alert.is_running:
                 self.mainmenu_buttons.show_status_label.configure(image=self.online)
                 self.mainmenu_buttons.show_status_label.image = self.offline
             else:
                 self.mainmenu_buttons.show_status_label.configure(image=self.offline)
                 self.mainmenu_buttons.show_status_label.image = self.offline
 
-            self.current_status = new_status
+            self.current_status = self.alert.is_running
 
         # Check the status again after (1 seconds)
         self.mainmenu_buttons.show_status_label.after(1000, self.check_status)
@@ -317,7 +314,7 @@ class MainMenu(customtkinter.CTk):
     def start_alert_script(self):
         """Start the Alert System (Thread)."""
         try:
-            if not self.alert.is_running():
+            if not self.alert.is_running:
                 Thread(target=self.alert.start).start()
             else:
                 self.write_message("System: EVE Alert is already running.")
@@ -327,7 +324,7 @@ class MainMenu(customtkinter.CTk):
 
     def stop_alert_script(self):
         """Stop the Alert System."""
-        if self.alert.is_running():
+        if self.alert.is_running:
             self.alert.stop()
             self.write_message("System: EVE Alert stopped.", "red")
             return

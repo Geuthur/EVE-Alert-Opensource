@@ -101,7 +101,7 @@ class OverlaySystem:
             self.set_faction_region()
 
     def set_alert_region(self):
-        settings = self.main.setting.load_settings()
+        settings = self.main.menu.setting.load_settings()
         settings["alert_region_1"]["x"] = self.start_x
         settings["alert_region_1"]["y"] = (
             self.start_y + 30
@@ -112,13 +112,13 @@ class OverlaySystem:
             self.end_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
-        self.main.setting.save_settings(settings)
+        self.main.menu.setting.save_settings(settings)
         self.main.menu.config.changed = True
         self.clean_up()
         self.main.write_message("Settings: Enemy Deactivated.")
 
     def set_faction_region(self):
-        settings = self.main.setting.load_settings()
+        settings = self.main.menu.setting.load_settings()
         settings["faction_region_1"]["x"] = self.start_x
         settings["faction_region_1"]["y"] = (
             self.start_y + 30
@@ -129,7 +129,7 @@ class OverlaySystem:
             self.end_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
-        self.main.setting.save_settings(settings)
+        self.main.menu.setting.save_settings(settings)
         self.main.menu.config.changed = True
         self.clean_up()
         self.main.write_message("Settings: Faction Deactivated.")
