@@ -275,9 +275,32 @@ class MainMenu(customtkinter.CTk):
         # Check the status again after (1 seconds)
         self.mainmenu_buttons.show_status_label.after(1000, self.check_status)
 
+    def update_alert_button(self):
+        if self.alert.alert_vision.is_vision_open and self.alert.is_running:
+            self.mainmenu_buttons.show_alert_button.configure(
+                fg_color="#fa0202", hover_color="#bd291e"
+            )
+        else:
+            self.mainmenu_buttons.show_alert_button.configure(
+                fg_color="#1f538d", hover_color="#14375e"
+            )
+
     def display_alert_region(self):
         """Display the alert region on the screen."""
         self.after(0, self.alert.set_vision)
+
+    def update_faction_button(self):
+        if (
+            self.alert.alert_vision_faction.is_faction_vision_open
+            and self.alert.is_running
+        ):
+            self.mainmenu_buttons.show_faction_button.configure(
+                fg_color="#fa0202", hover_color="#bd291e"
+            )
+        else:
+            self.mainmenu_buttons.show_faction_button.configure(
+                fg_color="#1f538d", hover_color="#14375e"
+            )
 
     def display_faction_region(self):
         """Display the faction region on the screen."""

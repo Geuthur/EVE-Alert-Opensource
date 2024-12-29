@@ -132,6 +132,8 @@ class AlertAgent:
         self.alarm_counter = {"Enemy": 0, "Faction": 0}
         self.alert_vision.debug_mode = False
         self.alert_vision_faction.debug_mode_faction = False
+        self.main.update_alert_button()
+        self.main.update_faction_button()
 
     def get_vision(self):
         return self.alert_vision.debug_mode
@@ -140,12 +142,16 @@ class AlertAgent:
         return self.alert_vision_faction.debug_mode_faction
 
     def set_vision(self):
-        self.alert_vision.debug_mode = not self.alert_vision.debug_mode
+        if self.is_running:
+            self.alert_vision.debug_mode = not self.alert_vision.debug_mode
+            self.main.update_alert_button()
 
     def set_vision_faction(self):
-        self.alert_vision_faction.debug_mode_faction = (
-            not self.alert_vision_faction.debug_mode_faction
-        )
+        if self.is_running:
+            self.alert_vision_faction.debug_mode_faction = (
+                not self.alert_vision_faction.debug_mode_faction
+            )
+            self.main.update_faction_button()
 
     async def vision_check(self):
         self.load_settings()
