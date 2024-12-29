@@ -69,12 +69,16 @@ class AlertAgent:
 
         self.load_settings()
 
+    @property
+    def is_running(self):
+        return self.running
+
     def clean_up(self):
         self.stop()
         self.main.write_message("System: EVE Alert stopped.", "green")
 
     def load_settings(self):
-        settings = self.main.setting.load_settings()
+        settings = self.main.menu.setting.load_settings()
 
         if settings:
             self.x1 = int(settings["alert_region_1"]["x"])
@@ -88,6 +92,21 @@ class AlertAgent:
             self.detection = int(settings["detectionscale"]["value"])
             self.detection_faction = int(settings["faction_scale"]["value"])
             self.cooldowntimer = int(settings["cooldown_timer"]["value"])
+            if self.main.menu.config.is_changed:
+                vision_opened = False
+                factiom_vision_opened = False
+                if self.alert_vision.is_vision_open:
+                    vision_opened = True
+                if self.alert_vision_faction.is_faction_vision_open:
+                    factiom_vision_opened = True
+                # Reload the Vision
+                self.alert_vision = Vision(ALERT_FILES)
+                self.alert_vision_faction = Vision(FACTION_FILES)
+                if vision_opened:
+                    self.set_vision()
+                if factiom_vision_opened:
+                    self.set_vision_faction()
+                self.main.write_message("Settings: Loaded.", "green")
 
     def start(self):
         self.loop.run_until_complete(self.vision_check())
@@ -113,9 +132,6 @@ class AlertAgent:
         self.alarm_counter = {"Enemy": 0, "Faction": 0}
         self.alert_vision.debug_mode = False
         self.alert_vision_faction.debug_mode_faction = False
-
-    def is_running(self):
-        return self.running
 
     def get_vision(self):
         return self.alert_vision.debug_mode
@@ -159,15 +175,14 @@ class AlertAgent:
                 else:
                     self.main.write_message("Wrong Alert Settings.", "red")
                     break
-                await asyncio.sleep(0.1)  # Add a small delay
+                await asyncio.sleep(
+                    0.1
+                )  # Add a small delay to prevent overstacking the CPU
 
     async def vision_faction_thread(self):
         async with self.factionlock:
             self.faction_state = True
             while True:
-                if self.main.menu.config.is_changed:
-                    self.load_settings()
-                    self.main.menu.config.changed = False
                 screenshot_faction, _ = self.wincap.get_screenshot_value(
                     self.y1_faction, self.x1_faction, self.x2_faction, self.y2_faction
                 )
@@ -247,6 +262,11 @@ class AlertAgent:
     async def run(self):
         async with self.lock:
             while True:
+                # Reload Settings if changed
+                if self.main.menu.config.is_changed:
+                    self.load_settings()
+                    self.main.menu.config.changed = False
+
                 # Reset Alarm Status
                 self.alarm_detected = False
 
