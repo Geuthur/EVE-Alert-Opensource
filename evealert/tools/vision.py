@@ -33,6 +33,16 @@ class Vision:
         self.enemy = None
         self.faction = None
 
+    @property
+    def is_vision_open(self):
+        """Returns True if the vision window is open."""
+        return self.debug_mode
+
+    @property
+    def is_faction_vision_open(self):
+        """Returns True if the faction vision window is open."""
+        return self.debug_mode_faction
+
     def vision_process(self, haystack_img, threshold=0.5, vision_mode="Enemy"):
         all_points = []
         color = (0, 255, 0)
