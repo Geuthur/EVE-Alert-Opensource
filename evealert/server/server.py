@@ -1,7 +1,6 @@
 # server.py
 import socket
 import threading
-import time
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -18,7 +17,6 @@ class ServerAgent:
         self.client = None
         self.running = False
         self.stop_event = threading.Event()
-        self.heartbeat_counter = 0
 
     @property
     def is_running(self):
@@ -31,14 +29,17 @@ class ServerAgent:
             self.stop_event.set()
             if self.server:
                 self.server.close()
+                self.server = None
             if self.client:
                 self.client.close()
+                self.client = None
             self.running = False
             # Close all active connections
             for connection in Server.connections:
                 connection.close()
-            self.main.write_message("Socket Server stopped", "red")
+            self.main.write_message("Server stopped", "red")
             Server.log_message("Server stopped")
+            Server.connections.clear()
         self.main.mainmenu_buttons.socket_server.configure(
             fg_color="#1f538d", hover_color="#14375e"
         )
@@ -53,31 +54,19 @@ class ServerAgent:
 
         if server:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.server.bind((host, port))
             self.server.listen(5)
+            self.stop_event.clear()
             self.running = True
 
-            Server.log_message(f"Server started on {host}:{port}")
-            Server.log_message("Waiting for connections...")
+            self.main.write_message("Socket Server started", "green")
+            Server.log_message("Server started")
 
-            newconnectionsthread = threading.Thread(target=self.newconnections)
-            newconnectionsthread.daemon = True
-            newconnectionsthread.start()
+            # Starte den Thread, der Verbindungen akzeptiert
+            threading.Thread(target=self.newconnections, daemon=True).start()
 
             self.main.write_message("Socket Server started successfully", "green")
-
-            while self.is_running:
-                time.sleep(1)
-                if self.main.alert.is_running:
-                    if self.main.alert.is_alarm:
-                        Server.broadcast_message("Alert")
-                    else:
-                        Server.broadcast_message("Normal")
-                    Server.log_message(
-                        "Server Broadcasted: Alert"
-                        if self.main.alert.is_alarm
-                        else "Server Broadcasted: Normal"
-                    )
         else:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
@@ -122,18 +111,27 @@ class ServerAgent:
     def broadcast_message(self, message: str):
         """Broadcast a message to all connected clients."""
         if self.server:
-            for connection in Server.connections:
-                connection.send_message(message)
+            try:
+                for connection in Server.connections:
+                    connection.send_message(message)
+                Server.log_message(f"Server Broadcast: {message}")
+            except OSError as e:
+                Server.log_message(
+                    f"Server Broadcast: Failed to broadcast message: {e}"
+                )
         elif self.client:
-            self.send_message_to_server(message)
+            try:
+                self.send_message_to_server(message)
+            except OSError as e:
+                if "WinError 10054" in str(e):
+                    self.clean_up()
+                    self.main.write_message("Connection to server lost", "red")
+                    return
+                Server.log_message(f"Server Send: Failed to broadcast message: {e}")
 
     def send_message_to_server(self, message: str):
         """Send a message to the server."""
-        try:
-            self.client.sendall(message.encode("utf-8"))
-            self.heartbeat_counter = 0
-        except OSError as e:
-            Server.log_message(f"Failed to send message to server: {e}")
+        self.client.sendall(message.encode("utf-8"))
 
 
 class Server(threading.Thread):
@@ -161,11 +159,15 @@ class Server(threading.Thread):
     def add_connection(cls, client):
         cls.connections.append(client)
         cls.total_connections += 1
+        Server.log_message(
+            f"New connection at ID {client.id}, {client.address} - Admin: {client.is_admin} - Total: {client.total_connections}"
+        )
 
     @classmethod
     def remove_connection(cls, client):
         if client in cls.connections:
             cls.connections.remove(client)
+            cls.total_connections -= 1
             Server.log_message(f"Client {client.address} disconnected")
 
     @staticmethod
@@ -206,7 +208,9 @@ class Server(threading.Thread):
                     self.handle_message(data.decode("utf-8"))
             except OSError:
                 self.handle_disconnect()
-                break
+            except Exception as e:
+                # self.handle_disconnect()
+                print(f"An unexpected error occurred: {e}")
         self.close()
 
     def handle_message(self, message: str):
@@ -217,16 +221,11 @@ class Server(threading.Thread):
                 self.socket.sendall(b"Alerter access granted!")
                 self.is_admin = True
                 Server.broadcast_message("Alerter has loged in!")
-                Server.log_message(
-                    f"New connection at ID {self.id}, {self.address} - Admin: {self.is_admin} - Total: {self.total_connections}"
-                )
             elif message == "Alert":
                 Server.broadcast_message("Alert")
                 Server.log_message(f"Alert broadcasted by {self.address}")
             elif message == "Normal":
                 Server.broadcast_message("Normal")
                 Server.log_message(f"Normal broadcasted by {self.address}")
-            else:
-                self.socket.sendall(b"Failed to authenticate with server")
         except OSError as e:
             print(f"Error: {e}")
