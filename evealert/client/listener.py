@@ -3,7 +3,7 @@ from tkinter import messagebox
 
 import customtkinter
 
-from evealert.client import SocketClient
+from evealert.client.client import SocketClient
 from evealert.settings.helper import get_resource_path
 
 CONFIG_PATH = get_resource_path("client.json")
