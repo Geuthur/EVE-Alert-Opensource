@@ -113,6 +113,14 @@ class SettingMenu:
             self.cooldown_timer.delete(0, customtkinter.END)
             self.cooldown_timer.insert(0, settings["cooldown_timer"]["value"])
 
+            # Render the server mode button
+            if settings["server"]["server_mode"]:
+                self.main.mainmenu_buttons.socket_server.configure(text="Start Server")
+            else:
+                self.main.mainmenu_buttons.socket_server.configure(
+                    text="Send to Server"
+                )
+
             self.socket_server_host.delete(0, customtkinter.END)
             self.socket_server_host.insert(0, settings["server"]["host"])
 

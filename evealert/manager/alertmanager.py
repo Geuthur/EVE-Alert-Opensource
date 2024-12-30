@@ -287,13 +287,19 @@ class AlertAgent:
                             "Faction Spawn!", FACTION_SOUND, "Faction"
                         )
                     if self.enemy:
-                        self.main.socket.broadcast_message("Alert")
+                        try:
+                            self.main.socket.broadcast_message("Alert")
+                        except OSError as e:
+                            logger.error("Alert System Broadcast Error: %s", e)
                         self.alarm_detected = True
                         await self.alarm_detection(
                             "Enemy Appears!", ALARM_SOUND, "Enemy"
                         )
                     else:
-                        self.main.socket.broadcast_message("Normal")
+                        try:
+                            self.main.socket.broadcast_message("Normal")
+                        except OSError as e:
+                            logger.error("Alert System Broadcast Error: %s", e)
                 except ValueError as e:
                     logger.error("Alert System Error: %s", e)
                     self.stop()
