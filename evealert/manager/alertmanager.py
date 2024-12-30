@@ -73,6 +73,10 @@ class AlertAgent:
     def is_running(self):
         return self.running
 
+    @property
+    def is_alarm(self):
+        return self.alarm_detected
+
     def clean_up(self):
         self.stop()
         self.main.write_message("System: EVE Alert stopped.", "green")
@@ -92,7 +96,7 @@ class AlertAgent:
             self.detection = int(settings["detectionscale"]["value"])
             self.detection_faction = int(settings["faction_scale"]["value"])
             self.cooldowntimer = int(settings["cooldown_timer"]["value"])
-            if self.main.menu.config.is_changed:
+            if self.main.menu.setting.is_changed:
                 vision_opened = False
                 factiom_vision_opened = False
                 if self.alert_vision.is_vision_open:
@@ -269,9 +273,9 @@ class AlertAgent:
         async with self.lock:
             while True:
                 # Reload Settings if changed
-                if self.main.menu.config.is_changed:
+                if self.main.menu.setting.is_changed:
                     self.load_settings()
-                    self.main.menu.config.changed = False
+                    self.main.menu.setting.changed = False
 
                 # Reset Alarm Status
                 self.alarm_detected = False
@@ -283,10 +287,13 @@ class AlertAgent:
                             "Faction Spawn!", FACTION_SOUND, "Faction"
                         )
                     if self.enemy:
+                        self.main.socket.broadcast_message("Alert")
                         self.alarm_detected = True
                         await self.alarm_detection(
                             "Enemy Appears!", ALARM_SOUND, "Enemy"
                         )
+                    else:
+                        self.main.socket.broadcast_message("Normal")
                 except ValueError as e:
                     logger.error("Alert System Error: %s", e)
                     self.stop()

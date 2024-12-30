@@ -17,9 +17,15 @@ DEFAULT_SETTINGS = {
     "alert_region_2": {"x": 0, "y": 0},
     "faction_region_1": {"x": 0, "y": 0},
     "faction_region_2": {"x": 0, "y": 0},
-    "detectionscale": {"value": 70},
-    "faction_scale": {"value": 70},
+    "detectionscale": {"value": 90},
+    "faction_scale": {"value": 90},
     "cooldown_timer": {"value": 30},
+    "server": {
+        "host": "127.0.0.1",
+        "port": 27215,
+        "admin_password": "1234",
+        "server_mode": True,
+    },
 }
 
 
@@ -30,19 +36,33 @@ class SettingMenu:
         self.main = main
         self.open = False
         self.default = DEFAULT_SETTINGS
+        self.changed = False
 
         self.setting_window = customtkinter.CTkToplevel(self.main)
         self.setting_window.title("Settings")
         self.setting_window.withdraw()
 
+        self.server_mode = customtkinter.BooleanVar()
+
         self.create_menu()
         self.load_settings()
+
+    @property
+    def is_changed(self):
+        """Returns True if the settings have been changed."""
+        return self.changed
+
+    @property
+    def is_open(self):
+        """Returns True if the settings window is open."""
+        return self.open
 
     def load_settings(self):
         config_path = get_resource_path("settings.json")
         try:
             with open(config_path, encoding="utf-8") as config_file:
                 settings = json.load(config_file)
+                settings = self.merge_settings_with_defaults(settings)
         except (FileNotFoundError, json.JSONDecodeError):
             logger.error(
                 "Setting Menu: Error reading settings file. Using default settings."
@@ -52,6 +72,12 @@ class SettingMenu:
 
         self.apply_settings(settings)
         return settings
+
+    def merge_settings_with_defaults(self, settings):
+        """Merge the loaded settings with the default settings."""
+        merged_settings = self.default.copy()
+        merged_settings.update(settings)
+        return merged_settings
 
     def apply_settings(self, settings):
         try:
@@ -86,6 +112,18 @@ class SettingMenu:
 
             self.cooldown_timer.delete(0, customtkinter.END)
             self.cooldown_timer.insert(0, settings["cooldown_timer"]["value"])
+
+            self.socket_server_host.delete(0, customtkinter.END)
+            self.socket_server_host.insert(0, settings["server"]["host"])
+
+            self.socket_server_port.delete(0, customtkinter.END)
+            self.socket_server_port.insert(0, settings["server"]["port"])
+
+            self.socket_server_alerter.delete(0, customtkinter.END)
+            self.socket_server_alerter.insert(0, settings["server"]["admin_password"])
+
+            self.server_mode.set(settings["server"]["server_mode"])
+
         except KeyError as e:
             logger.exception(e)
             self.main.write_message(
@@ -103,12 +141,7 @@ class SettingMenu:
 
         self.apply_settings(settings)
         # Set the changed flag to True
-        self.main.menu.config.changed = True
-
-    @property
-    def is_open(self):
-        """Returns True if the settings window is open."""
-        return self.open
+        self.changed = True
 
     def save(self):
         try:
@@ -135,6 +168,12 @@ class SettingMenu:
                     "detectionscale": {"value": int(self.detectionscale.get())},
                     "faction_scale": {"value": int(self.faction_scale.get())},
                     "cooldown_timer": {"value": int(self.cooldown_timer.get())},
+                    "server": {
+                        "host": self.socket_server_host.get(),
+                        "port": int(self.socket_server_port.get()),
+                        "admin_password": self.socket_server_alerter.get(),
+                        "server_mode": self.server_mode.get(),
+                    },
                 }
             )
         except ValueError as e:
@@ -256,6 +295,23 @@ class SettingMenu:
             self.menu_frame, text=self.slider2.get()
         )
 
+        self.socket_server_label = customtkinter.CTkLabel(
+            self.menu_frame, text="Socket Server:", justify="left"
+        )
+        self.socket_server_host = customtkinter.CTkEntry(self.menu_frame)
+        self.socket_server_port = customtkinter.CTkEntry(self.menu_frame)
+
+        self.socket_server_alerter_label = customtkinter.CTkLabel(
+            self.menu_frame, text="Alerter Password:", justify="left"
+        )
+        self.socket_server_alerter = customtkinter.CTkEntry(self.menu_frame)
+
+        self.socket_server_mode_checkbox = customtkinter.CTkCheckBox(
+            self.menu_frame, text="Server Mode", variable=self.server_mode
+        )
+
+        # Init Visuals
+
         self.label_x_axis.grid(row=0, column=1)
         self.label_y_axis.grid(row=0, column=2)
 
@@ -298,10 +354,19 @@ class SettingMenu:
         self.faction_slider_label.grid(row=7, column=0)
         self.slider2.grid(row=7, column=1)
 
+        # Socket Server Visual
+        self.socket_server_label.grid(row=8, column=0)
+        self.socket_server_host.grid(row=8, column=1)
+        self.socket_server_port.grid(row=8, column=2)
+
+        self.socket_server_alerter_label.grid(row=9, column=0)
+        self.socket_server_alerter.grid(row=9, column=1)
+        self.socket_server_mode_checkbox.grid(row=9, column=2)
+
         # Save Button
-        self.save_button.grid(row=8, column=0, pady=10)
+        self.save_button.grid(row=10, column=0, pady=10)
         # Close Button
-        self.close_button.grid(row=8, column=2, pady=10)
+        self.close_button.grid(row=10, column=2, pady=10)
 
         self.setting_window.protocol("WM_DELETE_WINDOW", self.clean_up)
 
@@ -324,7 +389,7 @@ class SettingMenu:
             )
 
             config_window_width = 650
-            config_window_height = 340
+            config_window_height = 370
             config_window_x = config_menu_x + config_menu_width + 10
             config_window_y = config_menu_y + config_menu_height + 40
 
