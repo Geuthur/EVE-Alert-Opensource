@@ -383,7 +383,6 @@ class MainMenu(customtkinter.CTk):
                 )
             else:
                 self.socket.clean_up()
-                self.write_message("Socket Server stopped.", "red")
         except Exception as e:
             log_main.error("Start Socket Error: %s", e, exc_info=True)
             self.write_message("System: Something went wrong.", "red")
