@@ -41,10 +41,10 @@ class SocketClient:
         return self.running
 
     def clean_up(self):
+        self.running = False
         if self.sock:
             self.sock.close()
             self.sock = None
-        self.running = False
         self.message_buffer.clear()
         self.alert_cooldown = False
         self.alert_counter = 0
@@ -64,21 +64,11 @@ class SocketClient:
 
     def heartbeat(self):
         try:
-            self.sock.send(b"Send Heartbeat")
             self._start_receive_thread()
             self._start_process_thread()
         except Exception as e:
             self.main.write_message("Failed to send heartbeat. Read Logs", "red")
             log_main.info("Failed to send heartbeat: %s", e)
-
-    def send_message(self, message):
-        if self.running:
-            try:
-                self.sock.send(message.encode("utf-8"))
-            # pylint: disable=bare-except
-            except Exception as e:
-                self.main.write_message("Failed to send message", "red")
-                log_main.info("Failed to send message: %s", e)
 
     def switch_state(self):
         if not self.running:
@@ -111,9 +101,9 @@ class SocketClient:
         while self.running:
             try:
                 if self.sock:
-                    data = self.sock.recv(32)
+                    data = self.sock.recv(32).decode("utf-8")
                     if data:
-                        message = data.decode("utf-8")
+                        message = data
                         self.message_buffer.append(message)
                 else:
                     print("Socket is not valid")
