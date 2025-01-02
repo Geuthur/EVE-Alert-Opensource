@@ -31,7 +31,8 @@ class MainMenu(customtkinter.CTk):
         self.place_widgets()
 
         self.client = None
-        self.apply_settings()
+        self.default = DEFAULT_SETTINGS
+        self.load_settings()
 
     def init_widgets(self):
         self.set_icon(ICON)
@@ -75,34 +76,53 @@ class MainMenu(customtkinter.CTk):
 
         self.port_entry.grid(row=0, column=3)
 
-        self.connect_button.grid(row=1, column=0, padx=(0, 10))
-        self.disconnect_button.grid(row=1, column=1, padx=(0, 10))
-        self.save_button.grid(row=1, column=2)
+        self.connect_button.grid(row=2, column=0, padx=(0, 10))
+        self.disconnect_button.grid(row=2, column=1, padx=(0, 10))
+        self.save_button.grid(row=2, column=2)
 
         self.setting_frame.pack(pady=(10, 10))
         self.button_frame.pack(pady=(0, 10))
         self.log_field.pack(pady=(0, 10))
 
-    def save_settings(self, settings):
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-        with open(CONFIG_PATH, encoding="utf-8", mode="w") as config_file:
-            json.dump(settings, config_file, indent=4)
-        print("Settings saved.")
-
     def load_settings(self):
         try:
             with open(CONFIG_PATH, encoding="utf-8") as config_file:
-                return json.load(config_file)
+                settings = json.load(config_file)
+                settings = self.merge_settings_with_defaults(settings)
         except (FileNotFoundError, json.JSONDecodeError):
+            log_main.error(
+                "Settings file not found or invalid. Using default settings."
+            )
+            settings = self.default
             self.save_settings(DEFAULT_SETTINGS)
-            return DEFAULT_SETTINGS
+        self.apply_settings(settings)
+        return settings
 
-    def apply_settings(self):
-        settings = self.load_settings()
-        self.host_entry.delete(0, "end")
-        self.host_entry.insert(0, settings["server"]["host"])
-        self.port_entry.delete(0, "end")
-        self.port_entry.insert(0, settings["server"]["port"])
+    def apply_settings(self, settings):
+        try:
+            self.host_entry.delete(0, "end")
+            self.host_entry.insert(0, settings["server"]["host"])
+            self.port_entry.delete(0, "end")
+            self.port_entry.insert(0, settings["server"]["port"])
+        except KeyError as e:
+            log_main.error("Settings Error: %s", e, exc_info=True)
+            self.write_message("Settings Error: Check Logs", "red")
+
+    def save_settings(self, settings):
+        if settings is None:
+            settings = self.default
+
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        with open(CONFIG_PATH, encoding="utf-8", mode="w") as config_file:
+            json.dump(settings, config_file, indent=4)
+
+        self.apply_settings(settings)
+
+    def merge_settings_with_defaults(self, settings):
+        """Merge the loaded settings with the default settings."""
+        merged_settings = self.default.copy()
+        merged_settings.update(settings)
+        return merged_settings
 
     def write_message(self, text, color="normal"):
         """Write a message to the log field."""
@@ -114,9 +134,20 @@ class MainMenu(customtkinter.CTk):
             log_main.error("Write Message Error: %s", e, exc_info=True)
 
     def on_save_button_click(self):
-        settings = self.load_settings()
-        settings["server"]["host"] = self.host_entry.get()
-        settings["server"]["port"] = self.port_entry.get()
+        try:
+            settings = self.default.copy()
+            settings.update(
+                {
+                    "server": {
+                        "host": self.host_entry.get(),
+                        "port": self.port_entry.get(),
+                    }
+                }
+            )
+        except ValueError as e:
+            log_main.error("Save Button Error: %s", e, exc_info=True)
+            self.write_message("Save Button Error: Check Logs", "red")
+
         self.save_settings(settings)
 
     def on_connect_button_click(self):
@@ -137,7 +168,6 @@ class MainMenu(customtkinter.CTk):
 
         self.client = SocketClient(self, host, int(port))
         if self.client.connect():
-            self.write_message("Connection established", "green")
             self.connect_button.configure(
                 state="disabled", fg_color="#fa0202", hover_color="#bd291e"
             )
