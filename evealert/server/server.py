@@ -45,9 +45,23 @@ class ServerAgent:
             for connection in Server.connections:
                 connection.close()
             Server.connections.clear()
-        self.main.mainmenu_buttons.socket_server.configure(
-            fg_color="#1f538d", hover_color="#14375e"
-        )
+        self._update_button()
+
+    def _update_button(self):
+        """Set the state of the server buttons."""
+        if self.running:
+            self.main.mainmenu_buttons.socket_server.configure(
+                fg_color="#fa0202", hover_color="#bd291e", text="Stop Server"
+            )
+        else:
+            if self.main.menu.setting.server_mode.get():
+                self.main.mainmenu_buttons.socket_server.configure(
+                    fg_color="#1f538d", hover_color="#14375e", text="Start Server"
+                )
+            else:
+                self.main.mainmenu_buttons.socket_server.configure(
+                    fg_color="#1f538d", hover_color="#14375e", text="Send to Server"
+                )
 
     def start_server(self):
         """Start the server"""
@@ -74,6 +88,7 @@ class ServerAgent:
             # Starte den Thread, der Verbindungen akzeptiert
             threading.Thread(target=self.newconnections, daemon=True).start()
 
+            self._update_button()
             self.main.write_message("Socket Server started successfully", "green")
         else:
             self.client = ClientAgent(self.main, host, port, self.admin_password)
@@ -81,6 +96,7 @@ class ServerAgent:
                 self.running = True
                 login = self.client.login(self.admin_password)
                 if login:
+                    self._update_button()
                     self.main.write_message("Alerter successfully logged in!", "green")
                     Server.log_message("Alerter successfully logged in!")
                     return
