@@ -55,7 +55,7 @@ class MainMenuButtons:
 
         self.socket_server = customtkinter.CTkButton(
             self.settings_label_frame,
-            text="Start Socket Server",
+            text="Start Server",
             command=self.socket_mode_toggle,
         )
         self.config_mode_menu.grid(row=0, column=1, padx=(0, 10))
@@ -378,9 +378,6 @@ class MainMenu(customtkinter.CTk):
             if not self.socket.running:
                 self.socket_thread = threading.Thread(target=self.socket.start_server)
                 self.socket_thread.start()
-                self.mainmenu_buttons.socket_server.configure(
-                    fg_color="#fa0202", hover_color="#bd291e"
-                )
             else:
                 self.socket.clean_up()
         except Exception as e:
