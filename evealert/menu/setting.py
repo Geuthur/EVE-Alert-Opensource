@@ -67,7 +67,7 @@ class SettingMenu:
                 settings = json.load(config_file)
                 settings = self.merge_settings_with_defaults(settings)
         except (FileNotFoundError, json.JSONDecodeError):
-            logger.error(
+            logger.debug(
                 "Setting Menu: Error reading settings file. Using default settings."
             )
             settings = self.default
@@ -419,7 +419,7 @@ class SettingMenu:
             )
 
             config_window_width = 650
-            config_window_height = 370
+            config_window_height = 400
             config_window_x = config_menu_x + config_menu_width + 10
             config_window_y = config_menu_y + config_menu_height + 40
 
