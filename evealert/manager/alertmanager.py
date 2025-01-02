@@ -63,6 +63,7 @@ class AlertAgent:
         self.alarm_detected = False
         self.alarm_counter = {"Enemy": 0, "Faction": 0}
         self.alarm_frequency = 3
+        self.mute = False
 
         # PyAudio-Objekt erstellen
         self.p = sd
@@ -96,6 +97,7 @@ class AlertAgent:
             self.detection = int(settings["detectionscale"]["value"])
             self.detection_faction = int(settings["faction_scale"]["value"])
             self.cooldowntimer = int(settings["cooldown_timer"]["value"])
+            self.mute = settings["server"]["mute"]
             if self.main.menu.setting.is_changed:
                 vision_opened = False
                 factiom_vision_opened = False
@@ -254,7 +256,8 @@ class AlertAgent:
 
     async def play_sound(self, sound, alarm_type="enemy"):
         if self.alarm_counter.get(alarm_type, 0) <= 3:
-            asyncio.ensure_future(self._play_sound(sound))
+            if not self.mute:
+                asyncio.ensure_future(self._play_sound(sound))
 
     async def _play_sound(self, sound):
         try:
