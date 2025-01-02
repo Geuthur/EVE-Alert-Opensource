@@ -21,10 +21,12 @@ DEFAULT_SETTINGS = {
     "faction_scale": {"value": 90},
     "cooldown_timer": {"value": 30},
     "server": {
+        "name": "Eve Local Server",
         "host": "127.0.0.1",
         "port": 27215,
         "admin_password": "1234",
         "server_mode": True,
+        "mute": False,
     },
 }
 
@@ -43,6 +45,7 @@ class SettingMenu:
         self.setting_window.withdraw()
 
         self.server_mode = customtkinter.BooleanVar()
+        self.play_alarm = customtkinter.BooleanVar()
 
         self.create_menu()
         self.load_settings()
@@ -130,6 +133,10 @@ class SettingMenu:
             self.socket_server_alerter.delete(0, customtkinter.END)
             self.socket_server_alerter.insert(0, settings["server"]["admin_password"])
 
+            self.socket_server_name.delete(0, customtkinter.END)
+            self.socket_server_name.insert(0, settings["server"]["name"])
+
+            self.play_alarm.set(settings["server"]["mute"])
             self.server_mode.set(settings["server"]["server_mode"])
 
         except KeyError as e:
@@ -177,10 +184,12 @@ class SettingMenu:
                     "faction_scale": {"value": int(self.faction_scale.get())},
                     "cooldown_timer": {"value": int(self.cooldown_timer.get())},
                     "server": {
+                        "name": self.socket_server_name.get(),
                         "host": self.socket_server_host.get(),
                         "port": int(self.socket_server_port.get()),
                         "admin_password": self.socket_server_alerter.get(),
                         "server_mode": self.server_mode.get(),
+                        "mute": self.play_alarm.get(),
                     },
                 }
             )
@@ -318,6 +327,15 @@ class SettingMenu:
             self.menu_frame, text="Server Mode", variable=self.server_mode
         )
 
+        self.socket_server_name_label = customtkinter.CTkLabel(
+            self.menu_frame, text="Server Name:", justify="left"
+        )
+        self.socket_server_name = customtkinter.CTkEntry(self.menu_frame)
+
+        self.play_alarm_checkbox = customtkinter.CTkCheckBox(
+            self.menu_frame, text="Mute Alarm", variable=self.play_alarm
+        )
+
         # Init Visuals
 
         self.label_x_axis.grid(row=0, column=1)
@@ -367,14 +385,18 @@ class SettingMenu:
         self.socket_server_host.grid(row=8, column=1)
         self.socket_server_port.grid(row=8, column=2)
 
-        self.socket_server_alerter_label.grid(row=9, column=0)
-        self.socket_server_alerter.grid(row=9, column=1)
-        self.socket_server_mode_checkbox.grid(row=9, column=2)
+        self.socket_server_name_label.grid(row=9, column=0)
+        self.socket_server_name.grid(row=9, column=1)
+        self.play_alarm_checkbox.grid(row=9, column=2)
+
+        self.socket_server_alerter_label.grid(row=10, column=0)
+        self.socket_server_alerter.grid(row=10, column=1)
+        self.socket_server_mode_checkbox.grid(row=10, column=2)
 
         # Save Button
-        self.save_button.grid(row=10, column=0, pady=10)
+        self.save_button.grid(row=11, column=0, pady=10)
         # Close Button
-        self.close_button.grid(row=10, column=2, pady=10)
+        self.close_button.grid(row=11, column=2, pady=10)
 
         self.setting_window.protocol("WM_DELETE_WINDOW", self.clean_up)
 
