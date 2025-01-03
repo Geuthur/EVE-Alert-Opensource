@@ -5,6 +5,7 @@ from threading import Thread
 
 import customtkinter
 import pyautogui
+from CTkMessagebox import CTkMessagebox as messagebox
 from PIL import Image
 from pynput import keyboard
 from screeninfo import get_monitors
@@ -246,6 +247,10 @@ class MainMenu(customtkinter.CTk):
             self.iconbitmap(default=icon_path)
         except Exception as e:
             log_main.exception("Error setting icon: %s", e)
+
+    def open_error_window(self, message):
+        """Open an error window."""
+        messagebox(title="Error", message=message, icon="cancel")
 
     def write_message(self, text, color="normal"):
         """Write a message to the log field."""
