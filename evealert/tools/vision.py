@@ -144,10 +144,29 @@ class Vision:
             all_points.extend(points)
         return all_points, haystack_img
 
+    def clean_up(self):
+        """Close all open windows."""
+        cv.destroyAllWindows()
+        self.debug_mode = False
+        self.debug_mode_faction = False
+
+    def destroy_vision(self, vision_mode="Enemy"):
+        """Close the vision window."""
+        if vision_mode == "Enemy":
+            self.debug_mode = False
+        elif vision_mode == "Faction":
+            self.debug_mode_faction = False
+        cv.destroyWindow(vision_mode)
+
     def find(self, haystack_img, threshold=0.5):
-        all_points, detection_image = self.vision_process(
-            haystack_img, threshold, "Enemy"
-        )
+        try:
+            all_points, detection_image = self.vision_process(
+                haystack_img, threshold, "Enemy"
+            )
+        except Exception as e:
+            logger.exception("Enemy Detection Error: %s", e)
+            self.destroy_vision("Enemy")
+            all_points = []
 
         if self.debug_mode:
             cv.imshow("Enemy Vision", detection_image)
@@ -160,9 +179,14 @@ class Vision:
         return all_points
 
     def find_faction(self, haystack_img, threshold=0.5):
-        all_points, detection_image = self.vision_process(
-            haystack_img, threshold, "Faction"
-        )
+        try:
+            all_points, detection_image = self.vision_process(
+                haystack_img, threshold, "Faction"
+            )
+        except Exception as e:
+            logger.exception("Faction Detection Error: %s", e)
+            self.destroy_vision("Faction")
+            all_points = []
 
         if self.debug_mode_faction:
             cv.imshow("Faction Vision", detection_image)
