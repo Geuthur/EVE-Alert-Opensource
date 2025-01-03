@@ -2,9 +2,9 @@ import asyncio
 import logging
 import os
 import random
+import time
 from typing import TYPE_CHECKING
 
-import cv2 as cv
 import sounddevice as sd
 import soundfile as sf
 
@@ -51,7 +51,6 @@ class AlertAgent:
 
         # Locks to prevent overstacking
         self.lock = asyncio.Lock()
-        self.timerlock = {}
         self.visionlock = asyncio.Lock()
         self.factionlock = asyncio.Lock()
 
@@ -60,13 +59,16 @@ class AlertAgent:
         self.faction = False
 
         # Alarm Settings
+        self.cooldown_timers = {}
+        self.cooldowntimer = 60
         self.alarm_detected = False
-        self.alarm_counter = {"Enemy": 0, "Faction": 0}
-        self.alarm_frequency = 3
         self.mute = False
 
-        # PyAudio-Objekt erstellen
+        # Sound Settings
         self.p = sd
+        self.alarm_trigger_counts = {}
+        self.max_sound_triggers = 3
+        self.currently_playing_sounds = {}
 
         self.load_settings()
 
@@ -77,6 +79,14 @@ class AlertAgent:
     @property
     def is_alarm(self):
         return self.alarm_detected
+
+    @property
+    def is_enemy(self):
+        return self.enemy
+
+    @property
+    def is_faction(self):
+        return self.faction
 
     def clean_up(self):
         self.stop()
@@ -119,7 +129,6 @@ class AlertAgent:
         if self.check is True:
 
             self.vison_t = self.loop.create_task(self.vision_thread())
-            self.alarm_timer_t = self.loop.create_task(self.init_alarm_cooldowns())
             self.vision_faction_t = self.loop.create_task(self.vision_faction_thread())
 
             # Start the Alarm
@@ -135,17 +144,13 @@ class AlertAgent:
     def stop(self):
         self.loop.stop()
         self.running = False
-        self.alarm_counter = {"Enemy": 0, "Faction": 0}
+        self.currently_playing_sounds = {}
+        self.alarm_trigger_counts = {}
+        self.cooldown_timers = {}
         self.alert_vision.debug_mode = False
         self.alert_vision_faction.debug_mode_faction = False
         self.main.update_alert_button()
         self.main.update_faction_button()
-
-    def get_vision(self):
-        return self.alert_vision.debug_mode
-
-    def get_vision_faction(self):
-        return self.alert_vision_faction.debug_mode_faction
 
     def set_vision(self):
         if self.is_running:
@@ -199,18 +204,9 @@ class AlertAgent:
                     self.y1_faction, self.x1_faction, self.x2_faction, self.y2_faction
                 )
                 if screenshot_faction is not None:
-                    try:
-                        faction = self.alert_vision_faction.find_faction(
-                            screenshot_faction, self.detection_faction
-                        )
-                    except Exception as e:
-                        faction = None
-                        logger.error(e)
-                        self.main.write_message(e, "red")
-                        if self.alert_vision_faction.faction:
-                            cv.destroyWindow("Faction Vision")
-                            self.alert_vision_faction.faction = False
-                        await asyncio.sleep(10)
+                    faction = self.alert_vision_faction.find_faction(
+                        screenshot_faction, self.detection_faction
+                    )
 
                     if faction:
                         self.faction = True
@@ -220,56 +216,68 @@ class AlertAgent:
                     0.1
                 )  # Add a small delay to prevent overstacking the CPU
 
-    # Alarm Cooldown - Run in Background
-    async def alarm_timer_check(self, alarm_type):
-        async with self.timerlock[alarm_type]:
-            while True:
-                if self.alarm_counter[alarm_type] >= self.alarm_frequency:
-                    self.main.write_message(f"{alarm_type} cooldown started.")
-                    await asyncio.sleep(int(self.cooldowntimer))
-                    self.alarm_counter[alarm_type] = 0
-                    self.main.write_message(f"{alarm_type} cooldown stopped.")
-                await asyncio.sleep(0.1)
-
-    async def init_alarm_cooldowns(self):
-        for alarm_type in self.alarm_counter:
-            self.timerlock[alarm_type] = asyncio.Lock()
-            asyncio.ensure_future(self.alarm_timer_check(alarm_type))
-
     async def reset_alarm(self, alarm_type):
-        if self.alarm_counter.get(alarm_type, 0) > 0:
-            self.main.write_message(f"No {alarm_type} found, cooldown reseted.")
-        self.alarm_counter[alarm_type] = 0
-        if alarm_type in self.timerlock and self.timerlock[alarm_type].locked():
-            self.timerlock[alarm_type].release()
+        if alarm_type in self.alarm_trigger_counts:
+            self.alarm_trigger_counts[alarm_type] = 0
+            self.cooldown_timers[alarm_type] = 0
 
     async def alarm_detection(self, alarm_text, sound=ALARM_SOUND, alarm_type="Enemy"):
-        if self.alarm_counter.get(alarm_type, 0) >= self.alarm_frequency:
-            return
-        self.alarm_counter[alarm_type] = self.alarm_counter.get(alarm_type, 0) + 1
-
         self.main.write_message(
-            f"{alarm_text} - Play Sound ({self.alarm_counter[alarm_type]}/{self.alarm_frequency}).",
+            f"{alarm_text}",
             "red",
         )
         await self.play_sound(sound, alarm_type)
 
-    async def play_sound(self, sound, alarm_type="enemy"):
-        if self.alarm_counter.get(alarm_type, 0) <= 3:
-            if not self.mute:
-                asyncio.ensure_future(self._play_sound(sound))
+    async def play_sound(self, sound, alarm_type):
+        if self.mute:
+            return
 
-    async def _play_sound(self, sound):
-        try:
-            # Lese die Audiodaten mit soundfile
-            data, samplerate = sf.read(sound, dtype="int16")
+        # Initialize counter and cooldown timer if not present
+        if alarm_type not in self.alarm_trigger_counts:
+            self.alarm_trigger_counts[alarm_type] = 0
+        if alarm_type not in self.cooldown_timers:
+            self.cooldown_timers[alarm_type] = 0
 
-            # Spiele die Audiodaten ab
-            sd.play(data, samplerate)
-        except Exception as e:
-            logger.error("Error playing audio: %s", e)
-            self.stop()
-            self.main.write_message("Something went wrong.", "red")
+        # Check cooldown timer
+        current_time = time.time()
+        if current_time < self.cooldown_timers[alarm_type]:
+            self.main.write_message(
+                f"{alarm_type} Sound is in cooldown period.", "yellow"
+            )
+            return
+
+        # Increment the counter
+        self.alarm_trigger_counts[alarm_type] += 1
+
+        # Check if the alarm has been triggered three times
+        if self.alarm_trigger_counts[alarm_type] > self.max_sound_triggers:
+            self.cooldown_timers[alarm_type] = current_time + self.cooldowntimer
+            self.alarm_trigger_counts[alarm_type] = 0
+            self.main.write_message(
+                f"{alarm_type} Sound is now in cooldown for {self.cooldowntimer} seconds.",
+                "yellow",
+            )
+            return
+
+        if alarm_type not in self.currently_playing_sounds:
+            self.currently_playing_sounds[alarm_type] = True
+            try:
+                # Lese die Audiodaten mit soundfile
+                data, samplerate = sf.read(sound, dtype="int16")
+
+                # Spiele die Audiodaten ab
+                sd.play(data, samplerate)
+                await asyncio.sleep(
+                    len(data) / samplerate
+                )  # Wait for the sound to finish
+            except Exception as e:
+                if self.alarm_trigger_counts[alarm_type] <= 1:
+                    self.main.open_error_window(
+                        "Error Playing Sound. Check Logs for more information."
+                    )
+                logger.exception("Error Playing Sound: %s", e)
+            finally:
+                self.currently_playing_sounds.pop(alarm_type, None)
 
     # Run Alert Agent
     async def run(self):
