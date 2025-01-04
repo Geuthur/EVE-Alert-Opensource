@@ -299,7 +299,7 @@ class AlertAgent:
                         )
                     if self.enemy:
                         try:
-                            self.main.socket.broadcast_message("Alert")
+                            self.main.socket.recieve_alert("Alert")
                         except OSError as e:
                             logger.error("Alert System Broadcast Error: %s", e)
                         self.alarm_detected = True
@@ -308,7 +308,7 @@ class AlertAgent:
                         )
                     else:
                         try:
-                            self.main.socket.broadcast_message("Normal")
+                            self.main.socket.recieve_alert("Normal")
                         except OSError as e:
                             logger.error("Alert System Broadcast Error: %s", e)
                 except ValueError as e:
