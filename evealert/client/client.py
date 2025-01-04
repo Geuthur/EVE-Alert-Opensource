@@ -27,14 +27,20 @@ class SocketClient:
         self.is_admin = False
         self.running = False
         self.message_buffer = deque()
+        self.message = None
 
         # Threads
         self.receive_thread = None
         self.process_thread = None
+        self.heartbeat_thread = None
 
         # Alert Cooldown
         self.alert_cooldown = False
         self.alert_counter = 0
+
+        self.server_name = None
+        self.total_connections = 0
+        self.active = False
 
     @property
     def is_running(self):
@@ -46,6 +52,7 @@ class SocketClient:
             self.sock.close()
             self.sock = None
         self.message_buffer.clear()
+        self.message = None
         self.alert_cooldown = False
         self.alert_counter = 0
         self.switch_state()
@@ -62,13 +69,14 @@ class SocketClient:
             log_main.debug("Connection failed")
             return False
 
-    def heartbeat(self):
+    def start_system(self):
         try:
             self._start_receive_thread()
             self._start_process_thread()
+            self._start_heartbeat_thread()
         except Exception as e:
-            self.main.write_message("Failed to send heartbeat. Read Logs", "red")
-            log_main.info("Failed to send heartbeat: %s", e)
+            self.main.write_message("Failed to Start System. Read Logs", "red")
+            log_main.info("Failed to Start System: %s", e)
 
     def switch_state(self):
         if not self.running:
@@ -96,15 +104,31 @@ class SocketClient:
         self.process_thread.daemon = True
         self.process_thread.start()
 
-    def _receive_messages(self):
+    def _start_heartbeat_thread(self):
+        self.heartbeat_thread = threading.Thread(target=self._send_heartbeat)
+        self.heartbeat_thread.daemon = True
+        self.heartbeat_thread.start()
 
+    def _parse_heartbeat(self, data):
+        lines = data.split("\n")
+        for line in lines:
+            if line.startswith("Server Name:"):
+                self.server_name = line.split(":")[1].strip()
+            elif line.startswith("Total Connections:"):
+                self.total_connections = int(line.split(":")[1].strip())
+            elif line.startswith("Local Active:"):
+                self.active = line.split(":")[1].strip() == "True"
+                if not self.active:
+                    self.main.write_message("Local Broadcaster is Inactive!!", "red")
+
+    def _receive_messages(self):
         while self.running:
             try:
                 if self.sock:
-                    data = self.sock.recv(32).decode("utf-8")
+                    data, _ = self.sock.recvfrom(1024)
                     if data:
-                        message = data
-                        self.message_buffer.append(message)
+                        self.message = data.decode("utf-8")
+                        # self.message_buffer.append(data)
                 else:
                     print("Socket is not valid")
                     break
@@ -127,35 +151,20 @@ class SocketClient:
                 self.clean_up()
                 break
 
-    def _retry_connection(self):
-        for attempt in range(3):
-            self.main.write_message(
-                f"Attempting to reconnect... ({attempt + 1}/3)", "normal"
-            )
-            if self.connect():
-                self.heartbeat()
-                self.switch_state()
-                self.main.write_message("Reconnected successfully", "green")
-                return
-            time.sleep(5)
-        self.main.write_message("Failed to reconnect after 3 attempts", "red")
-
     def _process_messages(self):
         last_message_time = time.time()
         while self.running:
             message_sent = False
-            time.sleep(1)
-            if self.message_buffer:
-                messages = list(self.message_buffer)
-                self.message_buffer.clear()
-                if "Alert" in messages:
-                    self.main.write_message("Enemy Detected", "red")
+            if self.message:
+                msg = self._generate_msg(self.message)
+                self.message = None
+                if "Alert" in msg:
                     self.play_alert_sound()
-                elif "Normal" in messages:
-                    self.main.write_message("No Enemy Detected", "green")
+                    self.main.write_message(f"{msg}")
+                elif "Heartbeat" in msg:
+                    self._parse_heartbeat(msg)
                 else:
-                    for message in messages:
-                        self.main.write_message(f"{message}")
+                    self.main.write_message(f"{msg}")
                 message_sent = True
             # Check if no messages are received
             if not message_sent and time.time() - last_message_time > 5:
@@ -165,6 +174,39 @@ class SocketClient:
                 last_message_time = time.time()
             elif message_sent:
                 last_message_time = time.time()
+            # Sleep for a short time to prevent high CPU usage
+            time.sleep(0.5)
+
+    def _generate_msg(self, msg):
+        """Generate message to display in the GUI."""
+        return f"{msg}"
+
+    def _send_heartbeat(self):
+        while self.running:
+            try:
+                if self.sock:
+                    self.sock.sendall(b"Heartbeat")
+                else:
+                    self.clean_up()
+            except Exception as e:
+                log_main.debug("Failed to send heartbeat: %s", e)
+                self.clean_up()
+            time.sleep(5)
+
+    def _retry_connection(self):
+        for attempt in range(3):
+            self.main.write_message(
+                f"Attempting to reconnect... ({attempt + 1}/3)", "normal"
+            )
+            if self.connect():
+                self._start_receive_thread()
+                self._start_process_thread()
+                self._start_heartbeat_thread()
+                self.switch_state()
+                self.main.write_message("Reconnected successfully", "green")
+                return
+            time.sleep(5)
+        self.main.write_message("Failed to reconnect after 3 attempts", "red")
 
     def alert_cooldown_timer(self):
         while True:
