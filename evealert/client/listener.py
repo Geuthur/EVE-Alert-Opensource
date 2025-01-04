@@ -174,7 +174,7 @@ class MainMenu(customtkinter.CTk):
             self.disconnect_button.configure(
                 state="normal", fg_color="#1f538d", hover_color="#14375e"
             )
-            self.client.heartbeat()
+            self.client.start_system()
 
     def set_icon(self, icon):
         """Set the icon for the main window."""
