@@ -2,6 +2,7 @@
 import logging
 import socket
 import threading
+import time
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -20,7 +21,7 @@ class ServerAgent:
         self.stop_event = threading.Event()
 
         # Default settings
-        self.name = "Eve Local Server"
+        self.name = ""
         self.admin_password = "1234"
 
     @property
@@ -87,6 +88,7 @@ class ServerAgent:
 
             # Starte den Thread, der Verbindungen akzeptiert
             threading.Thread(target=self.newconnections, daemon=True).start()
+            threading.Thread(target=self.start_broadcaster_checker, daemon=True).start()
 
             self._update_button()
             self.main.write_message("Socket Server started successfully", "green")
@@ -125,20 +127,37 @@ class ServerAgent:
             except OSError:
                 break
 
-    def broadcast_message(self, message: str):
+    def start_broadcaster_checker(self):
+        """Start the broadcaster checker."""
+        if self.is_running:
+            if self.server or self.client:
+                threading.Thread(target=self._broadcaster, daemon=True).start()
+
+    def _broadcaster(self):
+        """Check if the broadcaster is still active."""
+        while not self.stop_event.is_set():
+            if Server.alerter_sent:
+                time.sleep(5)
+                Server.alerter_sent = False
+            else:
+                time.sleep(5)
+
+    def recieve_alert(self, message: str):
         """Broadcast a message to all connected clients."""
+        msg = f"{self.name}: {message}"
         if self.server:
             try:
-                for connection in Server.connections:
-                    connection.send_message(message)
-                Server.log_message(f"Server Broadcast: {message}")
+                Server.broadcast_message(msg)
+                Server.log_message(f"Server Send: {msg}")
             except OSError as e:
-                Server.log_message(
-                    f"Server Broadcast: Failed to broadcast message: {e}"
-                )
+                if "WinError 10054" in str(e):
+                    self.clean_up()
+                    self.main.write_message("Connection to server lost", "red")
+                    return
+                Server.log_message(f"Server Send: Failed to broadcast message: {e}")
         elif self.client:
             try:
-                self.client.broadcast_message(message)
+                self.client.broadcast_message(msg)
             except OSError as e:
                 if "WinError 10054" in str(e):
                     self.clean_up()
@@ -150,6 +169,8 @@ class ServerAgent:
 class Server(threading.Thread):
     connections = []
     total_connections = 0
+    alerter_sent = False
+    alerter_count = 0
 
     # pylint: disable=too-many-positional-arguments
     def __init__(
@@ -164,12 +185,14 @@ class Server(threading.Thread):
         self.password = password
         self.stop_event = stop_event
 
-        # Alerter
-        self.is_admin = False
-        self.alerter_count = 0
-
         # Alert
         self.alert = False
+
+    @classmethod
+    def add_alerter(cls):
+        """Set alerter_sent to False every 5 seconds."""
+        cls.alerter_count += 1
+        Server.log_message(f"Alerter count: {cls.alerter_count}")
 
     @classmethod
     def add_connection(cls, client):
@@ -204,6 +227,8 @@ class Server(threading.Thread):
             except OSError as e:
                 Server.log_message(f"Failed to send to {client.address}: {e}")
                 client.close()
+        if "Alert" in message or "Normal" in message:
+            cls.alerter_sent = True
 
     def handle_disconnect(self):
         self.signal = False
@@ -238,19 +263,23 @@ class Server(threading.Thread):
         """Handle the message received from the client."""
         try:
             Server.log_message(f"Received from {self.address}: {message}")
-            if message == self.password:
-                self.is_admin = True
+            if self.password in message:
                 self.socket.sendall(b"Alerter access granted!")
                 self.socket.sendto(b"Alerter access granted!", self.address)
-                Server.broadcast_message("Alerter has loged in!")
-            elif message == "Alert":
-                Server.broadcast_message("Alert")
+                Server.broadcast_message("Local Broadcaster has loged in!")
+            elif "Alert" in message:
+                Server.broadcast_message(message)
                 Server.log_message(f"Alert broadcasted by {self.address}")
-            elif message == "Normal":
-                Server.broadcast_message("Normal")
+            elif "Normal" in message:
+                Server.broadcast_message(message)
                 Server.log_message(f"Normal broadcasted by {self.address}")
-            elif message == "Heartbeat":
-                pass
+            elif "Heartbeat" in message:
+                data = f"Heartbeat received from {self.address}"
+                data += f"\nServer Name: {self.name}"
+                data += f"\nTotal Connections: {self.total_connections}"
+                data += f"\nLocal Active: {self.alerter_sent}"
+                self.socket.sendto(data.encode("utf-8"), self.address)
+                print(data)
             else:
                 self.socket.sendall(b"Invalid Command")
                 self.handle_disconnect()
@@ -264,6 +293,7 @@ class ClientAgent:
         self.port = port
         self.host = host
         self.password = password
+        self.server_name = ""
 
         self.sock = None
         self.running = False
@@ -339,6 +369,7 @@ class ClientAgent:
                 self.sock.sendall(message.encode("utf-8"))
             except OSError as e:
                 self.main.write_message(f"Failed to broadcast message: {e}", "red")
+                logger.exception("Failed to broadcast message: %s", e)
                 self.clean_up()
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
