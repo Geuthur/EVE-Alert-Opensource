@@ -144,8 +144,8 @@ class ServerAgent:
 
     def recieve_alert(self, message: str):
         """Broadcast a message to all connected clients."""
-        msg = f"{self.name}: {message}"
         if self.server:
+            msg = f"{self.name}: {message}"
             try:
                 Server.broadcast_message(msg)
                 Server.log_message(f"Server Send: {msg}")
@@ -157,7 +157,7 @@ class ServerAgent:
                 Server.log_message(f"Server Send: Failed to broadcast message: {e}")
         elif self.client:
             try:
-                self.client.broadcast_message(msg)
+                self.client.broadcast_message(message)
             except OSError as e:
                 if "WinError 10054" in str(e):
                     self.clean_up()
@@ -364,9 +364,10 @@ class ClientAgent:
 
     def broadcast_message(self, message):
         """Broadcast a message to the server."""
+        msg = f"{self.server_name}: {message}"
         if self.running:
             try:
-                self.sock.sendall(message.encode("utf-8"))
+                self.sock.sendall(msg.encode("utf-8"))
             except OSError as e:
                 self.main.write_message(f"Failed to broadcast message: {e}", "red")
                 logger.exception("Failed to broadcast message: %s", e)
