@@ -92,6 +92,34 @@ class AlertAgent:
         self.stop()
         self.main.write_message("System: EVE Alert stopped.", "green")
 
+    def start(self):
+        self.loop.run_until_complete(self.vision_check())
+        if self.check is True:
+
+            self.vison_t = self.loop.create_task(self.vision_thread())
+            self.vision_faction_t = self.loop.create_task(self.vision_faction_thread())
+
+            # Start the Alarm
+            self.alert_t = self.loop.create_task(self.run())
+
+            self.running = True
+            self.main.write_message("System: EVE Alert started.", "green")
+            self.loop.run_forever()
+            logger.debug("Alle Tasks wurden gestartet")
+            return True
+        return False
+
+    def stop(self):
+        self.loop.stop()
+        self.running = False
+        self.currently_playing_sounds = {}
+        self.alarm_trigger_counts = {}
+        self.cooldown_timers = {}
+        self.alert_vision.debug_mode = False
+        self.alert_vision_faction.debug_mode_faction = False
+        self.main.update_alert_button()
+        self.main.update_faction_button()
+
     def load_settings(self):
         settings = self.main.menu.setting.load_settings()
 
@@ -123,34 +151,6 @@ class AlertAgent:
                 if factiom_vision_opened:
                     self.set_vision_faction()
                 self.main.write_message("Settings: Loaded.", "green")
-
-    def start(self):
-        self.loop.run_until_complete(self.vision_check())
-        if self.check is True:
-
-            self.vison_t = self.loop.create_task(self.vision_thread())
-            self.vision_faction_t = self.loop.create_task(self.vision_faction_thread())
-
-            # Start the Alarm
-            self.alert_t = self.loop.create_task(self.run())
-
-            self.running = True
-            self.main.write_message("System: EVE Alert started.", "green")
-            self.loop.run_forever()
-            logger.debug("Alle Tasks wurden gestartet")
-            return True
-        return False
-
-    def stop(self):
-        self.loop.stop()
-        self.running = False
-        self.currently_playing_sounds = {}
-        self.alarm_trigger_counts = {}
-        self.cooldown_timers = {}
-        self.alert_vision.debug_mode = False
-        self.alert_vision_faction.debug_mode_faction = False
-        self.main.update_alert_button()
-        self.main.update_faction_button()
 
     def set_vision(self):
         if self.is_running:
@@ -184,14 +184,14 @@ class AlertAgent:
                 if screenshot is not None:
                     enemy = self.alert_vision.find(screenshot, self.detection)
                     if enemy == "Error":
-                        break
+                        self.clean_up()
                     if enemy:
                         self.enemy = True
                     else:
                         self.enemy = False
                 else:
                     self.main.write_message("Wrong Alert Settings.", "red")
-                    break
+                    self.clean_up()
                 await asyncio.sleep(
                     0.1
                 )  # Add a small delay to prevent overstacking the CPU
