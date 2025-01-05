@@ -41,6 +41,7 @@ class SocketClient:
         self.server_name = None
         self.total_connections = 0
         self.active = False
+        self.inactive_count = 0
 
     @property
     def is_running(self):
@@ -117,9 +118,15 @@ class SocketClient:
             elif line.startswith("Total Connections:"):
                 self.total_connections = int(line.split(":")[1].strip())
             elif line.startswith("Local Active:"):
-                self.active = line.split(":")[1].strip() == "True"
-                if not self.active:
-                    self.main.write_message("Local Broadcaster is Inactive!!", "red")
+                active = line.split(":")[1].strip() == "True"
+                if not active:
+                    self.inactive_count += 1
+                    if self.inactive_count > 2:
+                        self.main.write_message(
+                            "Local Broadcaster is Inactive!!", "red"
+                        )
+                else:
+                    self.inactive_count = 0
 
     def _receive_messages(self):
         while self.running:
