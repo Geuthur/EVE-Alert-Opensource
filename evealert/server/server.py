@@ -93,7 +93,7 @@ class ServerAgent:
             self._update_button()
             self.main.write_message("Socket Server started successfully", "green")
         else:
-            self.client = ClientAgent(self.main, host, port, self.admin_password)
+            self.client = ClientAgent(self.main, settings)
             if self.client.connect():
                 self.running = True
                 login = self.client.login(self.admin_password)
@@ -268,9 +268,11 @@ class Server(threading.Thread):
                 self.socket.sendto(b"Alerter access granted!", self.address)
                 Server.broadcast_message("Local Broadcaster has loged in!")
             elif "Alert" in message:
+                Server.alerter_sent = True
                 Server.broadcast_message(message)
                 Server.log_message(f"Alert broadcasted by {self.address}")
             elif "Normal" in message:
+                Server.alerter_sent = True
                 Server.broadcast_message(message)
                 Server.log_message(f"Normal broadcasted by {self.address}")
             elif "Heartbeat" in message:
@@ -279,7 +281,6 @@ class Server(threading.Thread):
                 data += f"\nTotal Connections: {self.total_connections}"
                 data += f"\nLocal Active: {self.alerter_sent}"
                 self.socket.sendto(data.encode("utf-8"), self.address)
-                print(data)
             else:
                 self.socket.sendall(b"Invalid Command")
                 self.handle_disconnect()
@@ -288,12 +289,13 @@ class Server(threading.Thread):
 
 
 class ClientAgent:
-    def __init__(self, main: "MainMenu", host, port, password):
+    def __init__(self, main: "MainMenu", settings):
         self.main = main
-        self.port = port
-        self.host = host
-        self.password = password
-        self.server_name = ""
+
+        self.port = settings.get("server", {}).get("port", 27215)
+        self.host = settings.get("server", {}).get("host", "127.0.0.1")
+        self.password = settings.get("server", {}).get("admin_password", "1234")
+        self.server_name = settings.get("server", {}).get("name", "No Name")
 
         self.sock = None
         self.running = False
