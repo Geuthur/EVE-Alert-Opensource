@@ -47,7 +47,7 @@ Note: If you have different UI Scaling you need to add these images to the img f
 
 # Server Usage<a name="server"></a>
 
-> [!INFO]
+> [!NOTE]
 > **This Version is for Single User!**
 
 The server is responsible for sending messages to the connected clients. It can send two types of messages: Normal and Alarm. When an Alarm message is sent, all connected clients will receive it and can take appropriate actions, such as playing a sound.
@@ -63,7 +63,7 @@ Optional:
 
 ## Client Usage<a name="client"></a>
 
-> [!INFO]
+> [!NOTE]
 > To Use the Client Option you need at least 1 Server User!
 
 The client program can be used to connect to a socket server and continuously receives messages. The messages can be in one of two states: Normal or Alarm.
