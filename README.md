@@ -45,7 +45,7 @@ Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releas
 If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.\
 Note: If you have different UI Scaling you need to add these images to the img folder like the `image_1_90%`
 
-# Server Usage<a name="server"></a>
+## Server Usage<a name="server"></a>
 
 > [!NOTE]
 > **This Version is for Single User!**
