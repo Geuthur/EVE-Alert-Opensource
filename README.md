@@ -59,7 +59,8 @@ The server is responsible for sending messages to the connected clients. It can 
 
 Optional:
 
-- Activate Socket System for Clients
+- Activate Socket Server for Broadccast Mode
+- Mute Alarm for Just Broadcast
 
 ## Client Usage<a name="client"></a>
 
