@@ -10,12 +10,11 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 
 - [EVE Alert](#evealert)
   - [Features](#features)
-  - [Usage](#usage)
-  - [Installation](#installation)
-    - [Download](#step1)
-    - [Install Python](#step2)
-    - [Make Build](#step3)
+  - [Download](#step1)
   - [Detection](#detection)
+  - [Socket System](#socket)
+    - [Client](#client)
+    - [Server](#server)
   - [Showcase](#showcase)
   - [Donation](#donation)
   - [Terms](#terms)
@@ -28,62 +27,15 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 - Start/Stop System
 - Monitoring Region in real-time (also possible to stream via Discord for friends)
 - Faction Spawn Detection - Now you can set a Faction Spawn Detection and it will play a sound if a faction is in Site (can also used for other thing like active modules or something)
+- The Socket System allows you to have one server and multiple clients that can connect to it to receive alarms.
 
-## Usage<a name="usage"></a>
+## Upcoming Features
 
-- Simply launch EveLocal.exe, and a menu will appear. You can configure all your settings there. Afterward, click on "Start."
-- If the Alert doesn't respond to the local chat, you can reduce the detection accuracy or double-check if you've set the region correctly.
-- If both settings are 100% accurate and your interface is not blurred, make a new screenshot from your neutral symbol and try it with your own image
-- You can edit all images & sounds by yourself only the name must be the same
-
-## Installation<a name="installation"></a>
-
-You can just execute the "EveLocal.exe" or make a own Build with Python.\
-To create an executable program, you need to download a release version and then run it through the installer in an environment.\
-You also need a Python Version installed on Windows or Linux
+- Discord Webhook support
 
 ### Download Version<a name="step1"></a>
 
 Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releases) to download the latest version.
-
-### Install Python<a name="step2"></a>
-
-> [!CAUTION]
-> This Script only works with Python `3.10`, `3.11`, `3.12`
-
-You need Python for <a href="#step3">Step 3</a>
-Here is a Guide to install Python
-
-Windows User:
-
-Install `Python` you can download it from [Python Download](https://www.python.org/downloads/)
-
-Linux User:
-
-On Linux Python is automaticly installed you can update it with
-
-```bash
-sudo apt update
-```
-
-### Make Build<a name="step3"></a>
-
-> [!NOTE]
-> Ensure you have read/write permissions to this directory
-
-Windows:
-
-```cmd
-installer_window.bat
-```
-
-Linux:
-
-```bash
-./installer_linux.sh
-```
-
-Now you will find a folder called dist/ where the finished executable program is located.
 
 ## Detection<a name="detection"></a>
 
@@ -92,6 +44,33 @@ Now you will find a folder called dist/ where the finished executable program is
 
 If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.\
 Note: If you have different UI Scaling you need to add these images to the img folder like the `image_1_90%`
+
+# Server Usage<a name="server"></a>
+
+> [!INFO]
+> **This Version is for Single User!**
+
+The server is responsible for sending messages to the connected clients. It can send two types of messages: Normal and Alarm. When an Alarm message is sent, all connected clients will receive it and can take appropriate actions, such as playing a sound.
+
+- Simply launch Server.exe, and a menu will appear. You can configure all your settings there. Afterward, click on "Start."
+- If the Alert doesn't respond to the local chat, you can reduce the detection accuracy or double-check if you've set the region correctly.
+- If both settings are 100% accurate and your interface is not blurred, make a new screenshot from your neutral symbol and try it with your own image
+- You can edit all images & sounds by yourself only the name must be the same
+
+Optional:
+
+- Activate Socket System for Clients
+
+## Client Usage<a name="client"></a>
+
+> [!INFO]
+> To Use the Client Option you need at least 1 Server User!
+
+The client program can be used to connect to a socket server and continuously receives messages. The messages can be in one of two states: Normal or Alarm.
+
+When the client receives an Alarm message, it plays a sound.
+
+This will support a Alarm System for multiple Users
 
 ## Showcase<a name="showcase"></a>
 
