@@ -59,7 +59,7 @@ The server is responsible for sending messages to the connected clients. It can 
 
 Optional:
 
-- Activate Socket Server for Broadccast Mode
+- Activate Socket Server for Broadcast Mode
 - Mute Alarm for Just Broadcast
 
 ## Client Usage<a name="client"></a>
@@ -67,11 +67,8 @@ Optional:
 > [!NOTE]
 > To Use the Client Option you need at least 1 Server User!
 
-The client program can be used to connect to a socket server and continuously receives messages. The messages can be in one of two states: Normal or Alarm.
-
-When the client receives an Alarm message, it plays a sound.
-
-This will support a Alarm System for multiple Users
+- The client program can be used to connect to a socket server and continuously receives messages. The messages can be in one of two states: Normal or Alarm.
+- When the client receives an Alarm message, it plays a sound.
 
 ## Showcase<a name="showcase"></a>
 
