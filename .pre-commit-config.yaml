@@ -149,7 +149,7 @@ repos:
           )
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.0
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
         name: PyUpgrade
@@ -208,7 +208,7 @@ repos:
           - --target-version=py38
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.19
+    rev: 0.7.21
     hooks:
       - id: mdformat
         name: Mdformat
@@ -225,7 +225,7 @@ repos:
           - mdformat-shfmt==0.1.0  # Mdformat plugin to format shell code blocks » https://github.com/hukkin/mdformat-shfmt/tags
 
   - repo: https://github.com/pylint-dev/pylint
-    rev: v3.3.2
+    rev: v3.3.3
     hooks:
       - id: pylint
         name: Pylint
