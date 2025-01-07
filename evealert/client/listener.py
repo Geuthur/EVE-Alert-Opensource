@@ -176,6 +176,7 @@ class MainMenu(customtkinter.CTk):
             )
             self.client.start_system()
 
+    # pylint: disable=duplicate-code
     def set_icon(self, icon):
         """Set the icon for the main window."""
         try:

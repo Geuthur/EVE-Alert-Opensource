@@ -5,6 +5,7 @@ from pathlib import Path
 
 from evealert.settings.helper import get_resource_path
 
+# pylint: disable=duplicate-code
 # Logging
 LOG_PATH = Path("logs")
 LOG_PATH.mkdir(exist_ok=True)
