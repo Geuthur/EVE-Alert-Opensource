@@ -1,3 +1,44 @@
+## [0.9.0] - 2025-01-08
+
+### Changed
+
+- Setting Manager
+  - The settings manager has been refactored to improve the handling and organization of settings.
+- Config Mode
+  - The configuration mode has been optimized to respond more flexibly to changes.
+- Refactor of the entire system
+  - The system has been refactored to improve code readability and maintainability.
+- Logger System
+  - The logger system has been enhanced to capture more detailed information about errors, aiding in better troubleshooting.
+- Alert Sound
+  - The alert sound will not interrupt the program after an error occurs.
+
+### Fixed
+
+- EveLocal not closing with Window Close:
+  - An issue was fixed where the EveLocal window would not properly close when the window's close button was clicked. This fix ensures that the window is now correctly closed when the user attempts to exit.
+- Settings not reloaded if changed:
+  - A bug where settings were not being reloaded after being modified has been resolved. Now, when changes are made to the settings, they will be properly reloaded, reflecting the new configuration.
+- Vision not reloaded if changed:
+  - A similar issue was addressed where vision settings (likely related to display or graphical configurations) were not reloaded after changes. This fix ensures that any changes to vision settings are immediately applied and reflected.
+- Overlay Window not fitting exactly to the monitor resolution:
+  - The overlay window was previously not aligning correctly with the monitor's resolution. This issue has been fixed, ensuring that the overlay window now correctly fits and scales to the screen size, providing a more accurate and consistent user interface.
+
+### Added
+
+- Propertys for each system
+  - New properties have been added to manage and configure each system individually. This allows for more flexibility and control over system settings and their states.
+- Socket System (Test)
+  - A new socket system has been implemented for testing purposes. This enables communication between different components or systems, facilitating data exchange and interactions.
+- Cleanup Functions
+  - Cleanup functions have been introduced to improve resource management. These functions help remove unnecessary data, free up memory, and ensure the application remains efficient by handling cleanup tasks properly.
+- Set changed flag in the menu:
+  - The changed flag is now set to True whenever a modification is made to the menu settings. This helps track changes and triggers actions like warnings before exiting without saving.
+- Buttons State
+  - All buttons now have a state color to indicate when they are pressed. This visual cue helps users easily identify the current state of the buttons, improving the user interface and overall user experience by providing clearer feedback during interaction.
+- Message Box System
+  - Implemented a single-instance error message box to prevent multiple error windows from opening simultaneously.
+
 ## [0.5.0] - 2024-11-29
 
 ### Changed

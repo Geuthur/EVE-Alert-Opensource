@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING
 import customtkinter
 
 if TYPE_CHECKING:
-    from .alert import AlertMenu
+    from evealert.menu.main import MainMenu
 
 
 class OverlaySystem:
-    def __init__(self, root: "AlertMenu"):
-        self.root = root
+    def __init__(self, mainmenu: "MainMenu"):
+        self.main = mainmenu
         self.start_x = None
         self.start_y = None
         self.end_x = None
@@ -18,14 +18,19 @@ class OverlaySystem:
         self.canvas = None
 
     def create_overlay(self, monitor):
-        self.cleanup()
-        self.overlay = customtkinter.CTkToplevel(self.root)
+        self.clean_up()
+        self.overlay = customtkinter.CTkToplevel(self.main)
         self.overlay.attributes("-alpha", 0.3)
         self.overlay.attributes("-topmost", True)
         self.overlay.configure(bg="black")
+
+        monitor_x = monitor.x - 10  # Subtract 10 pixels to solve weird bug?
+        monitor_y = monitor.y
+
         self.overlay.geometry(
-            f"{monitor.width}x{monitor.height}+{monitor.x}+{monitor.y}"
+            f"{monitor.width}x{monitor.height}+{(monitor_x)}+{monitor_y}"
         )
+        self.overlay.protocol("WM_DELETE_WINDOW", self.clean_up)
 
         self.canvas = customtkinter.CTkCanvas(
             self.overlay, bg="black", highlightthickness=0
@@ -35,10 +40,12 @@ class OverlaySystem:
         self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_button_release)
 
-    def cleanup(self):
+    def clean_up(self):
         if self.overlay:
             self.overlay.destroy()
             self.overlay = None
+            self.main.menu.config.faction_region = False
+            self.main.menu.config.alert_region = False
         if self.canvas:
             self.canvas.destroy()
             self.canvas = None
@@ -77,52 +84,52 @@ class OverlaySystem:
             self.start_y, self.end_y = self.end_y, self.start_y
 
         # Get the current monitor where the mouse is
-        monitor = self.root.get_current_monitor()
+        monitor = self.main.get_current_monitor()
         if monitor:
             self.start_x += monitor.x
             self.start_y += monitor.y
             self.end_x += monitor.x
             self.end_y += monitor.y
 
-        self.root.write_message(
+        self.main.write_message(
             f"Selected region: ({self.start_x}, {self.start_y}) to ({self.end_x}, {self.end_y})"
         )
 
-        if self.root.set_alert_region:
+        if self.main.menu.config.is_alert_region:
             self.set_alert_region()
-        elif self.root.set_faction_region:
+        elif self.main.menu.config.is_faction_region:
             self.set_faction_region()
 
     def set_alert_region(self):
-        self.root.settingsmenu.alert_region_x_first.delete(0, customtkinter.END)
-        self.root.settingsmenu.alert_region_y_first.delete(0, customtkinter.END)
-        self.root.settingsmenu.alert_region_x_first.insert(0, str(self.start_x + 10))
-        self.root.settingsmenu.alert_region_y_first.insert(
-            0, str(self.start_y + 30)
+        settings = self.main.menu.setting.load_settings()
+        settings["alert_region_1"]["x"] = self.start_x
+        settings["alert_region_1"]["y"] = (
+            self.start_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
-        self.root.settingsmenu.alert_region_x_second.delete(0, customtkinter.END)
-        self.root.settingsmenu.alert_region_y_second.delete(0, customtkinter.END)
-        self.root.settingsmenu.alert_region_x_second.insert(0, str(self.end_x + 10))
-        self.root.settingsmenu.alert_region_y_second.insert(
-            0, str(self.end_y + 30)
+        settings["alert_region_2"]["x"] = self.end_x
+        settings["alert_region_2"]["y"] = (
+            self.end_y + 30
         )  # Add 30 pixels to the y-coordinate to solve weird bug?
-        self.root.save_settings()
-        self.root.set_alert_region = False
-        self.cleanup()
-        self.root.write_message("Settings: Enemy Deactivated.")
+
+        self.main.menu.setting.save_settings(settings)
+        self.main.menu.config.changed = True
+        self.clean_up()
+        self.main.write_message("Settings: Enemy Deactivated.")
 
     def set_faction_region(self):
-        self.root.settingsmenu.faction_region_x_first.delete(0, customtkinter.END)
-        self.root.settingsmenu.faction_region_y_first.delete(0, customtkinter.END)
-        self.root.settingsmenu.faction_region_x_first.insert(0, str(self.start_x + 10))
-        self.root.settingsmenu.faction_region_y_first.insert(0, str(self.start_y + 30))
+        settings = self.main.menu.setting.load_settings()
+        settings["faction_region_1"]["x"] = self.start_x
+        settings["faction_region_1"]["y"] = (
+            self.start_y + 30
+        )  # Add 30 pixels to the y-coordinate to solve weird bug?
 
-        self.root.settingsmenu.faction_region_x_second.delete(0, customtkinter.END)
-        self.root.settingsmenu.faction_region_y_second.delete(0, customtkinter.END)
-        self.root.settingsmenu.faction_region_x_second.insert(0, str(self.end_x + 10))
-        self.root.settingsmenu.faction_region_y_second.insert(0, str(self.end_y + 30))
-        self.root.save_settings()
-        self.root.set_faction_region = False
-        self.cleanup()
-        self.root.write_message("Settings: Faction Deactivated.")
+        settings["faction_region_2"]["x"] = self.end_x
+        settings["faction_region_2"]["y"] = (
+            self.end_y + 30
+        )  # Add 30 pixels to the y-coordinate to solve weird bug?
+
+        self.main.menu.setting.save_settings(settings)
+        self.main.menu.config.changed = True
+        self.clean_up()
+        self.main.write_message("Settings: Faction Deactivated.")

@@ -1,5 +1,6 @@
 __pycache__/**
 settings.json
+client.json
 Paper.exe
 pyinstaller.txt
 testing/*
@@ -9,3 +10,4 @@ logs/
 build/
 dist/
 main.spec
+testing/

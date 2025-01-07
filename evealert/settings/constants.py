@@ -1,1 +1,0 @@
-ICON = "img/eve.ico"

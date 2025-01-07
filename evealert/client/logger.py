@@ -5,6 +5,7 @@ from pathlib import Path
 
 from evealert.settings.helper import get_resource_path
 
+# pylint: disable=duplicate-code
 # Logging
 LOG_PATH = Path("logs")
 LOG_PATH.mkdir(exist_ok=True)
@@ -29,7 +30,7 @@ def create_fh(name: str):
 
 def setup_logger(name: str, level: str = None):
     """Create a logger with the given name and level."""
-    config_path = get_resource_path("settings.json")
+    config_path = get_resource_path("client.json")
 
     try:
         with open(config_path, encoding="utf-8") as config_file:
@@ -49,9 +50,5 @@ def setup_logger(name: str, level: str = None):
 
 # Create loggers
 main_log = setup_logger("main")
-alert_log = setup_logger("alert")
-menu_log = setup_logger("menu")
-tools_log = setup_logger("tools")
-test_log = setup_logger("test")
 
 logging.StreamHandler()

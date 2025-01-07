@@ -1,7 +1,7 @@
 import customtkinter
 
 from evealert import __version__
-from evealert.menu.main import MainMenu
+from evealert.client.listener import MainMenu
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
@@ -45,7 +45,7 @@ print(
 ░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓██▓████████▓████▒░░░░░░░░▒█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░
 ░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█░░░░░░░░░░░▓█░░░▒▓▓▓▓▓▒▒██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░
 ░▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░
-░░░░░░░░░░░░░░░░░ Geuthur - EVE Alert v{__version__} ░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░ Geuthur - EVE Local Client v{__version__} ░░░░░░░░░░░░░░░░
 """
 )
 

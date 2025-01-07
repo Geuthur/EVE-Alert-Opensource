@@ -1,3 +1,4 @@
+CTkMessagebox==2.7
 customtkinter==5.2.2
 mss==9.0.2
 numpy==2.1.2
