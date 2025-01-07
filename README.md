@@ -13,8 +13,8 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
   - [Download](#step1)
   - [Detection](#detection)
   - [Socket System](#socket)
-    - [Client](#client)
-    - [Server](#server)
+    - [Server - Main Program](#server)
+    - [Client - Listener](#client)
   - [Showcase](#showcase)
   - [Donation](#donation)
   - [Terms](#terms)
@@ -65,7 +65,7 @@ Optional:
 ## Client Usage<a name="client"></a>
 
 > [!NOTE]
-> To Use the Client Option you need at least 1 Server User!
+> To Use the Client Version you need at least 1 Active Server!
 
 - The client program can be used to connect to a socket server and continuously receives messages. The messages can be in one of two states: Normal or Alarm.
 - When the client receives an Alarm message, it plays a sound.
