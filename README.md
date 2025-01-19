@@ -72,7 +72,7 @@ Optional:
 
 ## Showcase<a name="showcase"></a>
 
-https://github.com/Geuthur/EVE-Alert-Opensource/evealert/docs/videos/detection.mp4
+https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/evealert/docs/videos/detection.mp4
 
 ## Donation<a name="donation"></a>
 
