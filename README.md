@@ -73,7 +73,7 @@ Optional:
 ## Showcase<a name="showcase"></a>
 
 <video width="600" controls>
-  <source src="https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/evealert/docs/videos/detection.mp4" type="video/mp4">
+  <source src="evealert/docs/videos/detection.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
