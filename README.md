@@ -72,10 +72,7 @@ Optional:
 
 ## Showcase<a name="showcase"></a>
 
-<video width="600" controls>
-  <source src="evealert/docs/videos/detection.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+https://github.com/user-attachments/assets/89727863-538d-4846-b861-0d693a75a688
 
 ## Donation<a name="donation"></a>
 
