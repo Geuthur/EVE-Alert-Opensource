@@ -159,7 +159,7 @@ repos:
         exclude: '^main\.py$'
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
+    rev: 7.1.2
     hooks:
       - id: flake8
         name: Flake8
@@ -174,7 +174,7 @@ repos:
         exclude: '^main\.py$'
 
   - repo: https://github.com/PyCQA/isort
-    rev: 6.0.0
+    rev: 6.0.1
     hooks:
       - id: isort
         name: Isort
@@ -234,7 +234,7 @@ repos:
           - --py-version=3.8
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.31.1
+    rev: 0.31.2
     hooks:
       - id: check-github-actions
         name: Check GitHub Actions
