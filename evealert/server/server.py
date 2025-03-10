@@ -202,7 +202,7 @@ class Server(threading.Thread):
         Server.log_message(
             f"New connection at ID {client.id}, {client.address} - Total: {client.total_connections}"
         )
-        client.send_message(f"Connetected to {client.name} Server")
+        client.send_message(f"Connected to {client.name} Server")
 
     @classmethod
     def remove_connection(cls, client):
@@ -323,7 +323,7 @@ class ClientAgent:
         try:
             self.sock.connect((self.host, self.port))
             response = self.sock.recv(1024).decode("utf-8")
-            if "Connetected" in response:
+            if "Connected" in response:
                 self.main.write_message(response, "green")
                 Server.log_message(response)
                 self.running = True
