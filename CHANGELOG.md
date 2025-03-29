@@ -1,3 +1,15 @@
+## [1.0.0] IN DEVELOPMENT
+
+### Changed
+
+- Removed Socket System
+  - The Socket System has been removed and we now use Discord Webhook to share Intel.
+
+### Added
+
+- Discord System
+  - All alarms are sent to a Discord webhook with the set system name.
+
 ## [0.9.0] - 2025-01-08
 
 ### Changed
