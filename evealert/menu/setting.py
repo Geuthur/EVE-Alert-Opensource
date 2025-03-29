@@ -45,7 +45,6 @@ class SettingMenu:
         self.play_alarm = customtkinter.BooleanVar()
 
         self.create_menu()
-        self.load_settings()
 
     @property
     def is_changed(self):
@@ -68,15 +67,29 @@ class SettingMenu:
                 "Setting Menu: Error reading settings file. Using default settings."
             )
             settings = self.default
-            self.save_settings(settings)
-
+        self.save_settings(settings)
         self.apply_settings(settings)
         return settings
 
-    def merge_settings_with_defaults(self, settings):
-        """Merge the loaded settings with the default settings."""
-        merged_settings = self.default.copy()
-        merged_settings.update(settings)
+    def merge_settings_with_defaults(self, settings, defaults=None):
+        """Merge the loaded settings with the default settings recursively."""
+        if defaults is None:
+            defaults = self.default
+
+        merged_settings = defaults.copy()
+        for key, value in defaults.items():
+            if key in settings:
+                if isinstance(value, dict) and isinstance(settings[key], dict):
+                    # Rekursiv verschachtelte Dictionaries zusammenführen
+                    merged_settings[key] = self.merge_settings_with_defaults(
+                        settings[key], value
+                    )
+                else:
+                    merged_settings[key] = settings[key]
+            else:
+                # Fehlende Schlüssel mit Standardwerten ergänzen
+                merged_settings[key] = value
+
         return merged_settings
 
     def _activate_webhook(self, webhookurl):
