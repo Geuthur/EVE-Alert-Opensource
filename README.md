@@ -44,9 +44,10 @@ Note: If you have different UI Scaling you need to add these images to the img f
 The webhook is responsible for sending messages to a Discord Server.
 
 - Open The Setting Menu and put a Discord Webhook URL in the Webhook Field
-- Setup a System Name: Jita 4-4
-- If not Webhook URL is setup the Webhook feature is disabled.
+- Setup a System Name: `Jita 4-4`
 - You can also mute the Alarm sound by checking the Mute Alarm Checkbox
+
+If there is a problem with the webhook, the webhook system is automatically deactivated.
 
 ## Showcase<a name="showcase"></a>
 
