@@ -12,9 +12,7 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
   - [Features](#features)
   - [Download](#step1)
   - [Detection](#detection)
-  - [Socket System](#socket)
-    - [Server - Main Program](#server)
-    - [Client - Listener](#client)
+  - [Discord Webhook](#webhook)
   - [Showcase](#showcase)
   - [Donation](#donation)
   - [Terms](#terms)
@@ -27,11 +25,7 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 - Start/Stop System
 - Monitoring Region in real-time (also possible to stream via Discord for friends)
 - Faction Spawn Detection - Now you can set a Faction Spawn Detection and it will play a sound if a faction is in Site (can also used for other thing like active modules or something)
-- The Socket System allows you to have one server and multiple clients that can connect to it to receive alarms.
-
-## Upcoming Features
-
-- Discord Webhook support
+- Webhook System allows to share alarms into Discord Webhook to create a Intel System anonymous.
 
 ### Download Version<a name="step1"></a>
 
@@ -45,30 +39,14 @@ Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releas
 If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.\
 Note: If you have different UI Scaling you need to add these images to the img folder like the `image_1_90%`
 
-## Server Usage<a name="server"></a>
+## Discord Webhook Usage (optinal)<a name="webhook"></a>
 
-> [!NOTE]
-> **This Version is for Single User!**
+The webhook is responsible for sending messages to a Discord Server.
 
-The server is responsible for sending messages to the connected clients. It can send two types of messages: Normal and Alarm. When an Alarm message is sent, all connected clients will receive it and can take appropriate actions, such as playing a sound.
-
-- Simply launch Server.exe, and a menu will appear. You can configure all your settings there. Afterward, click on "Start."
-- If the Alert doesn't respond to the local chat, you can reduce the detection accuracy or double-check if you've set the region correctly.
-- If both settings are 100% accurate and your interface is not blurred, make a new screenshot from your neutral symbol and try it with your own image
-- You can edit all images & sounds by yourself only the name must be the same
-
-Optional:
-
-- Activate Socket Server for Broadcast Mode
-- Mute Alarm for Just Broadcast
-
-## Client Usage<a name="client"></a>
-
-> [!NOTE]
-> To Use the Client Version you need at least 1 Active Server!
-
-- The client program can be used to connect to a socket server and continuously receives messages. The messages can be in one of two states: Normal or Alarm.
-- When the client receives an Alarm message, it plays a sound.
+- Open The Setting Menu and put a Discord Webhook URL in the Webhook Field
+- Setup a System Name: Jita 4-4
+- If not Webhook URL is setup the Webhook feature is disabled.
+- You can also mute the Alarm sound by checking the Mute Alarm Checkbox
 
 ## Showcase<a name="showcase"></a>
 

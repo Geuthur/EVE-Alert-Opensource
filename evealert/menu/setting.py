@@ -79,6 +79,26 @@ class SettingMenu:
         merged_settings.update(settings)
         return merged_settings
 
+    def _activate_webhook(self, webhookurl):
+        """Activate the webhook URL."""
+        try:
+            required_prefix = "https://discord.com/api/webhooks/"
+            if not webhookurl.startswith(required_prefix):
+                raise ValueError(f"It must start with '{required_prefix}'.")
+            self.main.webhook = Webhook(
+                webhookurl,
+                username="Gneuten",
+            )
+            return True
+        except ValueError as e:
+            logger.error(f"Invalid webhook URL: {e}")
+            self.main.webhook = None
+            return False
+        except Exception as e:
+            logger.error(f"Error activating webhook: {e}")
+            self.main.webhook = None
+            return False
+
     def apply_settings(self, settings):
         try:
             self.logging.delete(0, customtkinter.END)
@@ -118,28 +138,13 @@ class SettingMenu:
 
             self.webhook.delete(0, customtkinter.END)
 
-            try:
-                required_prefix = "https://discord.com/api/webhooks/"
-                webhookurl = settings["server"]["name"]
-                if (
-                    not webhookurl.startswith(required_prefix)
-                    and settings["server"]["name"] != "Enter a Webhook URL"
-                    or settings["server"]["name"] == ""
-                ):
-                    raise ValueError(
-                        f"Invalid webhook URL. It must start with '{required_prefix}'."
-                    )
-                if webhookurl.startswith(required_prefix):
-                    self.main.webhook = Webhook(
-                        webhookurl,
-                        username="Gneuten",
-                    )
-            except ValueError as e:
-                logger.error(e)
-                self.main.write_message(
-                    "Setting Menu: Error saving settings. Please check the values.",
-                    "red",
-                )
+            # Check if the webhook URL is valid
+            if (
+                settings["server"]["name"] != "Enter a Webhook URL"
+                and settings["server"]["name"] != ""
+            ):
+                self._activate_webhook(settings["server"]["name"])
+
             self.webhook.insert(0, settings["server"]["name"])
             self.play_alarm.set(settings["server"]["mute"])
 
