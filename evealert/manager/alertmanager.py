@@ -226,10 +226,11 @@ class AlertAgent:
             self.cooldown_timers[alarm_type] = 0
 
         if self.main.webhook and alarm_type == "Enemy":
+            if self.webhook_sent is True:
+                self.main.webhook.execute(
+                    f"Alarm Reset: {self.main.menu.setting.system_name.get()}!"
+                )
             self.webhook_sent = False
-            self.main.webhook.execute(
-                f"Alarm Reset: {alarm_type} alarm reset in {self.main.menu.setting.system_name.get()}!"
-            )
 
     async def alarm_detection(self, alarm_text, sound=ALARM_SOUND, alarm_type="Enemy"):
         self.main.write_message(
