@@ -4,6 +4,8 @@
 
 - Removed Socket System
   - The Socket System has been removed and we now use Discord Webhook to share Intel.
+- Setting Loader
+  - Missing Keys will be created.
 
 ### Added
 
