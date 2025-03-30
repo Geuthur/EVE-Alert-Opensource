@@ -101,6 +101,7 @@ class SettingMenu:
             self.main.webhook = Webhook(
                 webhookurl,
                 username="Gneuten",
+                avatar_url="https://cdn.discordapp.com/avatars/990582360103870495/410d536127874481b9771b9eb9aa8104.png",
             )
             return True
         except ValueError as e:
