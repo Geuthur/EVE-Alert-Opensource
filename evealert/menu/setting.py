@@ -105,11 +105,11 @@ class SettingMenu:
             )
             return True
         except ValueError as e:
-            logger.error(f"Invalid webhook URL: {e}")
+            logger.error("Invalid webhook URL: %s", e)
             self.main.webhook = None
             return False
         except Exception as e:
-            logger.error(f"Error activating webhook: {e}")
+            logger.error("Error activating webhook: %s", e)
             self.main.webhook = None
             return False
 
