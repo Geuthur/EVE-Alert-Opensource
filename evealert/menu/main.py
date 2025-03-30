@@ -1,5 +1,4 @@
 import os
-import threading
 from datetime import datetime
 from threading import Thread
 
@@ -14,7 +13,6 @@ from evealert import __version__
 from evealert.manager.alertmanager import AlertAgent
 from evealert.menu.config import ConfigModeMenu
 from evealert.menu.setting import SettingMenu
-from evealert.server.server import ServerAgent
 from evealert.settings.helper import ICON, get_resource_path
 from evealert.settings.logger import logging
 from evealert.tools.overlay import OverlaySystem
@@ -54,14 +52,8 @@ class MainMenuButtons:
             command=self.settings_mode_toggle,
         )
 
-        self.socket_server = customtkinter.CTkButton(
-            self.settings_label_frame,
-            text="Start Server",
-            command=self.socket_mode_toggle,
-        )
         self.config_mode_menu.grid(row=0, column=1, padx=(0, 10))
         self.setting_menu.grid(row=0, column=2, padx=(0, 10))
-        self.socket_server.grid(row=0, column=3)
 
         # Create Buttons
         self.show_alert_button = customtkinter.CTkButton(
@@ -103,15 +95,6 @@ class MainMenuButtons:
                 "Setting Menu: Error read logs for more information.", "red"
             )
 
-    def socket_mode_toggle(self):
-        try:
-            self.main.start_socket_system()
-        except AttributeError as e:
-            log_menu.exception("Socket Menu Error: %s", e)
-            self.main.write_message(
-                "Socket Menu: Error read logs for more information.", "red"
-            )
-
 
 class MenuManager:
     def __init__(self, main: "MainMenu"):
@@ -136,8 +119,8 @@ class MainMenu(customtkinter.CTk):
         self.overlay_system = OverlaySystem(self)
         # Alert System
         self.alert = AlertAgent(self)
-        # Server Settings
-        self.socket = ServerAgent(self)
+        # Webhook System
+        self.webhook = None
         # Status System
         self.current_status = False
         self.check_status()
@@ -147,7 +130,6 @@ class MainMenu(customtkinter.CTk):
         self.overlay_system.clean_up()
         self.menu.config.clean_up()
         self.alert.clean_up()
-        self.socket.clean_up()
         self.destroy()
 
     def init_widgets(self):
@@ -376,15 +358,3 @@ class MainMenu(customtkinter.CTk):
             self.write_message("System: EVE Alert stopped.", "red")
             return
         self.write_message("System: EVE Alert isn't running.")
-
-    def start_socket_system(self):
-        """Start the socket server in a new thread."""
-        try:
-            if not self.socket.running:
-                self.socket_thread = threading.Thread(target=self.socket.start_server)
-                self.socket_thread.start()
-            else:
-                self.socket.clean_up()
-        except Exception as e:
-            log_main.error("Start Socket Error: %s", e, exc_info=True)
-            self.write_message("System: Something went wrong.", "red")

@@ -1,0 +1,28 @@
+name: Suggestion Request
+description: What the program should have.
+title: "[SUGGESTION]: "
+labels: ["suggestion"]
+projects: ["eve-alert"]
+assignees:
+  - geuthur
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this suggestion request!
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Draw your suggestion
+      description: Draw your suggestion, or write code, or anything that can help us understand your suggestion.
+      placeholder: Draw your suggestion here!
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/geuthur/EVE-Alert-Opensource/blob/main/CODE_OF_CONDUCT.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

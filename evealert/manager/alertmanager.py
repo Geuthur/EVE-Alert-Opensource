@@ -64,6 +64,10 @@ class AlertAgent:
         self.alarm_detected = False
         self.mute = False
 
+        # Webhook Settings
+        self.webhook_cooldown_timer = 0
+        self.webhook_sent = False
+
         # Sound Settings
         self.p = sd
         self.alarm_trigger_counts = {}
@@ -221,12 +225,38 @@ class AlertAgent:
             self.alarm_trigger_counts[alarm_type] = 0
             self.cooldown_timers[alarm_type] = 0
 
+        if self.main.webhook and alarm_type == "Enemy":
+            if self.webhook_sent is True:
+                self.main.webhook.execute(
+                    f"Alarm Reset: {self.main.menu.setting.system_name.get()}!"
+                )
+            self.webhook_sent = False
+
     async def alarm_detection(self, alarm_text, sound=ALARM_SOUND, alarm_type="Enemy"):
         self.main.write_message(
             f"{alarm_text}",
             "red",
         )
         await self.play_sound(sound, alarm_type)
+        await self.send_webhook_message(alarm_type)
+
+    async def send_webhook_message(self, alarm_type):
+        current_time = time.time()
+        # Ensure to limit the webhook sending to once every 5 seconds
+        if current_time < self.webhook_cooldown_timer:
+            logger.info("Webhook is in cooldown period. Message not sent.")
+            return
+
+        if self.main.webhook and alarm_type == "Enemy" and self.webhook_sent is False:
+            # Send the webhook message
+            try:
+                msg = f"Enemy Appears in {self.main.menu.setting.system_name.get()}!"
+                self.main.webhook.execute(msg)
+                self.webhook_cooldown_timer = current_time + 5
+                self.webhook_sent = True
+
+            except Exception as e:
+                logger.error("Error sending webhook: %s", e)
 
     async def play_sound(self, sound, alarm_type):
         if self.mute:
@@ -298,19 +328,10 @@ class AlertAgent:
                             "Faction Spawn!", FACTION_SOUND, "Faction"
                         )
                     if self.enemy:
-                        try:
-                            self.main.socket.recieve_alert("Alert")
-                        except OSError as e:
-                            logger.error("Alert System Broadcast Error: %s", e)
                         self.alarm_detected = True
                         await self.alarm_detection(
                             "Enemy Appears!", ALARM_SOUND, "Enemy"
                         )
-                    else:
-                        try:
-                            self.main.socket.recieve_alert("Normal")
-                        except OSError as e:
-                            logger.error("Alert System Broadcast Error: %s", e)
                 except ValueError as e:
                     logger.error("Alert System Error: %s", e)
                     self.stop()

@@ -2,6 +2,7 @@ import json
 from typing import TYPE_CHECKING
 
 import customtkinter
+from dhooks_lite import Webhook
 
 from evealert.settings.helper import get_resource_path
 from evealert.settings.logger import logging
@@ -21,11 +22,8 @@ DEFAULT_SETTINGS = {
     "faction_scale": {"value": 90},
     "cooldown_timer": {"value": 30},
     "server": {
-        "name": "Eve Local Server",
-        "host": "127.0.0.1",
-        "port": 27215,
-        "admin_password": "1234",
-        "server_mode": True,
+        "name": "Enter a Webhook URL",
+        "system": "Enter a System Name",
         "mute": False,
     },
 }
@@ -44,11 +42,9 @@ class SettingMenu:
         self.setting_window.title("Settings")
         self.setting_window.withdraw()
 
-        self.server_mode = customtkinter.BooleanVar()
         self.play_alarm = customtkinter.BooleanVar()
 
         self.create_menu()
-        self.load_settings()
 
     @property
     def is_changed(self):
@@ -71,16 +67,51 @@ class SettingMenu:
                 "Setting Menu: Error reading settings file. Using default settings."
             )
             settings = self.default
-            self.save_settings(settings)
-
+        self.save_settings(settings)
         self.apply_settings(settings)
         return settings
 
-    def merge_settings_with_defaults(self, settings):
-        """Merge the loaded settings with the default settings."""
-        merged_settings = self.default.copy()
-        merged_settings.update(settings)
+    def merge_settings_with_defaults(self, settings, defaults=None):
+        """Merge the loaded settings with the default settings recursively."""
+        if defaults is None:
+            defaults = self.default
+
+        merged_settings = defaults.copy()
+        for key, value in defaults.items():
+            if key in settings:
+                if isinstance(value, dict) and isinstance(settings[key], dict):
+                    # Rekursiv verschachtelte Dictionaries zusammenführen
+                    merged_settings[key] = self.merge_settings_with_defaults(
+                        settings[key], value
+                    )
+                else:
+                    merged_settings[key] = settings[key]
+            else:
+                # Fehlende Schlüssel mit Standardwerten ergänzen
+                merged_settings[key] = value
+
         return merged_settings
+
+    def _activate_webhook(self, webhookurl):
+        """Activate the webhook URL."""
+        try:
+            required_prefix = "https://discord.com/api/webhooks/"
+            if not webhookurl.startswith(required_prefix):
+                raise ValueError(f"It must start with '{required_prefix}'.")
+            self.main.webhook = Webhook(
+                webhookurl,
+                username="Gneuten",
+                avatar_url="https://cdn.discordapp.com/avatars/990582360103870495/410d536127874481b9771b9eb9aa8104.png",
+            )
+            return True
+        except ValueError as e:
+            logger.error("Invalid webhook URL: %s", e)
+            self.main.webhook = None
+            return False
+        except Exception as e:
+            logger.error("Error activating webhook: %s", e)
+            self.main.webhook = None
+            return False
 
     def apply_settings(self, settings):
         try:
@@ -116,28 +147,20 @@ class SettingMenu:
             self.cooldown_timer.delete(0, customtkinter.END)
             self.cooldown_timer.insert(0, settings["cooldown_timer"]["value"])
 
-            # Render the server mode button
-            if settings["server"]["server_mode"]:
-                self.main.mainmenu_buttons.socket_server.configure(text="Start Server")
-            else:
-                self.main.mainmenu_buttons.socket_server.configure(
-                    text="Send to Server"
-                )
+            self.system_name.delete(0, customtkinter.END)
+            self.system_name.insert(0, settings["server"]["system"])
 
-            self.socket_server_host.delete(0, customtkinter.END)
-            self.socket_server_host.insert(0, settings["server"]["host"])
+            self.webhook.delete(0, customtkinter.END)
 
-            self.socket_server_port.delete(0, customtkinter.END)
-            self.socket_server_port.insert(0, settings["server"]["port"])
+            # Check if the webhook URL is valid
+            if (
+                settings["server"]["name"] != "Enter a Webhook URL"
+                and settings["server"]["name"] != ""
+            ):
+                self._activate_webhook(settings["server"]["name"])
 
-            self.socket_server_alerter.delete(0, customtkinter.END)
-            self.socket_server_alerter.insert(0, settings["server"]["admin_password"])
-
-            self.socket_server_name.delete(0, customtkinter.END)
-            self.socket_server_name.insert(0, settings["server"]["name"])
-
+            self.webhook.insert(0, settings["server"]["name"])
             self.play_alarm.set(settings["server"]["mute"])
-            self.server_mode.set(settings["server"]["server_mode"])
 
         except KeyError as e:
             logger.exception(e)
@@ -184,11 +207,8 @@ class SettingMenu:
                     "faction_scale": {"value": int(self.faction_scale.get())},
                     "cooldown_timer": {"value": int(self.cooldown_timer.get())},
                     "server": {
-                        "name": self.socket_server_name.get(),
-                        "host": self.socket_server_host.get(),
-                        "port": int(self.socket_server_port.get()),
-                        "admin_password": self.socket_server_alerter.get(),
-                        "server_mode": self.server_mode.get(),
+                        "name": self.webhook.get(),
+                        "system": self.system_name.get(),
                         "mute": self.play_alarm.get(),
                     },
                 }
@@ -312,25 +332,14 @@ class SettingMenu:
             self.menu_frame, text=self.slider2.get()
         )
 
-        self.socket_server_label = customtkinter.CTkLabel(
-            self.menu_frame, text="Socket Server:", justify="left"
+        self.webhook_label = customtkinter.CTkLabel(
+            self.menu_frame, text="Webhook:", justify="left"
         )
-        self.socket_server_host = customtkinter.CTkEntry(self.menu_frame)
-        self.socket_server_port = customtkinter.CTkEntry(self.menu_frame)
-
-        self.socket_server_alerter_label = customtkinter.CTkLabel(
-            self.menu_frame, text="Alerter Password:", justify="left"
+        self.webhook = customtkinter.CTkEntry(self.menu_frame)
+        self.system_name_label = customtkinter.CTkLabel(
+            self.menu_frame, text="System Name:", justify="left"
         )
-        self.socket_server_alerter = customtkinter.CTkEntry(self.menu_frame)
-
-        self.socket_server_mode_checkbox = customtkinter.CTkCheckBox(
-            self.menu_frame, text="Server Mode", variable=self.server_mode
-        )
-
-        self.socket_server_name_label = customtkinter.CTkLabel(
-            self.menu_frame, text="Server Name:", justify="left"
-        )
-        self.socket_server_name = customtkinter.CTkEntry(self.menu_frame)
+        self.system_name = customtkinter.CTkEntry(self.menu_frame)
 
         self.play_alarm_checkbox = customtkinter.CTkCheckBox(
             self.menu_frame, text="Mute Alarm", variable=self.play_alarm
@@ -380,18 +389,15 @@ class SettingMenu:
         self.faction_slider_label.grid(row=7, column=0)
         self.slider2.grid(row=7, column=1)
 
-        # Socket Server Visual
-        self.socket_server_label.grid(row=8, column=0)
-        self.socket_server_host.grid(row=8, column=1)
-        self.socket_server_port.grid(row=8, column=2)
+        # Webhook Visual
+        self.webhook_label.grid(row=8, column=0)
+        self.webhook.grid(row=8, column=1)
 
-        self.socket_server_name_label.grid(row=9, column=0)
-        self.socket_server_name.grid(row=9, column=1)
+        # System Name Visual
+        self.system_name_label.grid(row=9, column=0)
+        self.system_name.grid(row=9, column=1)
+
         self.play_alarm_checkbox.grid(row=9, column=2)
-
-        self.socket_server_alerter_label.grid(row=10, column=0)
-        self.socket_server_alerter.grid(row=10, column=1)
-        self.socket_server_mode_checkbox.grid(row=10, column=2)
 
         # Save Button
         self.save_button.grid(row=11, column=0, pady=10)

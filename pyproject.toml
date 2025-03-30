@@ -28,16 +28,17 @@ dynamic = [
 ]
 dependencies = [
     "customtkinter==5.2.2",
-    "mss==9.0.2",
+    "mss==10.0.0",
     "numpy==2.1.2",
-    "opencv-python==4.10.0.84",
+    "opencv-python==4.11.0.86",
     "pillow==11.0.0",
     "pyautogui==0.9.54",
     "pynput==1.7.7",
     "sounddevice==0.5.1",
     "soundfile==0.12.1",
     "pyinstaller==6.11.0",
-    "screeninfo==0.6.7",
+    "screeninfo==0.8.1",
+    "dhooks-lite",
 ]
 urls.Changelog = "https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/CHANGELOG.md"
 urls.Documentation = "https://github.com/Geuthur/EVE-Alert-Opensource/blob/main/README.md"

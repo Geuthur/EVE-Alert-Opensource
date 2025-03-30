@@ -1,3 +1,23 @@
+## [1.0.0] 2025-03-30
+
+### Changed
+
+- Removed Socket System
+  - The Socket System has been removed and we now use Discord Webhook to share Intel.
+- Setting Loader
+  - Missing Keys will be created.
+- Update Dependencies
+  - Open-CV Updated to 4.11.\*
+  - ScreenInfo to 0.8.1
+  - MSS to 10.0.0
+
+### Added
+
+- Discord System
+  - All alarms are sent to a Discord webhook with the system name.
+- dhooks-lite
+  - Discord Webhook library
+
 ## [0.9.0] - 2025-01-08
 
 ### Changed
