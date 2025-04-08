@@ -136,7 +136,7 @@ repos:
         description: Enforce that python3.6+ type annotations are used instead of type comments.
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 3.2.0
+    rev: 3.2.1
     hooks:
       - id: editorconfig-checker
         name: EditorConfig Checker
@@ -159,7 +159,7 @@ repos:
         exclude: '^main\.py$'
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.2
+    rev: 7.2.0
     hooks:
       - id: flake8
         name: Flake8
@@ -225,7 +225,7 @@ repos:
           - mdformat-shfmt==0.1.0  # Mdformat plugin to format shell code blocks » https://github.com/hukkin/mdformat-shfmt/tags
 
   - repo: https://github.com/pylint-dev/pylint
-    rev: v3.3.4
+    rev: v3.3.6
     hooks:
       - id: pylint
         name: Pylint
@@ -234,7 +234,7 @@ repos:
           - --py-version=3.8
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.31.2
+    rev: 0.32.1
     hooks:
       - id: check-github-actions
         name: Check GitHub Actions
