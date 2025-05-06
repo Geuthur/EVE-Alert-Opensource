@@ -225,7 +225,7 @@ repos:
           - mdformat-shfmt==0.1.0  # Mdformat plugin to format shell code blocks » https://github.com/hukkin/mdformat-shfmt/tags
 
   - repo: https://github.com/pylint-dev/pylint
-    rev: v3.3.6
+    rev: v3.3.7
     hooks:
       - id: pylint
         name: Pylint
@@ -234,7 +234,7 @@ repos:
           - --py-version=3.8
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.32.1
+    rev: 0.33.0
     hooks:
       - id: check-github-actions
         name: Check GitHub Actions
