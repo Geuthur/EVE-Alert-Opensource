@@ -5,6 +5,7 @@ import random
 import time
 from typing import TYPE_CHECKING
 
+import numpy as np
 import sounddevice as sd
 import soundfile as sf
 
@@ -294,6 +295,14 @@ class AlertAgent:
             try:
                 # Lese die Audiodaten mit soundfile
                 data, samplerate = sf.read(sound, dtype="int16")
+
+                # Prüfe die Form der Daten und passe ggf. die Kanäle an
+                if data.ndim == 1:
+                    # Mono -> Stereo konvertieren
+                    data = np.stack([data, data], axis=-1)
+                elif data.ndim == 2 and data.shape[1] == 1:
+                    # (N, 1) -> (N, 2)
+                    data = np.repeat(data, 2, axis=1)
 
                 # Spiele die Audiodaten ab
                 sd.play(data, samplerate)
