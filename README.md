@@ -27,9 +27,16 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 - Faction Spawn Detection - Now you can set a Faction Spawn Detection and it will play a sound if a faction is in Site (can also used for other thing like active modules or something)
 - Webhook System allows to share alarms into Discord Webhook to create a Intel System anonymous.
 
-### Download Version<a name="step1"></a>
+## Download Version<a name="step1"></a>
 
 Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releases) to download the latest version.
+
+## Requirements & instructions for use
+
+- Alert/Faction Region not working correctly
+  The Application only works with 100% Scaling this means your Monitor Scaling need to be 100% this can be changed in the "Display Settings"
+- Issues with Sound
+  Please check if you have a Sound Device installed.
 
 ## Detection<a name="detection"></a>
 
