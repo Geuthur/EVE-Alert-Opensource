@@ -1,5 +1,6 @@
 CTkMessagebox==2.7
 customtkinter==5.2.2
+dhooks-lite==1.1.0
 mss==9.0.2
 numpy==2.1.2
 opencv-python==4.10.0.84

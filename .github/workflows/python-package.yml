@@ -79,5 +79,5 @@ jobs:
         run: |
           sudo Xvfb :99 -screen 0 1024x768x16 &
           export DISPLAY=:99
-          timeout 10s python main.py || true
+          timeout 10s python main.py
         continue-on-error: ${{ matrix.python-version == '3.13' }}

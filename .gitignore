@@ -11,3 +11,4 @@ build/
 dist/
 main.spec
 testing/
+.vscode/
