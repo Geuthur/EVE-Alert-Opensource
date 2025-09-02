@@ -61,12 +61,6 @@ repos:
         name: Fix requirements.txt
         description: Fix the formatting of requirements.txt files.
 
-      - id: fix-encoding-pragma
-        name: Fix encoding pragma
-        description: Fix the encoding pragma in Python files.
-        args:
-          - --remove
-
       - id: fix-byte-order-marker
         name: Fix byte order marker
         description: Fix the byte order marker in Python files.
@@ -87,12 +81,6 @@ repos:
         description: Check for trailing whitespace.
         args:
           - --markdown-linebreak-ext=md
-        exclude: |
-          (?x)(
-            .min(.css|.css.map|.js|.js.map)|
-            locale/|
-            static/(.*)/libs/
-          )
 
       - id: check-executables-have-shebangs
         name: Check for shebangs in executables
@@ -101,12 +89,6 @@ repos:
       - id: end-of-file-fixer
         name: End of file fixer
         description: Ensure that files end with a newline.
-        exclude: |
-          (?x)(
-            .min(.css|.css.map|.js|.js.map)|
-            locale/|
-            static/(.*)/libs/
-          )
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -141,12 +123,6 @@ repos:
       - id: editorconfig-checker
         name: EditorConfig Checker
         description: Check for compliance with the definitions in the EditorConfig file.
-        exclude: |
-          (?x)(
-            LICENSE|
-            .min(.css|.css.map|.js|.js.map)|
-            static/(.*)/libs/
-          )
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.20.0
